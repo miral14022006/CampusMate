@@ -13,6 +13,7 @@ const { documentAdminRouter } = require('./features/f08_admin');
 const { feedbackRouter } = require('./features/f10_feedback');
 const { analyticsRouter } = require('./features/f11_analytics');
 const { botRoutes, telegramBotManager } = require('./features/f13_telegram');
+const { historyRouter } = require('./features/f00_history');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,8 +24,8 @@ app.use(helmet({
   crossOriginResourcePolicy: false
 }));
 
-// CORS allowlist configuration
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:3000').split(',');
+// CORS allowlist configuration for external client consumers / integrations
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000').split(',');
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
@@ -59,6 +60,7 @@ app.use((req, res, next) => {
 
 // Primary MERN chat routes, Admin routes, Bot routes
 app.use('/api/chat', chatRouter);
+app.use('/api/conversations', historyRouter);
 app.use('/api/legacy/chat', legacyChatRouter);
 app.use('/api/admin', adminCacheRouter);
 app.use('/api/admin', documentAdminRouter);

@@ -7,14 +7,15 @@ const { sessionManager } = require('../features/f06_sessions');
 const { serverCacheManager } = require('../features/f12_cache');
 const { logImplicitFailureIfNeeded } = require('../features/f10_feedback');
 const { logQueryAnalytics } = require('../features/f11_analytics');
+const { PersistentConversation } = require('../features/f00_history');
 
 const router = express.Router();
 
 /**
- * POST /api/chat
+ * POST /api/chat & POST /api/chat/message
  * Primary chat endpoint: queries production NLP service client, caches/saves conversation, and returns full state.
  */
-router.post('/', async (req, res) => {
+const handleChat = async (req, res) => {
   const { query, sessionId = `session_${Date.now()}` } = req.body;
 
   if (!query || typeof query !== 'string' || !query.trim()) {
@@ -144,6 +145,27 @@ router.post('/', async (req, res) => {
         },
         { upsert: true, new: true }
       );
+
+      // Feature 00: Persistent conversation history record update & auto-title
+      const clientId = req.headers['x-client-id'] || 'anonymous_client';
+      const cleanTitle = query.trim().replace(/[\r\n]+/g, ' ').slice(0, 40);
+      await PersistentConversation.findOneAndUpdate(
+        { sessionId },
+        {
+          $setOnInsert: {
+            sessionId,
+            clientId,
+            title: cleanTitle || 'New Conversation',
+            createdAt: new Date()
+          },
+          $set: {
+            lastMessagePreview: (nlpData.answer || '').slice(0, 80),
+            updatedAt: new Date()
+          },
+          $inc: { messageCount: 2 }
+        },
+        { upsert: true, new: true }
+      );
     } catch (dbErr) {
       console.warn(`[Server] Mongo persistence skipped: ${dbErr.message}`);
       // In offline/transient mode, also check implicit failure logging to memory store
@@ -159,7 +181,9 @@ router.post('/', async (req, res) => {
       messageId: createdMessageId,
       sessionId,
       answer: nlpData.answer,
+      reply: nlpData.answer,
       language: nlpData.language,
+      detected_language: nlpData.language,
       intent: nlpData.intent,
       confidence: nlpData.confidence,
       source_doc: nlpData.source_doc,
@@ -182,7 +206,10 @@ router.post('/', async (req, res) => {
     console.error(`[Server Error] /api/chat: ${error.message}`);
     return res.status(500).json({ error: 'Internal gateway error.' });
   }
-});
+};
+
+router.post('/', handleChat);
+router.post('/message', handleChat);
 
 /**
  * GET /api/chat/history/:sessionId

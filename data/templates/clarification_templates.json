@@ -1,0 +1,125 @@
+{
+  "intent_clarification_prompts": {
+    "en": "I want to make sure I understand correctly. Did you mean:",
+    "hi": "मैं यह सुनिश्चित करना चाहता हूँ कि मैंने सही समझा। क्या आपका मतलब यह था:",
+    "gu": "હું ખાતરી કરવા માંગુ છું કે મેં યોગ્ય સમજ્યું છે. શું તમારો મતલબ આ હતો:",
+    "hi-Latn": "Main confirm karna chahta hu, kya aapka matlab inme se kisi baare mein tha:"
+  },
+  "missing_slot_questions": {
+    "semester": {
+      "en": "Which semester timetable/information are you looking for? (e.g., Sem 1, Sem 3, Sem 5, Sem 7)",
+      "hi": "आप किस सेमेस्टर की समय सारणी/जानकारी जानना चाहते हैं? (उदा. सेमेस्टर 1, 3, 5, 7)",
+      "gu": "તમે કયા સેમેસ્ટરનું સમયપત્રક/માહિતી જોવા માંગો છો? (દા.ત. સેમ 1, સેમ 3, સેમ 5, સેમ 7)",
+      "hi-Latn": "Aap kaunse semester ka timetable ya information check karna chahte hain? (e.g., Sem 1, Sem 3, Sem 5, Sem 7)"
+    },
+    "course_name": {
+      "en": "Which course syllabus or eligibility are you inquiring about? (e.g., B.Tech CS, Mechanical, MCA, MBA)",
+      "hi": "आप किस कोर्स के पाठ्यक्रम या पात्रता के बारे में पूछ रहे हैं? (उदा. बी.टेक सीएस, मैकेनिकल, एमसीए)",
+      "gu": "તમે કયા અભ્યાસક્રમ/કોર્સ વિશે પૂછી રહ્યા છો? (દા.ત. B.Tech CS, મિકેનિકલ, MCA, MBA)",
+      "hi-Latn": "Aap kaunse course ke syllabus ya eligibility ke baare mein pooch rahe hain? (e.g., B.Tech CS, MCA, MBA)"
+    },
+    "category": {
+      "en": "Are you asking for Boys Hostel or Girls Hostel accommodation?",
+      "hi": "क्या आप बालक छात्रावास (Boys Hostel) या बालिका छात्रावास (Girls Hostel) के बारे में पूछ रहे हैं?",
+      "gu": "શું તમે બોય્ઝ હોસ્ટેલ કે ગર્લ્સ હોસ્ટેલ વિશે પૂછી રહ્યા છો?",
+      "hi-Latn": "Aap Boys Hostel ke baare mein pooch rahe hain ya Girls Hostel ke baare mein?"
+    }
+  },
+  "intent_labels": {
+    "en": {
+      "exam_timetable": "Exam Timetable & Schedule",
+      "exam_form_deadline": "Exam Form Submission Deadline",
+      "exam_hall_ticket": "Hall Ticket / Admit Card Download",
+      "exam_results": "Semester Results & Marksheets",
+      "re-evaluation": "Paper Re-checking / Re-evaluation",
+      "fee_payment_dates": "Tuition Fee Payment Schedule",
+      "scholarship_eligibility": "Scholarships & Financial Aid",
+      "hostel_admission": "Hostel Admission & Seat Allotment",
+      "hostel_rules": "Hostel Rules, Curfew & Mess Timings",
+      "library_hours": "Central Library Timings & Book Issue",
+      "bus_pass_application": "Bus Pass Application & Transport Routes",
+      "syllabus_structure": "Curriculum Syllabus & Course Structure",
+      "admission_cutoff": "Admission Eligibility & Cutoff Ranks",
+      "faculty_contacts": "Faculty & Department Directory",
+      "canteen_mess_menu": "Campus Canteen & Mess Timings",
+      "sports_facilities": "Sports Complex & Gym Facilities",
+      "clubs_extracurricular": "Student Clubs & Cultural Events",
+      "placement_stats": "Placement Statistics & Companies",
+      "wifi_network_access": "Campus Wi-Fi Login & Network Access",
+      "general_queries": "General College Information"
+    },
+    "hi": {
+      "exam_timetable": "परीक्षा समय सारणी (Timetable)",
+      "exam_form_deadline": "परीक्षा फॉर्म भरने की अंतिम तिथि",
+      "exam_hall_ticket": "हॉल टिकट / प्रवेश पत्र डाउनलोड",
+      "exam_results": "सेमेस्टर परिणाम और अंकतालिका",
+      "re-evaluation": "पुनर्मूल्यांकन (Re-checking)",
+      "fee_payment_dates": "ट्यूशन फीस भुगतान की तारीखें",
+      "scholarship_eligibility": "छात्रवृत्ति और वित्तीय सहायता",
+      "hostel_admission": "छात्रावास (Hostel) प्रवेश और आवंटन",
+      "hostel_rules": "हॉस्टल नियम और मेस का समय",
+      "library_hours": "पुस्तकालय समय और पुस्तक निर्गमन",
+      "bus_pass_application": "बस पास आवेदन और रूट",
+      "syllabus_structure": "पाठ्यक्रम (Syllabus) संरचना",
+      "admission_cutoff": "प्रवेश पात्रता और कट-ऑफ",
+      "faculty_contacts": "प्राध्यापक एवं विभाग संपर्क",
+      "canteen_mess_menu": "कैंटीन और मेस मेनू",
+      "sports_facilities": "खेल सुविधाएं और जिम",
+      "clubs_extracurricular": "छात्र क्लब और सांस्कृतिक गतिविधियां",
+      "placement_stats": "प्लेसमेंट रिकॉर्ड और कंपनियां",
+      "wifi_network_access": "परिसर वाई-फाई लॉगिन",
+      "general_queries": "सामान्य कॉलेज जानकारी"
+    },
+    "gu": {
+      "exam_timetable": "પરીક્ષા ટાઈમટેબલ અને તારીખો",
+      "exam_form_deadline": "પરીક્ષા ફોર્મ ભરવાની છેલ્લી તારીખ",
+      "exam_hall_ticket": "હોલ ટિકિટ / એડમિટ કાર્ડ ડાઉનલોડ",
+      "exam_results": "સેમેસ્ટર પરિણામ અને માર્કશીટ",
+      "re-evaluation": "પેપર રિ-ચેકિંગ / પુનઃમૂલ્યાંકન",
+      "fee_payment_dates": "ટ્યુશન ફી ભરવાની છેલ્લી તારીખ",
+      "scholarship_eligibility": "શિષ્યવૃત્તિ અને સહાય",
+      "hostel_admission": "હોસ્ટેલ પ્રવેશ અને બેઠક ફાળવણી",
+      "hostel_rules": "હોસ્ટેલ નિયમો અને મેસ સમય",
+      "library_hours": "લાઇબ્રેરી સમય અને પુસ્તક ઇશ્યૂ",
+      "bus_pass_application": "બસ પાસ અરજી અને રૂટ",
+      "syllabus_structure": "અભ્યાસક્રમ (Syllabus) માળખું",
+      "admission_cutoff": "પ્રવેશ લાયકાત અને કટ-ઓફ",
+      "faculty_contacts": "અધ્યાપક અને વિભાગ સંપર્ક",
+      "canteen_mess_menu": "કેન્ટીન અને મેસ મેનૂ",
+      "sports_facilities": "રમતગમત સુવિધાઓ અને જિમ",
+      "clubs_extracurricular": "વિદ્યાર્થી ક્લબ અને સાંસ્કૃતિક પ્રવૃત્તિઓ",
+      "placement_stats": "પ્લેસમેન્ટ આંકડા અને કંપનીઓ",
+      "wifi_network_access": "કેમ્પસ Wi-Fi લોગીન",
+      "general_queries": "સામાન્ય કૉલેજ માહિતી"
+    },
+    "hi-Latn": {
+      "exam_timetable": "Exam Timetable & Schedule",
+      "exam_form_deadline": "Exam Form Deadline",
+      "exam_hall_ticket": "Hall Ticket / Admit Card",
+      "exam_results": "Semester Results & Marks",
+      "re-evaluation": "Paper Re-checking",
+      "fee_payment_dates": "College Fee Dates",
+      "scholarship_eligibility": "Scholarship Guidelines",
+      "hostel_admission": "Hostel Admission Form",
+      "hostel_rules": "Hostel Rules & Curfew",
+      "library_hours": "Library Timings",
+      "bus_pass_application": "Bus Pass Application",
+      "syllabus_structure": "Course Syllabus",
+      "admission_cutoff": "Admission Cutoff",
+      "faculty_contacts": "Faculty Contact Directory",
+      "canteen_mess_menu": "Canteen & Mess",
+      "sports_facilities": "Sports & Gym",
+      "clubs_extracurricular": "Student Clubs",
+      "placement_stats": "Placement Stats",
+      "wifi_network_access": "Campus Wi-Fi Login",
+      "general_queries": "General College Info"
+    }
+  },
+  "fallback_messages": {
+    "en": "I'm not quite sure how to answer that accurately. For immediate assistance, please reach out to the relevant college desk:",
+    "hi": "मैं इस प्रश्न का सटीक उत्तर देने में असमर्थ हूँ। त्वरित सहायता के लिए कृपया संबंधित कॉलेज कार्यालय से संपर्क करें:",
+    "gu": "હું આ પ્રશ્નનો સચોટ જવાબ આપવામાં અસમર્થ છું. તાત્કાલિક સહાય માટે કૃપા કરીને સંબંધિત કૉલેજ કાર્યાલયનો સંપર્ક કરો:",
+    "hi-Latn": "Mujhe iska exact answer confirm nahi ho paya. Quick help ke liye aap direct college helpdesk se contact kar sakte hain:"
+  }
+}
+

@@ -1,0 +1,11 @@
+[
+  { "label": "COURSE", "pattern": "બીટેક" },
+  { "label": "COURSE", "pattern": "ડિપ્લોમા" },
+  { "label": "BRANCH", "pattern": "કમ્પ્યુટર એન્જિનિયરિંગ" },
+  { "label": "BRANCH", "pattern": "કમ્પ્યુટર સાયન્સ" },
+  { "label": "BRANCH", "pattern": "મિકેનિકલ એન્જિનિયરિંગ" },
+  { "label": "BRANCH", "pattern": "સિવિલ એન્જિનિયરિંગ" },
+  { "label": "EXAM_TYPE", "pattern": "મિડ સેમ" },
+  { "label": "EXAM_TYPE", "pattern": "રેગ્યુલર" }
+]
+
