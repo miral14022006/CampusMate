@@ -1,0 +1,16 @@
+{
+  "multilingual_detection": true,
+  "rag_retrieval": true,
+  "cache_enabled": true,
+  "synthetic_data_generation": true,
+  "production_rest_api": true,
+  "transliteration": true,
+  "hybrid_retrieval": true,
+  "transformer_intent": true,
+  "intent_model": "muril",
+  "retrieval_method": "hybrid_rerank",
+  "clarification_fallback": true,
+  "dialogue_state": true,
+  "rag_generation": true,
+  "document_versioning": true
+}

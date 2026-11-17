@@ -1,0 +1,83 @@
+{
+  "exam_cell": {
+    "name": "Examination Cell & Controller of Examinations",
+    "name_hi": "परीक्षा प्रकोष्ठ एवं परीक्षा नियंत्रक",
+    "name_gu": "પરીક્ષા વિભાગ અને પરીક્ષા નિયામક",
+    "name_en": "Examination Cell & Controller of Examinations",
+    "email": "exams@college.edu.in",
+    "phone": "+91-79-2395-2001",
+    "room": "Admin Block, Ground Floor, Room 104",
+    "hours": "Mon-Fri: 10:00 AM - 4:00 PM"
+  },
+  "accounts_office": {
+    "name": "Accounts & Fee Payment Office",
+    "name_hi": "लेखा एवं शुल्क भुगतान कार्यालय",
+    "name_gu": "હિસાબ અને ફી ચુકવણી કચેરી",
+    "name_en": "Accounts & Fee Payment Office",
+    "email": "accounts@college.edu.in",
+    "phone": "+91-79-2395-2002",
+    "room": "Admin Block, 1st Floor, Room 202",
+    "hours": "Mon-Fri: 10:30 AM - 3:30 PM"
+  },
+  "hostel_warden": {
+    "name": "Chief Hostel Warden Office",
+    "name_hi": "मुख्य छात्रावास वार्डन कार्यालय",
+    "name_gu": "મુખ્ય છાત્રાલય વોર્ડન કચેરી",
+    "name_en": "Chief Hostel Warden Office",
+    "email": "hostel.warden@college.edu.in",
+    "phone": "+91-79-2395-2003",
+    "room": "Hostel Block A, Ground Floor",
+    "hours": "Mon-Sat: 9:00 AM - 6:00 PM"
+  },
+  "academic_registrar": {
+    "name": "Academic Registrar & Student Affairs",
+    "name_hi": "शैक्षणिक रजिस्ट्रार एवं छात्र कल्याण",
+    "name_gu": "શૈક્ષણિક રજિસ્ટ્રાર અને વિદ્યાર્થી બાબતો",
+    "name_en": "Academic Registrar & Student Affairs",
+    "email": "registrar@college.edu.in",
+    "phone": "+91-79-2395-2004",
+    "room": "Admin Block, 2nd Floor, Room 301",
+    "hours": "Mon-Fri: 9:30 AM - 5:00 PM"
+  },
+  "transport_cell": {
+    "name": "Campus Transport & Bus Pass Counter",
+    "name_hi": "परिवहन प्रकोष्ठ एवं बस पास काउंटर",
+    "name_gu": "ટ્રાન્સપોર્ટ વિભાગ અને બસ પાસ કાઉન્ટર",
+    "name_en": "Campus Transport & Bus Pass Counter",
+    "email": "transport@college.edu.in",
+    "phone": "+91-79-2395-2005",
+    "room": "Student Amenity Center, Counter 3",
+    "hours": "Mon-Fri: 11:00 AM - 3:00 PM"
+  },
+  "placement_cell": {
+    "name": "Training & Placement Cell (T&P)",
+    "name_hi": "प्रशिक्षण एवं प्लेसमेंट प्रकोष्ठ",
+    "name_gu": "તાલીમ અને પ્લેસમેન્ટ સેલ",
+    "name_en": "Training & Placement Cell (T&P)",
+    "email": "placement@college.edu.in",
+    "phone": "+91-79-2395-2006",
+    "room": "Convention Centre, 3rd Floor",
+    "hours": "Mon-Fri: 9:00 AM - 5:30 PM"
+  },
+  "library_desk": {
+    "name": "Central Library Help Desk",
+    "name_hi": "केंद्रीय पुस्तकालय हेल्प डेस्क",
+    "name_gu": "સેન્ટ્રલ લાઇબ્રેરી હેલ્પ ડેસ્ક",
+    "name_en": "Central Library Help Desk",
+    "email": "library@college.edu.in",
+    "phone": "+91-79-2395-2007",
+    "room": "Central Library, Ground Floor",
+    "hours": "Mon-Sat: 8:00 AM - 8:00 PM"
+  },
+  "general_helpdesk": {
+    "name": "Student Student Central Helpdesk",
+    "name_hi": "केंद्रीय छात्र सहायता केंद्र",
+    "name_gu": "વિદ્યાર્થી સહાયતા કેન્દ્ર",
+    "name_en": "Student Central Helpdesk",
+    "email": "helpdesk@college.edu.in",
+    "phone": "+91-79-2395-2000",
+    "room": "Main Gate Reception",
+    "hours": "Mon-Sat: 8:30 AM - 6:00 PM"
+  }
+}
+

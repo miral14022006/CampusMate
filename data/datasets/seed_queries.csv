@@ -1,0 +1,201 @@
+query,intent,language,split
+What is the last date to submit exam registration forms?,exam_form_deadline,en,seed
+When is the deadline for examination form submission?,exam_form_deadline,en,seed
+परीक्षा फॉर्म भरने की अंतिम तिथि क्या है?,exam_form_deadline,hi,seed
+एग्जाम फॉर्म जमा करने की आखिरी तारीख बताएं,exam_form_deadline,hi,seed
+પરીક્ષા ફોર્મ ભરવાની છેલ્લી તારીખ કઈ છે?,exam_form_deadline,gu,seed
+એક્ઝામ ફોર્મ સબમિટ કરવાની લાસ્ટ ડેટ ક્યારે છે?,exam_form_deadline,gu,seed
+Exam form bharne ki last date kab hai?,exam_form_deadline,hi-Latn,seed
+Final exam form submission date kya hai bhai?,exam_form_deadline,hi-Latn,seed
+Exam form bharvani last date ketli che ane kyare aavshe?,exam_form_deadline,gu-Latn,seed
+Exam form kyare submit karvanu chhe last date su chhe?,exam_form_deadline,gu-Latn,seed
+Where can I download the semester exam timetable?,exam_timetable,en,seed
+When will the mid sem exam schedule be announced?,exam_timetable,en,seed
+सेमेस्टर परीक्षा की समय सारिणी कब आएगी?,exam_timetable,hi,seed
+परीक्षा का टाइम टेबल कहाँ से डाउनलोड करें?,exam_timetable,hi,seed
+પરીક્ષાનું ટાઈમ ટેબલ ક્યાંથી મળશે?,exam_timetable,gu,seed
+મિડ સેમ એક્ઝામ શેડ્યુલ ક્યારે જાહેર થશે?,exam_timetable,gu,seed
+Exam timetable kab release hoga website par?,exam_timetable,hi-Latn,seed
+Sem exam ka schedule kaha se download kare?,exam_timetable,hi-Latn,seed
+Exam no timetable kyare aavshe website par?,exam_timetable,gu-Latn,seed
+Mid sem exam schedule kyathi download karvu?,exam_timetable,gu-Latn,seed
+How do I pay my college tuition fees online?,fee_payment,en,seed
+What are the payment modes available for college fees?,fee_payment,en,seed
+कॉलेज फीस ऑनलाइन कैसे जमा करें?,fee_payment,hi,seed
+फीस भुगतान के लिए कौन से विकल्प उपलब्ध हैं?,fee_payment,hi,seed
+કોલેજ ફી ઓનલાઇન કેવી રીતે ભરવી?,fee_payment,gu,seed
+ટ્યુશન ફી ભરવા માટે કઈ લિંક છે?,fee_payment,gu,seed
+College fee online kaise pay karni hai portal se?,fee_payment,hi-Latn,seed
+Fee payment ke liye NetBanking use kar sakte hain kya?,fee_payment,hi-Latn,seed
+College ni fees online kevi rite bharvani chhe?,fee_payment,gu-Latn,seed
+Fees pay karva mate UPI chale ke nahi?,fee_payment,gu-Latn,seed
+What is the annual fee structure for Computer Engineering?,fee_structure,en,seed
+"Give details of tuition, laboratory and library fees per year",fee_structure,en,seed
+इंजीनियरिंग शाखा की वार्षिक फीस संरचना क्या है?,fee_structure,hi,seed
+कंप्यूटर साइंस की प्रति सेमेस्टर फीस कितनी है?,fee_structure,hi,seed
+કમ્પ્યુટર એન્જિનિયરિંગની વાર્ષિક ફી કેટલી છે?,fee_structure,gu,seed
+સેમેસ્ટર દીઠ ટ્યુશન અને લેબ ફી કેટલી થાય?,fee_structure,gu,seed
+Computer engineering ki saal ki fees kitni hoti hai?,fee_structure,hi-Latn,seed
+BTech semester tuition fee structure bataiye,fee_structure,hi-Latn,seed
+Computer science ni fee ketli che per year?,fee_structure,gu-Latn,seed
+Aakha varas ni college fee ketli lage che?,fee_structure,gu-Latn,seed
+What scholarships are available for reserved category students?,scholarship,en,seed
+How to apply for MYSY or Digital Gujarat scholarships?,scholarship,en,seed
+छात्रवृत्ति के लिए आवेदन कैसे और कहाँ करें?,scholarship,hi,seed
+स्कॉलरशिप के लिए पात्रता मानदंड क्या हैं?,scholarship,hi,seed
+સ્કોલરશિપ માટે કયા ડોક્યુમેન્ટ્સ જોઈએ?,scholarship,gu,seed
+ડિજિટલ ગુજરાત સ્કોલરશિપ ફોર્મ ક્યારે ભરાશે?,scholarship,gu,seed
+Scholarship ke liye apply kaise kare portal par?,scholarship,hi-Latn,seed
+MYSY scholarship ka criteria aur form kab aayega?,scholarship,hi-Latn,seed
+Scholarship mate shu document joyiye ane kyare aavshe?,scholarship,gu-Latn,seed
+Digital Gujarat scholarship form bharva mate shu karvu?,scholarship,gu-Latn,seed
+How do I apply for campus hostel accommodation?,hostel,en,seed
+What are the hostel room charges and mess fees?,hostel,en,seed
+हॉस्टल में कमरा कैसे मिलता है और फीस क्या है?,hostel,hi,seed
+कॉलेज हॉस्टल में मेस का खाना और नियम क्या हैं?,hostel,hi,seed
+હોસ્ટેલ પ્રવેશ માટેના નિયમો અને ફી શું છે?,hostel,gu,seed
+હોસ્ટેલ મેસની સુવિધા કેવી છે?,hostel,gu,seed
+Hostel room allotment kaise hota hai aur mess charges kitne hain?,hostel,hi-Latn,seed
+Hostel me admission ke liye form kaha milega?,hostel,hi-Latn,seed
+Hostel ma room book karva mate shu document joyiye?,hostel,gu-Latn,seed
+Hostel ni fees ketli chhe ane mess facility che?,hostel,gu-Latn,seed
+What are the working hours and timings of the central library?,library_timings,en,seed
+Is the college library open on weekends and holidays?,library_timings,en,seed
+सेंट्रल लाइब्रेरी का समय क्या है और किताबें कैसे जारी करें?,library_timings,hi,seed
+पुस्तकालय किस समय खुलता और बंद होता है?,library_timings,hi,seed
+સેન્ટ્રલ લાઈબ્રેરીનો સમય શું છે?,library_timings,gu,seed
+લાઈબ્રેરી રવિવારે ખુલ્લી હોય છે કે બંધ?,library_timings,gu,seed
+Library timings kya hai aur kitni books issue ho sakti hain?,library_timings,hi-Latn,seed
+Central library kab open hoti hai subah?,library_timings,hi-Latn,seed
+Library no time shu che ane books kevi rite issue thay?,library_timings,gu-Latn,seed
+Library sanje ketla vagya sudhi chalu hoy che?,library_timings,gu-Latn,seed
+When will the odd semester examination results be declared?,result,en,seed
+Where can I check my university exam grade sheet?,result,en,seed
+सेमेस्टर परीक्षा का परिणाम कब घोषित होगा?,result,hi,seed
+एग्जाम रिजल्ट चेक करने का लिंक कहाँ है?,result,hi,seed
+પરીક્ષાનું પરિણામ ક્યારે જાહેર થશે?,result,gu,seed
+ઓનલાઇન રિઝલ્ટ ચેક કરવા માટે કઈ વેબસાઈટ છે?,result,gu,seed
+Exam result kab aayega website par date batao?,result,hi-Latn,seed
+Sem result declare hua kya grade card kaise dekhe?,result,hi-Latn,seed
+Exam nu result kyare aavshe ane mark sheet kyathi malse?,result,gu-Latn,seed
+Result aavi gayu ke baki che kyare jova malse?,result,gu-Latn,seed
+What is the process to apply for paper re-evaluation or re-checking?,re_evaluation,en,seed
+What is the fee per subject for exam answer paper re-checking?,re_evaluation,en,seed
+पुनर्मूल्यांकन या रीचेकिंग के लिए कैसे आवेदन करें?,re_evaluation,hi,seed
+पेपर री-इवैल्यूएशन की प्रति विषय फीस कितनी है?,re_evaluation,hi,seed
+પેપર રી-ચેકિંગ માટે કેવી રીતે અરજી કરવી?,re_evaluation,gu,seed
+પુનઃમૂલ્યાંકન માટે સબ્જેક્ટ દીઠ કેટલી ફી ભરવી પડે?,re_evaluation,gu,seed
+Paper re-evaluation ya rechecking ke liye form kaise bhare?,re_evaluation,hi-Latn,seed
+Rechecking ki per subject fee kitni lagti hai?,re_evaluation,hi-Latn,seed
+Exam paper re-checking mate shu karvu pade ane fee ketli che?,re_evaluation,gu-Latn,seed
+Paper rechecking form kyare aapse portal par?,re_evaluation,gu-Latn,seed
+What is the minimum attendance percentage required for exams?,attendance_rules,en,seed
+Is 75 percent attendance mandatory to appear in semester examinations?,attendance_rules,en,seed
+परीक्षा में बैठने के लिए न्यूनतम उपस्थिति कितनी अनिवार्य है?,attendance_rules,hi,seed
+क्या कॉलेज में 75 प्रतिशत हाजिरी जरूरी है?,attendance_rules,hi,seed
+પરીક્ષા આપવા માટે ઓછામાં ઓછી કેટલી હાજરી જરૂરી છે?,attendance_rules,gu,seed
+શું કોલેજમાં 75 ટકા હાજરી ફરજિયાત છે?,attendance_rules,gu,seed
+Exam me baithne ke liye kitna attendance percentage chahiye?,attendance_rules,hi-Latn,seed
+Kya 75 percent attendance compulsory hai college me?,attendance_rules,hi-Latn,seed
+Exam aapva mate ketla percent attendance jaroori chhe?,attendance_rules,gu-Latn,seed
+College ma 75 percent hajri mandatory che ke nahi?,attendance_rules,gu-Latn,seed
+How do I get a bonafide certificate for a bus pass or bank loan?,bonafide_certificate,en,seed
+Where do I apply for an official student bonafide letter?,bonafide_certificate,en,seed
+बोनाफाइड सर्टिफिकेट के लिए कैसे आवेदन करें?,bonafide_certificate,hi,seed
+बस पास के लिए कॉलेज से बोनाफाइड कैसे मिलेगा?,bonafide_certificate,hi,seed
+બોનાફાઇડ સર્ટિફિકેટ મેળવવા માટે શું કરવું પડે?,bonafide_certificate,gu,seed
+બસ પાસ માટે બોનાફાઇડ ક્યાંથી કઢાવવું?,bonafide_certificate,gu,seed
+Bonafide certificate banwane ke liye form kaha milega?,bonafide_certificate,hi-Latn,seed
+Bus pass ke liye bonafide letter kaise issue karwaye?,bonafide_certificate,hi-Latn,seed
+Bonafide certificate kadvava mate kya javu pade?,bonafide_certificate,gu-Latn,seed
+Bus pass mate bonafide kyathi malse student section mathi?,bonafide_certificate,gu-Latn,seed
+What was the highest and average placement package last year?,placement,en,seed
+Which tech companies visit the campus for recruitment drives?,placement,en,seed
+कॉलेज का औसत प्लेसमेंट पैकेज कितना है?,placement,hi,seed
+कैंपस प्लेसमेंट में कौन-कौन सी कंपनियाँ आती हैं?,placement,hi,seed
+કોલેજમાં સરેરાશ પ્લેસમેન્ટ પેકેજ કેટલું મળે છે?,placement,gu,seed
+કઈ કઈ કંપનીઓ કેમ્પસ રિક્રુટમેન્ટ માટે આવે છે?,placement,gu,seed
+Campus placement me average package kitna jata hai IT branch ka?,placement,hi-Latn,seed
+Placement cell me registration kab shuru hoga companies ke liye?,placement,hi-Latn,seed
+Placement ma ketlu highest package aavyu hatu last year?,placement,gu-Latn,seed
+Campus placement mate kai kai companies aavshe recruitment ma?,placement,gu-Latn,seed
+When does the Diwali vacation start according to the academic calendar?,holidays,en,seed
+What are the declared public holidays for this academic semester?,holidays,en,seed
+दीवाली की छुट्टियाँ कब से शुरू हो रही हैं?,holidays,hi,seed
+इस सेमेस्टर में कॉलेज के अवकाश की सूची क्या है?,holidays,hi,seed
+વેકેશન અને રજાઓનું લિસ્ટ ક્યાંથી જોવા મળશે?,holidays,gu,seed
+દિવાળી વેકેશન કઈ તારીખથી શરૂ થશે?,holidays,gu,seed
+Diwali vacation kab se start hoga holiday list me dekho?,holidays,hi-Latn,seed
+College me holidays ki list calendar par kab upload hogi?,holidays,hi-Latn,seed
+College ma Diwali vacation kyare sharu thay che dates su chhe?,holidays,gu-Latn,seed
+Aa semester ni total holidays ketli che ane kyare aavshe?,holidays,gu-Latn,seed
+"What are the college bus routes, timings and stop locations?",bus_transport,en,seed
+How can I purchase a semester bus transport pass?,bus_transport,en,seed
+कॉलेज बस के रूट्स और स्टॉप की जानकारी कहाँ मिलेगी?,bus_transport,hi,seed
+बस पास बनवाने की प्रक्रिया और फीस क्या है?,bus_transport,hi,seed
+કોલેજ બસ કયા રૂટ પર ચાલે છે અને સમય શું છે?,bus_transport,gu,seed
+બસ પાસ કઢાવવા માટે કેટલી ફી ભરવી પડે?,bus_transport,gu,seed
+College bus ke routes aur pickup points ki list kaha milegi?,bus_transport,hi-Latn,seed
+Bus pass renew karwane ke liye kitna charge lagta hai?,bus_transport,hi-Latn,seed
+College bus na routes ane timings ketla vagye che?,bus_transport,gu-Latn,seed
+Bus pass banvava mate fee ketli chhe ane form kyathi malse?,bus_transport,gu-Latn,seed
+What is the eligibility criteria and cutoff rank for engineering admission?,admission,en,seed
+What documents are required during ACPC admission counselling?,admission,en,seed
+बीटेक प्रवेश के लिए पात्रता मानदंड और कटऑफ क्या है?,admission,hi,seed
+एडमिशन काउंसलिंग के समय कौन-से दस्तावेज चाहिए?,admission,hi,seed
+નવા એડમિશન માટે લાયકાત અને કટઓફ માર્ક્સ કેટલા છે?,admission,gu,seed
+એડમિશન સમયે કયા કયા અસલ ડોક્યુમેન્ટ્સ જમા કરાવવાના હોય?,admission,gu,seed
+Engineering me admission lene ke liye cutoff rank kya hoti hai?,admission,hi-Latn,seed
+ACPC admission counselling ke liye document verification kaise hoga?,admission,hi-Latn,seed
+College ma admission leva mate ketla marks jaroori che cutoff su chhe?,admission,gu-Latn,seed
+Admission form mate shu eligibility criteria che?,admission,gu-Latn,seed
+Where can I download the latest semester syllabus for CSE?,syllabus,en,seed
+What is the course curriculum and subject list for 3rd semester?,syllabus,en,seed
+कंप्यूटर साइंस 5वें सेमेस्टर का सिलेबस कहाँ उपलब्ध है?,syllabus,hi,seed
+विषयों की सूची और क्रेडिट सिस्टम कहाँ देख सकते हैं?,syllabus,hi,seed
+નવો સિલેબસ અને વિષયોની યાદી ક્યાંથી ડાઉનલોડ કરવી?,syllabus,gu,seed
+સેમેસ્ટર 3 કમ્પ્યુટર એન્જિનિયરિંગનો અભ્યાસક્રમ શું છે?,syllabus,gu,seed
+Computer science 5th sem ka syllabus website par kaha milega?,syllabus,hi-Latn,seed
+Subjects aur credit system syllabus pdf kaha se download kare?,syllabus,hi-Latn,seed
+New syllabus ane subject details kyathi download karvu?,syllabus,gu-Latn,seed
+Sem 4 no syllabus ane exam scheme kya jova malse?,syllabus,gu-Latn,seed
+What is the official email and phone number of the registrar office?,contact_office,en,seed
+What are the student grievance counter operating hours?,contact_office,en,seed
+छात्र अनुभाग कार्यालय का हेल्पलाइन नंबर क्या है?,contact_office,hi,seed
+रजिस्ट्रार ऑफिस से संपर्क करने का समय क्या है?,contact_office,hi,seed
+વિદ્યાર્થી શાખાનો ફોન નંબર અને ઈમેલ શું છે?,contact_office,gu,seed
+રજિસ્ટ્રાર ઓફિસનો સમય કેટલા વાગ્યાનો હોય છે?,contact_office,gu,seed
+Student section ka contact number aur email id kya hai?,contact_office,hi-Latn,seed
+Admin office ka helpline number bataiye call karne ke liye,contact_office,hi-Latn,seed
+Student section no contact number ane timings shu che?,contact_office,gu-Latn,seed
+Registrar office ma call karva mate number aapo?,contact_office,gu-Latn,seed
+How do I replace a lost student identity card?,id_card,en,seed
+What is the fine for issuing a duplicate college ID card?,id_card,en,seed
+खोया हुआ छात्र पहचान पत्र (आईडी कार्ड) दोबारा कैसे बनवाएं?,id_card,hi,seed
+डुप्लीकेट आईडी कार्ड प्राप्त करने का शुल्क कितना है?,id_card,hi,seed
+ખોવાયેલું આઈ-કાર્ડ ફરીથી કઢાવવા માટે શું કરવું પડે?,id_card,gu,seed
+ડુપ્લિકેટ આઈડી કાર્ડ કઢાવવા કેટલી ફી ભરવી પડે?,id_card,gu,seed
+Mera college ID card kho gaya hai duplicate kaise banwaye?,id_card,hi-Latn,seed
+Lost ID card replace karwane ke liye kitni penalty lagti hai?,id_card,hi-Latn,seed
+ID card khoi gayu che duplicate mate shu karvu pade?,id_card,gu-Latn,seed
+New ID card kadvava mate application kya aapvani?,id_card,gu-Latn,seed
+What are the ATKT and backlog clearing rules for promotion?,backlog_rules,en,seed
+How many backlogs are allowed to get admission in 3rd year?,backlog_rules,en,seed
+बैकलॉग और एटीकेटी पास करने के क्या नियम हैं?,backlog_rules,hi,seed
+अगले वर्ष में प्रवेश के लिए अधिकतम कितने बैकलॉग की अनुमति है?,backlog_rules,hi,seed
+એટીકેટી અને બેકલોગ ક્લિયર કરવાના નિયમો શું છે?,backlog_rules,gu,seed
+આગલા વર્ષમાં જવા માટે વધુમાં વધુ કેટલા બેકલોગ માન્ય છે?,backlog_rules,gu,seed
+Backlog aur ATKT ke rules kya hain next sem me jane ke liye?,backlog_rules,hi-Latn,seed
+Remedial exam dekar backlog kaise clear kar sakte hain?,backlog_rules,hi-Latn,seed
+Backlog ane ATKT na rules shu che next year promote thava mate?,backlog_rules,gu-Latn,seed
+Ketla backlog hoy toh college ma detain thay?,backlog_rules,gu-Latn,seed
+"Hello, good morning how are you doing today?",out_of_scope,en,seed
+Tell me a funny joke about engineering life,out_of_scope,en,seed
+"नमस्ते, आप कैसे हैं और क्या काम कर सकते हैं?",out_of_scope,hi,seed
+आज मौसम कैसा रहने वाला है बताइए,out_of_scope,hi,seed
+"નમસ્તે, તમે કેમ છો અને શું મદદ કરી શકો?",out_of_scope,gu,seed
+મને એક સરસ મજાની રમુજી વાત કહો,out_of_scope,gu,seed
+Hello bhai kya haal chaal hai kaise ho aap?,out_of_scope,hi-Latn,seed
+Bhai cricket match ka score kya chal raha hai batao,out_of_scope,hi-Latn,seed
+Kem cho majama cho tame shu kari sako chho?,out_of_scope,gu-Latn,seed
+Tame kon chho ane tamaro shok shu che?,out_of_scope,gu-Latn,seed

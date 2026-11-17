@@ -1,0 +1,93 @@
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: mca_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: mca_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nlp-service:
+    build:
+      context: ./nlp-service
+      dockerfile: Dockerfile
+    container_name: mca_nlp_service
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - APP_ENV=production
+      - NLP_API_KEY=campus_ai_secret_token_123
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/v1/health')"]
+      interval: 15s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    depends_on:
+      - redis
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: mca_server
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NLP_SERVICE_URL=http://nlp-service:8000
+      - NLP_API_KEY=campus_ai_secret_token_123
+      - MONGODB_URI=mongodb://mongo:27017/college_assistant
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=supersecret_jwt_key_change_in_production
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nlp-service:
+        condition: service_healthy
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: mca_client
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:5000/api
+    depends_on:
+      - server
+
+volumes:
+  mongo_data:
+  redis_data:

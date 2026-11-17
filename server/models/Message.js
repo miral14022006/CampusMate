@@ -1,0 +1,45 @@
+const mongoose = require('mongoose');
+
+const MessageSchema = new mongoose.Schema({
+  sessionId: {
+    type: String,
+    required: true,
+    index: true
+  },
+  sender: {
+    type: String,
+    enum: ['user', 'assistant'],
+    required: true
+  },
+  text: {
+    type: String,
+    required: true
+  },
+  language: {
+    type: String,
+    default: 'en'
+  },
+  intent: {
+    type: String,
+    default: null
+  },
+  confidence: {
+    type: Number,
+    default: null
+  },
+  sourceDoc: {
+    type: String,
+    default: null
+  },
+  entities: {
+    type: Array,
+    default: []
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+module.exports = mongoose.model('Message', MessageSchema);
+

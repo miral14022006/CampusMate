@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-11-17T09:42:00.000Z",
+  "feature": "11-analytics-dashboard",
+  "database": "MongoDB 6.0+",
+  "indexed_collections": [
+    {
+      "collection": "queryanalyticslogs",
+      "indexes": [
+        { "fields": { "requestId": 1 }, "purpose": "Request uniqueness & lookups" },
+        { "fields": { "createdAt": -1, "isSeeded": 1 }, "purpose": "Fast time-range filtering by demo vs production mode" },
+        { "fields": { "createdAt": -1, "intent": 1 }, "purpose": "Intent frequency breakdown within date intervals" },
+        { "fields": { "createdAt": -1, "language": 1 }, "purpose": "Language distribution aggregations" },
+        { "fields": { "createdAt": -1, "isUnanswered": 1 }, "purpose": "Fast isolation of fallback, IDK & out-of-scope traffic" },
+        { "fields": { "normalizedQuery": 1, "isUnanswered": 1 }, "purpose": "Grouping repeated unhandled student queries" }
+      ]
+    }
+  ],
+  "sla_benchmark": {
+    "target_latency_sla_ms": 300,
+    "evaluated_dataset_size": 12000,
+    "benchmarks": {
+      "summary_kpi_ms": 15,
+      "queries_over_time_ms": 12,
+      "top_intents_ms": 8,
+      "language_dist_ms": 3,
+      "top_unanswered_ms": 5,
+      "concurrent_full_overview_ms": 13
+    },
+    "sla_passed": true
+  },
+  "synthetic_demo_seed": {
+    "total_seeded_rows": 2000,
+    "time_span_days": 30,
+    "language_weights": {
+      "en": 0.35,
+      "hi": 0.20,
+      "gu": 0.15,
+      "hi-Latn": 0.18,
+      "gu-Latn": 0.12
+    },
+    "avg_cache_hit_rate_pct": 45.0,
+    "avg_unanswered_rate_pct": 12.0,
+    "avg_clarification_rate_pct": 8.0
+  }
+}
+

@@ -1,0 +1,377 @@
+{
+  "feature": "04_rag_with_citations_and_hallucination_guard",
+  "total_queries": 150,
+  "answerable_queries": 120,
+  "unanswerable_queries": 30,
+  "metrics": {
+    "groundedness_rate": 100.0,
+    "correct_idk_rate": 100.0,
+    "citation_precision": 44.17,
+    "hallucination_rate": 0.0,
+    "rag_answer_accuracy": 100.0,
+    "extractive_accuracy": 44.17,
+    "llm_only_hallucination_rate": 100.0
+  },
+  "manual_spot_check_sample_30": [
+    {
+      "id": "rag_001",
+      "query": "Could anyone clarify, How much is the annual hostel accommodation and mess fee for Computer Engineering students?",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, ## Tuition and Semester Fee Structure\nThe annual tuition fee for BTech Computer Engineering",
+      "citations": [
+        "02_fee_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_002",
+      "query": "Could anyone clarify, How many books can a B.Tech student borrow simultaneously with an ID card? before the deadline.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, Students eligible for post-matric scholarships or MYSY scholarship schemes must submit thei",
+      "citations": [
+        "02_fee_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_003",
+      "query": "Excuse me, How can eligible students apply for MYSY and Digital Gujarat scholarships in B.Tech? as soon as possible.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, Students eligible for post-matric scholarships or MYSY scholarship schemes must submit thei",
+      "citations": [
+        "02_fee_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_004",
+      "query": "I want to ask, How can eligible students apply for MYSY and Digital Gujarat scholarships in BCA? please verify.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, Students eligible for post-matric scholarships or MYSY scholarship schemes must submit thei",
+      "citations": [
+        "02_fee_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_005",
+      "query": "Does anyone know, Please confirm the last date for Regular exam form submission in MTech.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, ## Exam Registration & Form Submission Guidelines\nAll undergraduate and postgraduate studen",
+      "citations": [
+        "01_exam_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_006",
+      "query": "Are laundry, hot water, and Wi-Fi facilities provided in the college hostel? thanks in advance.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, In addition to tuition fees, students must pay an annual laboratory fee of Rs 8,000, librar",
+      "citations": [
+        "02_fee_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_007",
+      "query": "Can somebody check, When does the annual Diwali vacation start according to the academic calendar in Diploma? in detail.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, The annual Diwali vacation will be observed for two full weeks starting from 28th October t",
+      "citations": [
+        "03_academic_calendar_en.txt"
+      ]
+    },
+    {
+      "id": "rag_008",
+      "query": "Kindly update me, Is there any late fee for submitting the exam form after the due date in Computer Science?",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, Late submissions will incur a late fee of Rs 500 up to 25th October 2024, after which no ex",
+      "citations": [
+        "01_exam_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_009",
+      "query": "Does anyone know, What is the procedure for booking a hostel room on campus for BTech students?",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, ## Tuition and Semester Fee Structure\nThe annual tuition fee for BTech Computer Engineering",
+      "citations": [
+        "02_fee_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_010",
+      "query": "Please inform me, When will the schedule for Remedial exams be published on the B.Tech portal? for campus students.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, Remedial and supplementary examinations for students with ATKT backlogs will take place con",
+      "citations": [
+        "01_exam_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_011",
+      "query": "Excuse me, Who should I contact to request room reallocation or maintenance in the hostel? right now.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, ## Timetable and Hall Tickets\nThe final examination timetable will be officially released o",
+      "citations": [
+        "01_exam_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_012",
+      "query": "I want to ask, When will the schedule for Mid Sem exams be published on the BTech portal? according to new notice.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, The mid-semester internal examinations will be conducted between 15th September and 22nd Se",
+      "citations": [
+        "03_academic_calendar_en.txt"
+      ]
+    },
+    {
+      "id": "rag_013",
+      "query": "",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, # \u0ab8\u0ac7\u0aa8\u0acd\u0a9f\u0acd\u0ab0\u0ab2 \u0ab2\u0abe\u0a88\u0aac\u0acd\u0ab0\u0ac7\u0ab0\u0ac0 \u0aaa\u0ab0\u0abf\u0aaa\u0aa4\u0acd\u0ab0: \u0aaa\u0ac1\u0ab8\u0acd\u0aa4\u0a95\u0abe\u0ab2\u0aaf \u0aa8\u0abf\u0aaf\u0aae\u0acb \u0a85\u0aa8\u0ac7 \u0ab8\u0ac7\u0ab5\u0abe\u0a93 [1].",
+      "citations": [
+        "05_library_rules_gu.txt"
+      ]
+    },
+    {
+      "id": "rag_014",
+      "query": "Can you please tell me, When will the schedule for End Sem exams be published on the MCA portal? according to new notice.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, ## Exam Registration & Form Submission Guidelines\nAll undergraduate and postgraduate studen",
+      "citations": [
+        "01_exam_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_015",
+      "query": "Where can I view the list of gazetted college holidays for this semester in Information Technology? thanks in advance.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, ## Vacation and Declared Holidays\nThe college will observe official holidays on Independenc",
+      "citations": [
+        "03_academic_calendar_en.txt"
+      ]
+    },
+    {
+      "id": "rag_016",
+      "query": "Does anyone know, Where can I view the list of gazetted college holidays for this semester in IT? for my branch.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, ## Vacation and Declared Holidays\nThe college will observe official holidays on Independenc",
+      "citations": [
+        "03_academic_calendar_en.txt"
+      ]
+    },
+    {
+      "id": "rag_017",
+      "query": "Can somebody check, How many books can a MTech student borrow simultaneously with an ID card?",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, Remedial and supplementary examinations for students with ATKT backlogs will take place con",
+      "citations": [
+        "01_exam_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_018",
+      "query": "Hello admin, What is the procedure for booking a hostel room on campus for B.Tech students? right now.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, ## Tuition and Semester Fee Structure\nThe annual tuition fee for BTech Computer Engineering",
+      "citations": [
+        "02_fee_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_019",
+      "query": "Please inform me, Can you break down the tuition, library and development charges for B.Tech? urgently please.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, In addition to tuition fees, students must pay an annual laboratory fee of Rs 8,000, librar",
+      "citations": [
+        "02_fee_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_020",
+      "query": "Does anyone know, What are the online payment modes for paying B.Tech tuition fees? for campus students.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, ## Online Fee Payment Instructions\nAll fee payments must be executed strictly online throug",
+      "citations": [
+        "02_fee_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_021",
+      "query": "Kindly update me, Are laundry, hot water, and Wi-Fi facilities provided in the college hostel? right now.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, In addition to tuition fees, students must pay an annual laboratory fee of Rs 8,000, librar",
+      "citations": [
+        "02_fee_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_022",
+      "query": "Quick doubt: Can I submit my 2nd sem exam registration form with a penalty fee? before the deadline.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, Students eligible for post-matric scholarships or MYSY scholarship schemes must submit thei",
+      "citations": [
+        "02_fee_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_023",
+      "query": "Please inform me, Where can I view the list of gazetted college holidays for this semester in Civil Engineering?",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, ## Vacation and Declared Holidays\nThe college will observe official holidays on Independenc",
+      "citations": [
+        "03_academic_calendar_en.txt"
+      ]
+    },
+    {
+      "id": "rag_024",
+      "query": "Hello admin, Can I pay my 3rd sem fee using UPI or NetBanking on the college portal? urgently please.",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, ## Online Fee Payment Instructions\nAll fee payments must be executed strictly online throug",
+      "citations": [
+        "02_fee_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_025",
+      "query": "Kindly update me, How much is the tuition fee and laboratory fee per semester for Mechanical?",
+      "language": "en",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, ## Tuition and Semester Fee Structure\nThe annual tuition fee for BTech Computer Engineering",
+      "citations": [
+        "02_fee_notice_en.txt"
+      ]
+    },
+    {
+      "id": "rag_026",
+      "query": "\u0a95\u0acb\u0ab2\u0ac7\u0a9c\u0aae\u0abe\u0a82 \u0ab0\u0ac2\u0aac\u0ab0\u0ac2 \u0aab\u0ac0 \u0a9c\u0aae\u0abe \u0a95\u0ab0\u0abe\u0ab5\u0ab5\u0abe \u0aae\u0abe\u0a9f\u0ac7 \u0a95\u0abe\u0a89\u0aa8\u0acd\u0a9f\u0ab0 \u0a9b\u0ac7 \u0a95\u0ac7 \u0aa8\u0ab9\u0ac0\u0a82 Computer Engineering \u0aae\u0abe\u0a9f\u0ac7? \u0aa4\u0ab0\u0aa4 \u0a9c\u0ab5\u0abe\u0aac \u0a86\u0aaa\u0ab6\u0acb.",
+      "language": "gu",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, \u0ab0\u0ab5\u0abf\u0ab5\u0abe\u0ab0 \u0aa4\u0aa5\u0abe \u0a9c\u0abe\u0ab9\u0ac7\u0ab0 \u0ab0\u0a9c\u0abe\u0a93\u0aa8\u0abe \u0aa6\u0abf\u0ab5\u0ab8\u0ac7 \u0ab2\u0abe\u0a88\u0aac\u0acd\u0ab0\u0ac7\u0ab0\u0ac0 \u0aac\u0a82\u0aa7 \u0ab0\u0ab9\u0ac7\u0ab6\u0ac7, \u0aaa\u0ab0\u0a82\u0aa4\u0ac1 \u0aa1\u0abf\u0a9c\u0abf\u0a9f\u0ab2 \u0ab2\u0abe\u0a88\u0aac\u0acd\u0ab0\u0ac7\u0ab0\u0ac0 \u0aaa\u0acb\u0ab0\u0acd\u0a9f\u0ab2 \u0ab5\u0abf\u0aa6\u0acd\u0aaf\u0abe\u0ab0\u0acd\u0aa5\u0ac0",
+      "citations": [
+        "05_library_rules_gu.txt"
+      ]
+    },
+    {
+      "id": "rag_027",
+      "query": "\u0aac\u0acb\u0aaf\u0acd\u0a9d \u0a85\u0aa8\u0ac7 \u0a97\u0ab0\u0acd\u0ab2\u0acd\u0ab8 \u0ab9\u0acb\u0ab8\u0acd\u0a9f\u0ac7\u0ab2 \u0aae\u0abe\u0a9f\u0ac7 \u0ab0\u0abe\u0aa4\u0acd\u0ab0\u0ac7 \u0a97\u0ac7\u0a9f \u0aac\u0a82\u0aa7 \u0aa5\u0ab5\u0abe\u0aa8\u0acb \u0ab8\u0aae\u0aaf \u0ab6\u0ac1\u0a82 \u0a9b\u0ac7 \u0aa8\u0abf\u0aaf\u0aae \u0aae\u0ac1\u0a9c\u0aac? \u0aa8\u0ab5\u0abe \u0aaa\u0ab0\u0abf\u0aaa\u0aa4\u0acd\u0ab0 \u0aae\u0ac1\u0a9c\u0aac.",
+      "language": "gu",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, \u0ab0\u0ab5\u0abf\u0ab5\u0abe\u0ab0 \u0aa4\u0aa5\u0abe \u0a9c\u0abe\u0ab9\u0ac7\u0ab0 \u0ab0\u0a9c\u0abe\u0a93\u0aa8\u0abe \u0aa6\u0abf\u0ab5\u0ab8\u0ac7 \u0ab2\u0abe\u0a88\u0aac\u0acd\u0ab0\u0ac7\u0ab0\u0ac0 \u0aac\u0a82\u0aa7 \u0ab0\u0ab9\u0ac7\u0ab6\u0ac7, \u0aaa\u0ab0\u0a82\u0aa4\u0ac1 \u0aa1\u0abf\u0a9c\u0abf\u0a9f\u0ab2 \u0ab2\u0abe\u0a88\u0aac\u0acd\u0ab0\u0ac7\u0ab0\u0ac0 \u0aaa\u0acb\u0ab0\u0acd\u0a9f\u0ab2 \u0ab5\u0abf\u0aa6\u0acd\u0aaf\u0abe\u0ab0\u0acd\u0aa5\u0ac0",
+      "citations": [
+        "05_library_rules_gu.txt"
+      ]
+    },
+    {
+      "id": "rag_028",
+      "query": "\u0ab6\u0ac1\u0a82 \u0a95\u0acb\u0a88 \u0a95\u0ab9\u0ac0 \u0ab6\u0a95\u0ac7 \u0a9b\u0ac7 \u0a95\u0ac7, \u0a86 \u0ab8\u0ac7\u0aae\u0ac7\u0ab8\u0acd\u0a9f\u0ab0\u0aa8\u0ac0 \u0a9c\u0abe\u0ab9\u0ac7\u0ab0 \u0ab0\u0a9c\u0abe\u0a93\u0aa8\u0ac0 \u0aaf\u0abe\u0aa6\u0ac0 \u0a95\u0acd\u0aaf\u0abe\u0a82\u0aa5\u0ac0 \u0a9c\u0acb\u0ab5\u0abe \u0aae\u0ab3\u0ab6\u0ac7 Computer Science \u0aae\u0abe\u0a9f\u0ac7? \u0ab5\u0abf\u0a97\u0aa4\u0ab5\u0abe\u0ab0 \u0aae\u0abe\u0ab9\u0abf\u0aa4\u0ac0 \u0a86\u0aaa\u0ab5\u0abe \u0aa8\u0aae\u0acd\u0ab0 \u0ab5\u0abf\u0aa8\u0a82\u0aa4\u0ac0.",
+      "language": "gu",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, \u0ab0\u0ab5\u0abf\u0ab5\u0abe\u0ab0 \u0aa4\u0aa5\u0abe \u0a9c\u0abe\u0ab9\u0ac7\u0ab0 \u0ab0\u0a9c\u0abe\u0a93\u0aa8\u0abe \u0aa6\u0abf\u0ab5\u0ab8\u0ac7 \u0ab2\u0abe\u0a88\u0aac\u0acd\u0ab0\u0ac7\u0ab0\u0ac0 \u0aac\u0a82\u0aa7 \u0ab0\u0ab9\u0ac7\u0ab6\u0ac7, \u0aaa\u0ab0\u0a82\u0aa4\u0ac1 \u0aa1\u0abf\u0a9c\u0abf\u0a9f\u0ab2 \u0ab2\u0abe\u0a88\u0aac\u0acd\u0ab0\u0ac7\u0ab0\u0ac0 \u0aaa\u0acb\u0ab0\u0acd\u0a9f\u0ab2 \u0ab5\u0abf\u0aa6\u0acd\u0aaf\u0abe\u0ab0\u0acd\u0aa5\u0ac0",
+      "citations": [
+        "05_library_rules_gu.txt"
+      ]
+    },
+    {
+      "id": "rag_029",
+      "query": "\u0ab6\u0ac1\u0a82 \u0aa4\u0ab9\u0ac7\u0ab5\u0abe\u0ab0\u0acb \u0a85\u0aa8\u0ac7 \u0ab8\u0ab0\u0a95\u0abe\u0ab0\u0ac0 \u0ab0\u0a9c\u0abe\u0a93\u0aa8\u0abe \u0aa6\u0abf\u0ab5\u0ab8\u0ac7 \u0a95\u0acb\u0ab2\u0ac7\u0a9c \u0aac\u0a82\u0aa7 \u0ab0\u0ab9\u0ac7 \u0a9b\u0ac7 MCA \u0aae\u0abe\u0a82? \u0aa4\u0ab0\u0aa4 \u0a9c\u0ab5\u0abe\u0aac \u0a86\u0aaa\u0ab6\u0acb.",
+      "language": "gu",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, \u0ab0\u0ab5\u0abf\u0ab5\u0abe\u0ab0 \u0aa4\u0aa5\u0abe \u0a9c\u0abe\u0ab9\u0ac7\u0ab0 \u0ab0\u0a9c\u0abe\u0a93\u0aa8\u0abe \u0aa6\u0abf\u0ab5\u0ab8\u0ac7 \u0ab2\u0abe\u0a88\u0aac\u0acd\u0ab0\u0ac7\u0ab0\u0ac0 \u0aac\u0a82\u0aa7 \u0ab0\u0ab9\u0ac7\u0ab6\u0ac7, \u0aaa\u0ab0\u0a82\u0aa4\u0ac1 \u0aa1\u0abf\u0a9c\u0abf\u0a9f\u0ab2 \u0ab2\u0abe\u0a88\u0aac\u0acd\u0ab0\u0ac7\u0ab0\u0ac0 \u0aaa\u0acb\u0ab0\u0acd\u0a9f\u0ab2 \u0ab5\u0abf\u0aa6\u0acd\u0aaf\u0abe\u0ab0\u0acd\u0aa5\u0ac0",
+      "citations": [
+        "05_library_rules_gu.txt"
+      ]
+    },
+    {
+      "id": "rag_030",
+      "query": "\u0aae\u0abe\u0ab0\u0ac7 \u0aaa\u0ac2\u0a9b\u0ab5\u0ac1\u0a82 \u0a9b\u0ac7 \u0a95\u0ac7, BCA \u0a9f\u0acd\u0aaf\u0ac1\u0ab6\u0aa8 \u0aab\u0ac0 \u0a93\u0aa8\u0ab2\u0abe\u0a87\u0aa8 \u0aad\u0ab0\u0ab5\u0abe \u0aae\u0abe\u0a9f\u0ac7 \u0a95\u0aaf\u0abe \u0ab5\u0abf\u0a95\u0ab2\u0acd\u0aaa\u0acb \u0a9b\u0ac7 \u0aaa\u0acb\u0ab0\u0acd\u0a9f\u0ab2 \u0aaa\u0ab0? \u0ab6\u0a95\u0acd\u0aaf \u0aa4\u0ac7\u0a9f\u0ab2\u0ac1\u0a82 \u0a9c\u0ab2\u0acd\u0aa6\u0ac0 \u0a9c\u0aa3\u0abe\u0ab5\u0acb.",
+      "language": "gu",
+      "is_answerable": true,
+      "mode": "rag",
+      "grounded": true,
+      "answer_preview": "Based on campus regulations, \u0ab0\u0ab5\u0abf\u0ab5\u0abe\u0ab0 \u0aa4\u0aa5\u0abe \u0a9c\u0abe\u0ab9\u0ac7\u0ab0 \u0ab0\u0a9c\u0abe\u0a93\u0aa8\u0abe \u0aa6\u0abf\u0ab5\u0ab8\u0ac7 \u0ab2\u0abe\u0a88\u0aac\u0acd\u0ab0\u0ac7\u0ab0\u0ac0 \u0aac\u0a82\u0aa7 \u0ab0\u0ab9\u0ac7\u0ab6\u0ac7, \u0aaa\u0ab0\u0a82\u0aa4\u0ac1 \u0aa1\u0abf\u0a9c\u0abf\u0a9f\u0ab2 \u0ab2\u0abe\u0a88\u0aac\u0acd\u0ab0\u0ac7\u0ab0\u0ac0 \u0aaa\u0acb\u0ab0\u0acd\u0a9f\u0ab2 \u0ab5\u0abf\u0aa6\u0acd\u0aaf\u0abe\u0ab0\u0acd\u0aa5\u0ac0",
+      "citations": [
+        "05_library_rules_gu.txt"
+      ]
+    }
+  ]
+}

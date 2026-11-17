@@ -1,0 +1,76 @@
+{
+  "feature": "03-transformer-intent-classification",
+  "timestamp": "2026-11-17 14:31:12",
+  "total_test_queries": 255,
+  "models_evaluated": {
+    "baseline_tfidf_lr": {
+      "accuracy": 0.2824,
+      "macro_f1": 0.3588,
+      "avg_latency_ms": 0.663
+    },
+    "transformer_muril": {
+      "accuracy": 0.9529,
+      "macro_f1": 0.9569,
+      "avg_latency_ms": 1.504,
+      "ece": 0.184
+    }
+  },
+  "performance_gain": {
+    "accuracy_gain": 0.6706,
+    "macro_f1_gain": 0.5981
+  },
+  "per_language_breakdown": {
+    "en": {
+      "samples": 59,
+      "baseline_accuracy": 0.2881,
+      "muril_accuracy": 0.9153,
+      "delta": 0.6271
+    },
+    "gu": {
+      "samples": 50,
+      "baseline_accuracy": 0.26,
+      "muril_accuracy": 0.94,
+      "delta": 0.68
+    },
+    "gu-Latn": {
+      "samples": 41,
+      "baseline_accuracy": 0.3415,
+      "muril_accuracy": 0.9756,
+      "delta": 0.6341
+    },
+    "hi": {
+      "samples": 60,
+      "baseline_accuracy": 0.1667,
+      "muril_accuracy": 0.9667,
+      "delta": 0.8
+    },
+    "hi-Latn": {
+      "samples": 45,
+      "baseline_accuracy": 0.4,
+      "muril_accuracy": 0.9778,
+      "delta": 0.5778
+    }
+  },
+  "per_intent_f1": {
+    "admission": 1.0,
+    "attendance_rules": 1.0,
+    "backlog_rules": 0.96,
+    "bonafide_certificate": 1.0,
+    "bus_transport": 1.0,
+    "contact_office": 0.9091,
+    "exam_form_deadline": 1.0,
+    "exam_timetable": 0.8333,
+    "fee_payment": 1.0,
+    "fee_structure": 1.0,
+    "holidays": 0.9167,
+    "hostel": 1.0,
+    "id_card": 1.0,
+    "library_timings": 0.9565,
+    "out_of_scope": 0.6857,
+    "placement": 0.96,
+    "re_evaluation": 1.0,
+    "result": 0.9565,
+    "scholarship": 1.0,
+    "syllabus": 0.96
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "feature": "06_conversation_memory_and_dialogue_state",
+  "total_dialogues": 40,
+  "total_turns": 80,
+  "metrics": {
+    "follow_up_detection_accuracy": 95.0,
+    "slot_carry_over_accuracy": 85.26,
+    "intent_resolution_accuracy": 75.0,
+    "query_rewriting_accuracy": 75.0,
+    "reset_command_accuracy": 100.0,
+    "total_slots_tested": 95,
+    "correct_slots": 81,
+    "total_follow_ups_tested": 40
+  },
+  "sample_dialogues": [
+    {
+      "dialogue_id": "dial_01",
+      "language": "en",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "What is the examination timetable for B.Tech CS 3rd sem?",
+          "is_follow_up": false,
+          "standalone_query": "What is the examination timetable for B.Tech CS 3rd sem?",
+          "resolved_intent": "exam_timetable",
+          "slots": {
+            "course": "B.Tech",
+            "branch": null,
+            "semester": "3rd sem",
+            "exam_type": null,
+            "date": null
+          }
+        },
+        {
+          "turn": 2,
+          "query": "and for 5th sem?",
+          "is_follow_up": true,
+          "standalone_query": "exam timetable schedule for course B.Tech semester 5th sem",
+          "resolved_intent": "exam_timetable",
+          "slots": {
+            "course": "B.Tech",
+            "branch": null,
+            "semester": "5th sem",
+            "exam_type": null,
+            "date": null
+          }
+        }
+      ]
+    },
+    {
+      "dialogue_id": "dial_02",
+      "language": "hi-Latn",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "B.Tech IT ki semester fee kitni hai?",
+          "is_follow_up": false,
+          "standalone_query": "B.Tech IT ki semester fee kitni hai?",
+          "resolved_intent": "fee_structure",
+          "slots": {
+            "course": "B.Tech",
+            "branch": "it",
+            "semester": null,
+            "exam_type": null,
+            "date": null
+          }
+        },
+        {
+          "turn": 2,
+          "query": "aur hostel fees ke liye?",
+          "is_follow_up": true,
+          "standalone_query": "tuition and college fee structure for course B.Tech branch it",
+          "resolved_intent": "fee_structure",
+          "slots": {
+            "course": "B.Tech",
+            "branch": "it",
+            "semester": null,
+            "exam_type": null,
+            "date": null
+          }
+        }
+      ]
+    },
+    {
+      "dialogue_id": "dial_03",
+      "language": "gu",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "Mechanical Engineering 4th sem \u0aa8\u0acb \u0ab8\u0abf\u0ab2\u0ac7\u0aac\u0ab8 \u0ab6\u0ac1\u0a82 \u0a9b\u0ac7?",
+          "is_follow_up": false,
+          "standalone_query": "Mechanical Engineering 4th sem \u0aa8\u0acb \u0ab8\u0abf\u0ab2\u0ac7\u0aac\u0ab8 \u0ab6\u0ac1\u0a82 \u0a9b\u0ac7?",
+          "resolved_intent": "syllabus_structure",
+          "slots": {
+            "course": "Mechanical Engineering",
+            "branch": "Mechanical Engineering",
+            "semester": "4th sem",
+            "exam_type": null,
+            "date": null
+          }
+        },
+        {
+          "turn": 2,
+          "query": "\u0a85\u0aa8\u0ac7 6th sem \u0aae\u0abe\u0a9f\u0ac7?",
+          "is_follow_up": true,
+          "standalone_query": "syllabus structure and curriculum for course Mechanical Engineering branch Mechanical Engineering semester 6th sem",
+          "resolved_intent": "syllabus_structure",
+          "slots": {
+            "course": "Mechanical Engineering",
+            "branch": "Mechanical Engineering",
+            "semester": "6th sem",
+            "exam_type": null,
+            "date": null
+          }
+        }
+      ]
+    },
+    {
+      "dialogue_id": "dial_04",
+      "language": "en",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "How do I apply for a bus pass from Gandhinagar?",
+          "is_follow_up": false,
+          "standalone_query": "How do I apply for a bus pass from Gandhinagar?",
+          "resolved_intent": "bus_pass_application",
+          "slots": {
+            "course": null,
+            "branch": "Gandhinagar",
+            "semester": null,
+            "exam_type": null,
+            "date": null
+          }
+        },
+        {
+          "turn": 2,
+          "query": "reset",
+          "is_follow_up": false,
+          "standalone_query": "reset",
+          "resolved_intent": "greeting",
+          "slots": {
+            "course": null,
+            "branch": null,
+            "semester": null,
+            "exam_type": null,
+            "date": null
+          }
+        }
+      ]
+    },
+    {
+      "dialogue_id": "dial_05",
+      "language": "hi",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "\u0907\u0932\u0947\u0915\u094d\u091f\u094d\u0930\u093f\u0915\u0932 \u0907\u0902\u091c\u0940\u0928\u093f\u092f\u0930\u093f\u0902\u0917 \u0915\u093e \u092a\u0930\u0940\u0915\u094d\u0937\u093e \u0915\u093e\u0930\u094d\u092f\u0915\u094d\u0930\u092e \u0915\u094d\u092f\u093e \u0939\u0948?",
+          "is_follow_up": false,
+          "standalone_query": "\u0907\u0932\u0947\u0915\u094d\u091f\u094d\u0930\u093f\u0915\u0932 \u0907\u0902\u091c\u0940\u0928\u093f\u092f\u0930\u093f\u0902\u0917 \u0915\u093e \u092a\u0930\u0940\u0915\u094d\u0937\u093e \u0915\u093e\u0930\u094d\u092f\u0915\u094d\u0930\u092e \u0915\u094d\u092f\u093e \u0939\u0948?",
+          "resolved_intent": "exam_timetable",
+          "slots": {
+            "course": null,
+            "branch": null,
+            "semester": null,
+            "exam_type": null,
+            "date": null
+          }
+        },
+        {
+          "turn": 2,
+          "query": "\u0914\u0930 2nd sem \u0915\u093e \u0915\u094d\u092f\u093e?",
+          "is_follow_up": true,
+          "standalone_query": "exam timetable schedule for semester 2nd sem",
+          "resolved_intent": "exam_timetable",
+          "slots": {
+            "course": null,
+            "branch": null,
+            "semester": "2nd sem",
+            "exam_type": null,
+            "date": null
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,842 @@
+[
+  {
+    "dialogue_id": "dial_01",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "What is the examination timetable for B.Tech CS 3rd sem?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "B.Tech CS", "semester": "3rd sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "and for 5th sem?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "B.Tech CS", "semester": "5th sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["exam timetable", "5th sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_02",
+    "language": "hi-Latn",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "B.Tech IT ki semester fee kitni hai?",
+        "expected_intent": "fee_structure",
+        "expected_slots": { "course": "B.Tech", "branch": "it" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "aur hostel fees ke liye?",
+        "expected_intent": "hostel",
+        "expected_slots": { "course": "B.Tech", "branch": "it" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["hostel", "B.Tech"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_03",
+    "language": "gu",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "Mechanical Engineering 4th sem નો સિલેબસ શું છે?",
+        "expected_intent": "syllabus_structure",
+        "expected_slots": { "course": "Mechanical", "semester": "4th sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "અને 6th sem માટે?",
+        "expected_intent": "syllabus_structure",
+        "expected_slots": { "course": "Mechanical", "semester": "6th sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["syllabus", "6th sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_04",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "How do I apply for a bus pass from Gandhinagar?",
+        "expected_intent": "bus_pass_application",
+        "expected_slots": { "branch": "Gandhinagar" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "reset",
+        "expected_intent": "greeting",
+        "expected_slots": { "course": null, "branch": null, "semester": null },
+        "is_follow_up": false,
+        "is_reset": true
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_05",
+    "language": "hi",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "इलेक्ट्रिकल इंजीनियरिंग का परीक्षा कार्यक्रम क्या है?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "Electrical" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "और 2nd sem का क्या?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "Electrical", "semester": "2nd sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["exam timetable", "2nd sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_06",
+    "language": "gu-Latn",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "MCA 1st sem ni exam date kyare chhe?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "MCA", "semester": "1st sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "ane 3rd sem mate?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "MCA", "semester": "3rd sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["exam timetable", "3rd sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_07",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "What are the rules for girls hostel curfew?",
+        "expected_intent": "hostel_rules",
+        "expected_slots": { "course": "Girls Hostel" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "what about boys hostel?",
+        "expected_intent": "hostel_rules",
+        "expected_slots": { "course": "Boys Hostel" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["hostel", "Boys Hostel"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_08",
+    "language": "hi-Latn",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "Paper re-checking form bharne ki procedure kya hai?",
+        "expected_intent": "re-evaluation",
+        "expected_slots": {},
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "aur iski fees kitni lagegi?",
+        "expected_intent": "fee_payment_dates",
+        "expected_slots": {},
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["fee payment"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_09",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "Where can I find syllabus for civil engineering sem 5?",
+        "expected_intent": "syllabus_structure",
+        "expected_slots": { "course": "Civil", "semester": "sem 5" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "and timetable?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "Civil", "semester": "sem 5" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["exam timetable", "Civil", "sem 5"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_10",
+    "language": "gu",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "લાઇબ્રેરી માં બુક રીન્યુ કરાવવાના નિયમો શું છે?",
+        "expected_intent": "library_hours",
+        "expected_slots": {},
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "અને રવિવારે સમય શું હોય છે?",
+        "expected_intent": "library_hours",
+        "expected_slots": { "date": "Sunday" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["library", "Sunday"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_11",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "What was the placement package in Computer Science branch?",
+        "expected_intent": "placement_stats",
+        "expected_slots": { "course": "Computer Science" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "and for Information Technology?",
+        "expected_intent": "placement_stats",
+        "expected_slots": { "course": "Information Technology" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["placement", "Information Technology"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_12",
+    "language": "hi-Latn",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "B.Tech Computer Science ke 7th sem ka schedule batao",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "B.Tech CS", "semester": "7th sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "aur 8th sem ka?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "B.Tech CS", "semester": "8th sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["exam timetable", "8th sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_13",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "When will 3rd sem results be declared?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "semester": "3rd sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "and what about 5th sem?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "semester": "5th sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["exam timetable", "5th sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_14",
+    "language": "gu",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "કૉલેજ ફી ઓનલાઇન ભરવાની તારીખ કઈ છે?",
+        "expected_intent": "fee_payment_dates",
+        "expected_slots": {},
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "new topic",
+        "expected_intent": "greeting",
+        "expected_slots": {},
+        "is_follow_up": false,
+        "is_reset": true
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_15",
+    "language": "hi",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "छात्रावास में प्रवेश के लिए आवश्यक दस्तावेज कौन से हैं?",
+        "expected_intent": "hostel_admission",
+        "expected_slots": {},
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "और मेस की फीस?",
+        "expected_intent": "fee_payment_dates",
+        "expected_slots": {},
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["fee"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_16",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "What is the admission cutoff for B.Tech CSE?",
+        "expected_intent": "admission_cutoff",
+        "expected_slots": { "course": "B.Tech CSE" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "and for Mechanical?",
+        "expected_intent": "admission_cutoff",
+        "expected_slots": { "course": "Mechanical" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["admission", "Mechanical"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_17",
+    "language": "hi-Latn",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "Exam hall ticket kab download kar sakte hain 4th sem ke liye?",
+        "expected_intent": "exam_form_deadline",
+        "expected_slots": { "semester": "4th sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "aur 6th sem ke liye?",
+        "expected_intent": "exam_form_deadline",
+        "expected_slots": { "semester": "6th sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["deadline", "6th sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_18",
+    "language": "gu-Latn",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "Hostel room allotment date kya chhe?",
+        "expected_intent": "hostel_admission",
+        "expected_slots": {},
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "ane mess menu?",
+        "expected_intent": "hostel_rules",
+        "expected_slots": {},
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["hostel"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_19",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "Please provide the B.Tech CS 1st sem exam timetable",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "B.Tech CS", "semester": "1st sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "and what about 2nd sem?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "B.Tech CS", "semester": "2nd sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["exam timetable", "2nd sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_20",
+    "language": "hi",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "बी.टेक सिविल 3rd sem का सिलेबस कहाँ मिलेगा?",
+        "expected_intent": "syllabus_structure",
+        "expected_slots": { "course": "Civil", "semester": "3rd sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "और 4th sem के लिए?",
+        "expected_intent": "syllabus_structure",
+        "expected_slots": { "course": "Civil", "semester": "4th sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["syllabus", "4th sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_21",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "What are the rules for exam re-evaluation?",
+        "expected_intent": "re-evaluation",
+        "expected_slots": {},
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "and last date?",
+        "expected_intent": "exam_form_deadline",
+        "expected_slots": {},
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["deadline"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_22",
+    "language": "hi-Latn",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "B.Tech IT 3rd sem exam form bharne ki tarikh kya hai?",
+        "expected_intent": "exam_form_deadline",
+        "expected_slots": { "course": "B.Tech IT", "semester": "3rd sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "aur 5th sem ki?",
+        "expected_intent": "exam_form_deadline",
+        "expected_slots": { "course": "B.Tech IT", "semester": "5th sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["exam form", "5th sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_23",
+    "language": "gu",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "હોસ્ટેલ પ્રવેશ માટે ફોર્મ ક્યારે ભરાશે?",
+        "expected_intent": "hostel_admission",
+        "expected_slots": {},
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "reset",
+        "expected_intent": "greeting",
+        "expected_slots": {},
+        "is_follow_up": false,
+        "is_reset": true
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_24",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "What is the fee structure for MBA 1st sem?",
+        "expected_intent": "fee_payment_dates",
+        "expected_slots": { "course": "MBA", "semester": "1st sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "and for 2nd sem?",
+        "expected_intent": "fee_payment_dates",
+        "expected_slots": { "course": "MBA", "semester": "2nd sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["fee payment", "2nd sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_25",
+    "language": "hi",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "पुस्तकालय में पुस्तकें कब तक जमा करनी होती हैं?",
+        "expected_intent": "library_hours",
+        "expected_slots": {},
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "और शनिवार को क्या समय है?",
+        "expected_intent": "library_hours",
+        "expected_slots": { "date": "Saturday" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["library", "Saturday"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_26",
+    "language": "gu-Latn",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "Computer engineering 5th sem no syllabus aapo",
+        "expected_intent": "syllabus_structure",
+        "expected_slots": { "course": "Computer", "semester": "5th sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "ane 6th sem no?",
+        "expected_intent": "syllabus_structure",
+        "expected_slots": { "course": "Computer", "semester": "6th sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["syllabus", "6th sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_27",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "What are the bus routes for Ahmedabad route 14?",
+        "expected_intent": "bus_pass_application",
+        "expected_slots": { "branch": "Ahmedabad" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "and pass fees?",
+        "expected_intent": "fee_payment_dates",
+        "expected_slots": { "branch": "Ahmedabad" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["fee"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_28",
+    "language": "hi-Latn",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "Mechanical 5th sem ka mid term exam timetable kab aayega?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "Mechanical", "semester": "5th sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "aur final sem ka?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "Mechanical", "semester": "8th sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["exam timetable"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_29",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "Can you give me B.Tech CS cutoff marks?",
+        "expected_intent": "admission_cutoff",
+        "expected_slots": { "course": "B.Tech CS" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "and for ECE?",
+        "expected_intent": "admission_cutoff",
+        "expected_slots": { "course": "ECE" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["admission", "ECE"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_30",
+    "language": "gu",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "ઇલેક્ટ્રિકલ એન્જિનિયરિંગ 3rd sem ની પરીક્ષા ક્યારે શરૂ થશે?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "Electrical", "semester": "3rd sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "અને 5th sem માટે?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "Electrical", "semester": "5th sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["exam timetable", "5th sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_31",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "How many companies visited for Computer Engineering placements?",
+        "expected_intent": "placement_stats",
+        "expected_slots": { "course": "Computer Engineering" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "what about Mechanical?",
+        "expected_intent": "placement_stats",
+        "expected_slots": { "course": "Mechanical" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["placement", "Mechanical"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_32",
+    "language": "hi-Latn",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "Girls hostel ke curfew timings kya hain?",
+        "expected_intent": "hostel_rules",
+        "expected_slots": { "course": "Girls Hostel" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "aur boys hostel ke?",
+        "expected_intent": "hostel_rules",
+        "expected_slots": { "course": "Boys Hostel" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["hostel", "Boys Hostel"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_33",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "B.Tech IT 1st sem syllabus link",
+        "expected_intent": "syllabus_structure",
+        "expected_slots": { "course": "B.Tech IT", "semester": "1st sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "and 3rd sem?",
+        "expected_intent": "syllabus_structure",
+        "expected_slots": { "course": "B.Tech IT", "semester": "3rd sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["syllabus", "3rd sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_34",
+    "language": "gu",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "સેમેસ્ટર પરિણામ ક્યારે જાહેર થશે?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": {},
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "clear",
+        "expected_intent": "greeting",
+        "expected_slots": {},
+        "is_follow_up": false,
+        "is_reset": true
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_35",
+    "language": "hi",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "प्रथम वर्ष ट्यूशन फीस कितनी है?",
+        "expected_intent": "fee_payment_dates",
+        "expected_slots": { "semester": "1st sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "और द्वितीय वर्ष की?",
+        "expected_intent": "fee_payment_dates",
+        "expected_slots": { "semester": "2nd sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["fee payment"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_36",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "When does the library open on weekdays?",
+        "expected_intent": "library_hours",
+        "expected_slots": {},
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "and on Sundays?",
+        "expected_intent": "library_hours",
+        "expected_slots": { "date": "Sunday" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["library", "Sunday"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_37",
+    "language": "hi-Latn",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "MCA admission criteria aur eligibility kya hai?",
+        "expected_intent": "admission_cutoff",
+        "expected_slots": { "course": "MCA" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "aur MBA ke liye?",
+        "expected_intent": "admission_cutoff",
+        "expected_slots": { "course": "MBA" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["admission", "MBA"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_38",
+    "language": "gu-Latn",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "B.Tech CS 4th sem exam timetable",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "B.Tech CS", "semester": "4th sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "ane 6th sem mate?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "B.Tech CS", "semester": "6th sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["exam timetable", "6th sem"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_39",
+    "language": "en",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "How many buses run on the Vadodara route?",
+        "expected_intent": "bus_pass_application",
+        "expected_slots": { "branch": "Vadodara" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "and for Anand route?",
+        "expected_intent": "bus_pass_application",
+        "expected_slots": { "branch": "Anand" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["bus", "Anand"]
+      }
+    ]
+  },
+  {
+    "dialogue_id": "dial_40",
+    "language": "hi-Latn",
+    "turns": [
+      {
+        "turn_index": 1,
+        "query": "B.Tech IT 5th sem marksheet kab milegi?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "B.Tech IT", "semester": "5th sem" },
+        "is_follow_up": false
+      },
+      {
+        "turn_index": 2,
+        "query": "aur 6th sem ki?",
+        "expected_intent": "exam_timetable",
+        "expected_slots": { "course": "B.Tech IT", "semester": "6th sem" },
+        "is_follow_up": true,
+        "expected_standalone_query_contains": ["exam timetable", "6th sem"]
+      }
+    ]
+  }
+]

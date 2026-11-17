@@ -1,0 +1,50 @@
+{
+  "feature": "14-synthetic-multilingual-dataset",
+  "total_generated": 3000,
+  "post_processed_total": 1700,
+  "splits": {
+    "train": 1189,
+    "val": 256,
+    "test": 255
+  },
+  "target_met": {
+    "total_rows_1500_plus": true,
+    "test_rows_200_plus": true
+  },
+  "intent_distribution": {
+    "result": 85,
+    "attendance_rules": 85,
+    "exam_form_deadline": 85,
+    "contact_office": 85,
+    "exam_timetable": 85,
+    "scholarship": 85,
+    "id_card": 85,
+    "fee_payment": 85,
+    "admission": 85,
+    "hostel": 85,
+    "library_timings": 85,
+    "backlog_rules": 85,
+    "holidays": 85,
+    "syllabus": 85,
+    "out_of_scope": 85,
+    "bonafide_certificate": 85,
+    "re_evaluation": 85,
+    "placement": 85,
+    "bus_transport": 85,
+    "fee_structure": 85
+  },
+  "language_distribution": {
+    "hi": 388,
+    "en": 372,
+    "gu": 342,
+    "hi-Latn": 315,
+    "gu-Latn": 283
+  },
+  "verified_sample": {
+    "sample_size": 255,
+    "errors_flagged": 0,
+    "label_error_rate": 0.0,
+    "label_accuracy": 1.0,
+    "status": "verified_clean"
+  }
+}

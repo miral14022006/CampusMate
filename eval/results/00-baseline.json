@@ -1,0 +1,42 @@
+{
+  "evaluation_name": "00-baseline",
+  "timestamp": "2026-11-17 14:16:59",
+  "total_seed_samples": 200,
+  "language_identification": {
+    "overall_accuracy": 1.0,
+    "avg_latency_ms": 0.007,
+    "breakdown": {
+      "en": {
+        "samples": 40,
+        "accuracy": 1.0
+      },
+      "gu": {
+        "samples": 40,
+        "accuracy": 1.0
+      },
+      "gu-Latn": {
+        "samples": 40,
+        "accuracy": 1.0
+      },
+      "hi": {
+        "samples": 40,
+        "accuracy": 1.0
+      },
+      "hi-Latn": {
+        "samples": 40,
+        "accuracy": 1.0
+      }
+    }
+  },
+  "intent_classification": {
+    "total_intents": 20,
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "avg_latency_ms": 0.648
+  },
+  "retrieval_tfidf": {
+    "evaluated_queries": 80,
+    "recall_at_3": 0.6375,
+    "mrr": 0.5667
+  }
+}
