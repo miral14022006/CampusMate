@@ -68,8 +68,6 @@ app.use('/api/feedback', feedbackRouter);
 app.use('/api/admin/feedback', feedbackRouter);
 app.use('/api/admin/analytics', analyticsRouter);
 app.use('/api/telegram', botRoutes);
-app.use('/api/admin/analytics', analyticsRouter);
-app.use('/api/telegram', botRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
