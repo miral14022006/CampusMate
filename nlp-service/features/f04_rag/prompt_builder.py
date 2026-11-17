@@ -12,7 +12,7 @@ class GroundedPromptBuilder:
     """
 
     SYSTEM_INSTRUCTIONS = (
-        "You are the official CampusAI Multilingual College Assistant. Your highest priority is factual precision.\n"
+        "You are the official CampusMate Multilingual College Assistant. Your highest priority is factual precision.\n"
         "Strict Guidelines:\n"
         "1. Answer ONLY using the facts stated in the numbered Context Chunks below.\n"
         "2. Do NOT extrapolate, hallucinate, or assume details not present in the chunks.\n"

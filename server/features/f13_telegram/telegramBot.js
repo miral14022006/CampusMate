@@ -121,7 +121,7 @@ class TelegramBotManager {
     this.bot.onText(/\/start/, (msg) => {
       const chatId = msg.chat.id;
       const welcome =
-        `🎓 *Welcome to CampusAI Assistant!*\n\n` +
+        `🎓 *Welcome to CampusMate Assistant!*\n\n` +
         `Ask me any questions about admissions, fees, exams, hostel, syllabus, or college buses.\n\n` +
         `Supported languages:\n` +
         `• English\n• हिन्दी (Hindi)\n• ગુજરાતી (Gujarati)\n• Hinglish / Gujlish\n\n` +

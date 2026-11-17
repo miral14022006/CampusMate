@@ -49,7 +49,7 @@ It implements an extensible sequential pipeline:
 
 ### Client UI (`client/`)
 - `client/src/features/chat/ChatWindow.jsx`: Chat interface featuring message bubbles, language badges, intent tags, source chips, and quick queries.
-- `client/src/App.jsx`: CampusAI layout container.
+- `client/src/App.jsx`: CampusMate layout container.
 
 ### Evaluation & Demo (`eval/`, `scripts/`)
 - `eval/run_baseline.py`: Evaluation harness computing language accuracy, intent macro-F1, Recall@3, and MRR.

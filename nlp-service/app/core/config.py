@@ -25,7 +25,7 @@ FEATURES_CONFIG_PATH = BASE_DIR.parent / "config" / "features.json"
 
 # API & Security
 API_VERSION = "1.0.0"
-NLP_API_KEY = os.getenv("NLP_API_KEY", "campus_ai_secret_token_123")
+NLP_API_KEY = os.getenv("NLP_API_KEY", "campus_mate_secret_token_123")
 API_KEY_HEADER_NAME = "X-API-Key"
 LOG_DIR = BASE_DIR / "logs"
 

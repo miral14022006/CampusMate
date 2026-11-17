@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ==============================================================================
-# CampusAI — Backend Services Startup Orchestrator (Backend-Only)
+# CampusMate — Backend Services Startup Orchestrator (Backend-Only)
 # Runs MongoDB, Redis, FastAPI NLP Microservice & Node.js API Gateway
 # ==============================================================================
 
@@ -19,7 +19,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
 echo -e "${CYAN}=================================================================${NC}"
-echo -e "${CYAN}    CampusAI — Multilingual Assistant Backend Services          ${NC}"
+echo -e "${CYAN}    CampusMate — Multilingual Assistant Backend Services          ${NC}"
 echo -e "${CYAN}=================================================================${NC}"
 
 # PID tracking for cleanup
@@ -119,7 +119,7 @@ done
 sleep 1
 
 echo -e "\n${CYAN}=================================================================${NC}"
-echo -e "${LIME}  🎉  CampusAI Backend Services are Operational!               ${NC}"
+echo -e "${LIME}  🎉  CampusMate Backend Services are Operational!               ${NC}"
 echo -e "${CYAN}=================================================================${NC}"
 echo -e "  • ${TEAL}Node Gateway API:${NC}   http://localhost:5005"
 echo -e "  • ${TEAL}Chat Endpoint:${NC}      POST http://localhost:5005/api/chat"

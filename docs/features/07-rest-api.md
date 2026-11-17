@@ -59,7 +59,7 @@ Interactive Swagger documentation is automatically available at **`http://localh
 
 ### 1. `POST /v1/query`
 Executes the full pipeline and returns synthesized response with attribution.
-- **Headers**: `X-API-Key: campus_ai_secret_token_123`
+- **Headers**: `X-API-Key: campus_mate_secret_token_123`
 - **Request**:
   ```json
   {
@@ -82,7 +82,7 @@ Executes the full pipeline and returns synthesized response with attribution.
 
 ### 2. `POST /v1/analyze`
 Returns all intermediate pipeline traces (tokens, language confidence, intent probabilities, entity offsets, retrieved chunk scores, stage latencies) without generating final response text.
-- **Headers**: `X-API-Key: campus_ai_secret_token_123`
+- **Headers**: `X-API-Key: campus_mate_secret_token_123`
 - **Response**:
   ```json
   {

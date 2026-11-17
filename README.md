@@ -1,4 +1,4 @@
-# CampusAI — Multilingual College Assistant (Backend & NLP Engine)
+# CampusMate — Multilingual College Assistant (Backend & NLP Engine)
 
 A production-grade, citation-grounded multilingual assistant backend for higher-education campuses. Understands English, Hindi, Gujarati, Hinglish, and Gujlish queries, retrieving official notices and circulars via hybrid neural search (BM25 + FAISS) with strict hallucination verification.
 

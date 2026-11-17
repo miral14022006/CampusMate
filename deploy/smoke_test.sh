@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-# Production Smoke Test Script for CampusAI Assistant
+# Production Smoke Test Script for CampusMate Assistant
 # Usage: ./deploy/smoke_test.sh [TARGET_URL]
 # Defaults to http://localhost:5000 if not provided.
 
 TARGET_URL="${1:-http://localhost:5000}"
 echo "========================================================="
-echo "   CampusAI Assistant - Production Smoke Test Suite"
+echo "   CampusMate Assistant - Production Smoke Test Suite"
 echo "   Target Base URL: $TARGET_URL"
 echo "========================================================="
 

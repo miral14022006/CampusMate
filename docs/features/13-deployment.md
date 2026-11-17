@@ -87,8 +87,8 @@ flowchart TD
 | `NLP_SERVICE_API_KEY` | Shared secret header between gateway & NLP | `super-secret-key-123` |
 | `JWT_SECRET` | Signing secret for admin authentication | `your-jwt-production-secret` |
 | `TELEGRAM_BOT_TOKEN` | Bot API token obtained from @BotFather | `123456789:ABCdefGhIJKlmNoPQRstuVWXyz` |
-| `TELEGRAM_WEBHOOK_URL` | Public HTTPS domain for Telegram webhook | `https://campus-ai.example.edu` |
-| `CORS_ORIGIN` | Allowed web origins | `https://campus-ai.vercel.app` |
+| `TELEGRAM_WEBHOOK_URL` | Public HTTPS domain for Telegram webhook | `https://campus-mate.example.edu` |
+| `CORS_ORIGIN` | Allowed web origins | `https://campus-mate.vercel.app` |
 
 ---
 
@@ -126,7 +126,7 @@ The Telegram integration is embedded directly into the Node server:
 
 ## 6. Live Deploy Placeholders
 
-- **Web App Live URL**: `https://campus-ai-assistant.vercel.app` *(Placeholder)*
-- **API Gateway URL**: `https://api.campus-ai.example.edu` *(Placeholder)*
-- **Telegram Bot Username**: `@CampusAiCollegeBot` *(Placeholder)*
+- **Web App Live URL**: `https://campus-mate-assistant.vercel.app` *(Placeholder)*
+- **API Gateway URL**: `https://api.campus-mate.example.edu` *(Placeholder)*
+- **Telegram Bot Username**: `@CampusMateCollegeBot` *(Placeholder)*
 
