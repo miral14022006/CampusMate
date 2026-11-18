@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="CampusMate">
+  <defs>
+    <linearGradient id="cm-fav-bg" x1="6" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#242424"/>
+      <stop offset="100%" stop-color="#181818"/>
+    </linearGradient>
+    <linearGradient id="cm-fav-arc" x1="12" y1="12" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E59368"/>
+      <stop offset="50%" stop-color="#D4673F"/>
+      <stop offset="100%" stop-color="#B9482F"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#cm-fav-bg)"/>
+  <g transform="translate(8, 8) scale(1)">
+    <!-- Outer Arc (r=15.5) -->
+    <path d="M 34.37 35.52 A 15.5 15.5 0 1 1 34.37 12.48" stroke="url(#cm-fav-arc)" stroke-width="3.6" stroke-linecap="round" fill="none"/>
+    <!-- Middle Arc (r=11.0) -->
+    <path d="M 31.36 32.17 A 11 11 0 1 1 31.36 15.83" stroke="url(#cm-fav-arc)" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+    <!-- Inner Arc (r=6.5) -->
+    <path d="M 28.35 28.83 A 6.5 6.5 0 1 1 28.35 19.17" stroke="url(#cm-fav-arc)" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+    <!-- Center Dot -->
+    <circle cx="24" cy="24" r="2.6" fill="url(#cm-fav-arc)"/>
+  </g>
+</svg>

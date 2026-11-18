@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const QueryAnalyticsLog = require('../../models/QueryAnalyticsLog');
 const { requireAdminAuth } = require('../f08_admin');
+const { recordAuditLog } = require('../f16_auth/auditService');
 const {
   buildMatchFilter,
   getSummaryPipeline,
@@ -86,6 +87,13 @@ router.get('/overview', requireAdminAuth, async (req, res) => {
       const cacheHitRate = summary.totalQueries > 0 ? (summary.cachedCount / summary.totalQueries) * 100 : 0;
       const p95Latency = calculateP95(summary.latencies || []);
 
+      // Derive a per-day latency series (avg + p95) and drop the raw latency arrays.
+      const latencySeries = queriesOverTime.map(({ latencies, ...row }) => ({
+        ...row,
+        avgLatencyMs: Math.round(row.avgLatencyMs || 0),
+        p95LatencyMs: Math.round(calculateP95(latencies || []))
+      }));
+
       const queryDurationMs = Date.now() - startTime;
 
       return res.json({
@@ -101,7 +109,7 @@ router.get('/overview', requireAdminAuth, async (req, res) => {
           avgLatencyMs: Math.round(summary.avgLatencyMs || 0),
           p95LatencyMs: Math.round(p95Latency)
         },
-        queriesOverTime,
+        queriesOverTime: latencySeries,
         topIntents,
         languageDistribution,
         topUnanswered,
@@ -127,6 +135,26 @@ router.get('/overview', requireAdminAuth, async (req, res) => {
     const latencies = filtered.map(it => it.totalLatencyMs || 0);
     const avgLatency = latencies.length ? latencies.reduce((a, b) => a + b, 0) / latencies.length : 0;
 
+    const byDay = {};
+    filtered.forEach(it => {
+      const date = new Date(it.createdAt).toISOString().slice(0, 10);
+      if (!byDay[date]) byDay[date] = { date, count: 0, unanswered: 0, cached: 0, latencies: [] };
+      byDay[date].count += 1;
+      if (it.isUnanswered) byDay[date].unanswered += 1;
+      if (it.cached) byDay[date].cached += 1;
+      byDay[date].latencies.push(it.totalLatencyMs || 0);
+    });
+    const queriesOverTime = Object.keys(byDay)
+      .sort()
+      .map(date => {
+        const { latencies: dayLatencies, ...row } = byDay[date];
+        return {
+          ...row,
+          avgLatencyMs: Math.round(dayLatencies.reduce((a, b) => a + b, 0) / (dayLatencies.length || 1)),
+          p95LatencyMs: Math.round(calculateP95(dayLatencies))
+        };
+      });
+
     const queryDurationMs = Date.now() - startTime;
 
     return res.json({
@@ -142,7 +170,7 @@ router.get('/overview', requireAdminAuth, async (req, res) => {
         avgLatencyMs: Math.round(avgLatency),
         p95LatencyMs: Math.round(calculateP95(latencies))
       },
-      queriesOverTime: [],
+      queriesOverTime,
       topIntents: [],
       languageDistribution: [],
       topUnanswered: [],
@@ -199,6 +227,16 @@ router.get('/export-csv', requireAdminAuth, async (req, res) => {
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename=analytics_${table}_${Date.now()}.csv`);
+
+    await recordAuditLog({
+      actorId: req.admin?.id,
+      action: 'analytics_export',
+      targetType: 'analytics',
+      targetId: table,
+      meta: { rowCount: rows.length, table },
+      req
+    });
+
     return res.send(csvContent);
   } catch (error) {
     console.error(`[Analytics CSV Export Error]: ${error.message}`);

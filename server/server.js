@@ -5,15 +5,18 @@ const mongoose = require('mongoose');
 
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 
 const chatRouter = require('./routes/chat');
 const legacyChatRouter = require('./features/chat/chatController');
 const { latencyTrackerMiddleware, adminCacheRouter } = require('./features/f12_cache');
 const { documentAdminRouter } = require('./features/f08_admin');
+const { calendarRoutes } = require('./features/f15_calendar');
 const { feedbackRouter } = require('./features/f10_feedback');
 const { analyticsRouter } = require('./features/f11_analytics');
 const { botRoutes, telegramBotManager } = require('./features/f13_telegram');
 const { historyRouter } = require('./features/f00_history');
+const { studentAuthRoutes, adminAuthRoutes } = require('./features/f16_auth');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,7 +28,12 @@ app.use(helmet({
 }));
 
 // CORS allowlist configuration for external client consumers / integrations
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000').split(',');
+const defaultCorsOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
+];
+const allowedOrigins = (process.env.CORS_ORIGIN || defaultCorsOrigins.join(',')).split(',');
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
@@ -48,6 +56,7 @@ app.use('/api/', apiLimiter);
 
 // Input Length Limits on JSON
 app.use(express.json({ limit: '100kb' }));
+app.use(cookieParser());
 
 // Feature 12: Latency tracking middleware
 app.use(latencyTrackerMiddleware);
@@ -58,7 +67,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Primary MERN chat routes, Admin routes, Bot routes
+// Primary MERN chat routes, Auth routes, Admin routes, Bot routes
+app.use('/api/auth', studentAuthRoutes);
+app.use('/api/admin/auth', adminAuthRoutes);
+app.use('/api/admin', adminAuthRoutes);
 app.use('/api/chat', chatRouter);
 app.use('/api/conversations', historyRouter);
 app.use('/api/legacy/chat', legacyChatRouter);
@@ -67,6 +79,7 @@ app.use('/api/admin', documentAdminRouter);
 app.use('/api/feedback', feedbackRouter);
 app.use('/api/admin/feedback', feedbackRouter);
 app.use('/api/admin/analytics', analyticsRouter);
+app.use('/api/calendar', calendarRoutes);
 app.use('/api/telegram', botRoutes);
 
 // Health check

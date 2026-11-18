@@ -61,4 +61,41 @@ class AnswerStage(PipelineStage):
         context.answer = ans_info["answer"]
         context.source_doc = ans_info.get("source_doc")
         context.generation_mode = "extractive"
+
+        # Hook 2: The query pipeline adds calendar_events to the response ONLY when the date appears in a cited chunk
+        try:
+            from config.settings import is_feature_enabled
+            if is_feature_enabled("calendar", True):
+                from features.f15_calendar_events.extractor import calendar_extractor
+                # Only scan cited chunks or top retrieved chunk that formed the answer
+                target_chunks = []
+                if context.citations:
+                    # Match citations by doc_name / snippet
+                    cited_names = {c.get("doc_name") for c in context.citations}
+                    target_chunks = [c for c in context.retrieved_chunks if c.get("doc_name") in cited_names]
+                elif context.retrieved_chunks and context.grounded:
+                    target_chunks = context.retrieved_chunks[:2]
+
+                found_events = []
+                seen_event_keys = set()
+                for ch in target_chunks:
+                    chunk_text = ch.get("text", "") or ch.get("snippet", "")
+                    evs = calendar_extractor.extract_dates_from_text(
+                        text=chunk_text,
+                        doc_name=ch.get("doc_name", ""),
+                        page=ch.get("page", 1),
+                        chunk_id=ch.get("chunk_id", ""),
+                        intent=context.intent,
+                        effective_date=ch.get("effective_date")
+                    )
+                    for ev in evs:
+                        ev_key = (ev["start"], ev["end"], ev["title"])
+                        if ev_key not in seen_event_keys:
+                            seen_event_keys.add(ev_key)
+                            found_events.append(ev)
+
+                context.calendar_events = found_events
+        except Exception as e:
+            logger.warning(f"Calendar events extraction hook in answer stage error: {e}")
+
         return context

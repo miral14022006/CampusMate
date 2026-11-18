@@ -1,0 +1,31 @@
+const commonPasswords = [
+  '123456',
+  'password',
+  '12345678',
+  'qwerty',
+  '123456789',
+  '12345',
+  '1234',
+  '111111',
+  '1234567',
+  'dragon',
+  'welcome',
+  'admin123',
+  'admin',
+  'administrator',
+  'password123',
+  'pass1234',
+  'college123',
+  'student123',
+  'changeme',
+  'letmein',
+  'master',
+  'sunshine',
+  'football',
+  'monkey',
+  'princess',
+  'pdeu123',
+  'campus123'
+];
+
+module.exports = new Set(commonPasswords.map(p => p.toLowerCase()));

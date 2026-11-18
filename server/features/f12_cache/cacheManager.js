@@ -104,6 +104,41 @@ class ServerCacheManager {
   }
 
   /**
+   * Generic raw cache helpers (used by Feature 11 dashboards, 60s TTL).
+   */
+  async getRaw(key) {
+    if (this.redisClient && this.redisClient.isOpen) {
+      try {
+        const val = await this.redisClient.get(key);
+        if (val) return JSON.parse(val);
+      } catch (err) {
+        console.warn(`[CacheManager] Redis raw get failed: ${err.message}`);
+      }
+    }
+    const entry = this.memCache.get(key);
+    if (entry) {
+      if (Date.now() > entry.expiresAt) {
+        this.memCache.delete(key);
+      } else {
+        return entry.data;
+      }
+    }
+    return null;
+  }
+
+  async setRaw(key, value, ttl = 60) {
+    this.memCache.set(key, { data: value, expiresAt: Date.now() + ttl * 1000 });
+    if (this.redisClient && this.redisClient.isOpen) {
+      try {
+        await this.redisClient.setEx(key, ttl, JSON.stringify(value));
+      } catch (err) {
+        console.warn(`[CacheManager] Redis raw set failed: ${err.message}`);
+      }
+    }
+    return true;
+  }
+
+  /**
    * Invalidate cache when an admin re-indexes documents (Part 8 Hook)
    */
   async invalidateAll() {

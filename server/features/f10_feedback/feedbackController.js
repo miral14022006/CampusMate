@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const Feedback = require('../../models/Feedback');
 const { requireAdminAuth } = require('../f08_admin');
+const { recordAuditLog } = require('../f16_auth/auditService');
+const { optionalAuth } = require('../f16_auth');
+const { recordInBackground } = require('../f17_activity');
 
 // In-memory fallback repository when MongoDB is in transient/offline mode
 const memoryFeedbackStore = [];
@@ -30,7 +33,7 @@ async function recordFeedback(data) {
  * POST /api/feedback
  * Records explicit user rating (thumbs up / thumbs down + reasons)
  */
-router.post('/', async (req, res) => {
+router.post('/', optionalAuth, async (req, res) => {
   try {
     const {
       messageId,
@@ -65,6 +68,18 @@ router.post('/', async (req, res) => {
       reviewStatus: rating === 'down' ? 'pending' : 'approved'
     });
 
+    recordInBackground({
+      req,
+      type: 'feedback',
+      meta: {
+        messageId,
+        conversationId: sessionId || null,
+        rating,
+        intent: pipelineSnapshot?.intent || null,
+        language: pipelineSnapshot?.language || null
+      }
+    });
+
     return res.status(201).json({
       status: 'success',
       feedbackId: feedbackDoc._id,
@@ -82,11 +97,11 @@ router.post('/', async (req, res) => {
  */
 router.get('/queue', requireAdminAuth, async (req, res) => {
   try {
-    const { status = 'pending', rating } = req.query;
+    const { status = 'all', rating } = req.query;
 
     if (Feedback.db && Feedback.db.readyState === 1) {
       const queryFilter = {};
-      if (status) queryFilter.reviewStatus = status;
+      if (status && status !== 'all') queryFilter.reviewStatus = status;
       if (rating) queryFilter.rating = rating;
 
       const items = await Feedback.find(queryFilter).sort({ createdAt: -1 }).limit(200).lean();
@@ -95,7 +110,7 @@ router.get('/queue', requireAdminAuth, async (req, res) => {
 
     // Memory fallback
     let items = memoryFeedbackStore;
-    if (status) items = items.filter(it => it.reviewStatus === status);
+    if (status && status !== 'all') items = items.filter(it => it.reviewStatus === status);
     if (rating) items = items.filter(it => it.rating === rating);
     return res.json({ queue: items.reverse().slice(0, 200) });
   } catch (error) {
@@ -178,6 +193,15 @@ router.get('/export', requireAdminAuth, async (req, res) => {
       retrievedChunks: item.pipelineSnapshot?.retrievedChunkIds || [],
       createdAt: item.createdAt
     }));
+
+    await recordAuditLog({
+      actorId: req.admin?.id,
+      action: 'feedback_export',
+      targetType: 'feedback',
+      targetId: null,
+      meta: { count: exportRows.length },
+      req
+    });
 
     return res.json({
       count: exportRows.length,

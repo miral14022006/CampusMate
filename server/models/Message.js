@@ -35,6 +35,10 @@ const MessageSchema = new mongoose.Schema({
     type: Array,
     default: []
   },
+  calendarEvents: {
+    type: Array,
+    default: []
+  },
   createdAt: {
     type: Date,
     default: Date.now

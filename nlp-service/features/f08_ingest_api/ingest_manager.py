@@ -96,11 +96,30 @@ class DocumentIngestionManager:
         new_index_version = f"idx_{int(datetime.now().timestamp())}"
         self.rebuild_indexes()
 
+        # Hook 1: Call calendar extractor on new chunks to find candidate events
+        calendar_candidates = []
+        try:
+            from config.settings import is_feature_enabled
+            if is_feature_enabled("calendar", True):
+                from features.f15_calendar_events.extractor import calendar_extractor
+                for cr in new_chunk_records:
+                    evs = calendar_extractor.extract_dates_from_text(
+                        text=cr["text"],
+                        doc_name=cr["doc_name"],
+                        page=cr.get("page", 1),
+                        chunk_id=cr["chunk_id"],
+                        effective_date=cr.get("effective_date")
+                    )
+                    calendar_candidates.extend(evs)
+        except Exception as e:
+            logger.warning(f"Calendar extraction hook in ingest failed: {e}")
+
         return {
             "status": "success",
             "chunks_created": len(new_chunk_records),
             "total_chunks": len(all_chunks),
-            "new_index_version": new_index_version
+            "new_index_version": new_index_version,
+            "calendar_candidates": calendar_candidates
         }
 
     def rebuild_indexes(self):

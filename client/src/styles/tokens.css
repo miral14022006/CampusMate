@@ -1,0 +1,231 @@
+/* ------------------------------------------------------------------
+   CampusMate design tokens — dark mode only
+   This file is the CSS source of truth for colour, radius and typography.
+------------------------------------------------------------------ */
+
+:root {
+  --nav-h: 64px;
+}
+
+@media (min-width: 1024px) and (min-height: 640px) {
+  section.scene {
+    min-height: 100svh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: calc(var(--nav-h) + 32px);
+    padding-bottom: 56px;
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+}
+
+:root,
+[data-theme='dark'],
+[data-theme='light'] {
+  color-scheme: dark;
+
+  --page: #161616;
+  --app: #1b1b1b;
+  --surface-1: #202020;
+  --surface-2: #262626;
+  --surface-3: #2d2d2d;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+
+  --text-primary: #f3eee9;
+  --text-secondary: #a8a29c;
+  --text-muted: #948c85;
+
+  --accent: #d4673f;
+  --accent-strong: #c4553a;
+  --accent-soft: rgba(212, 103, 63, 0.15);
+  --accent-soft-strong: rgba(212, 103, 63, 0.22);
+  --accent-ring: rgba(212, 103, 63, 0.45);
+  --accent-contrast: #ffffff;
+
+  --positive: #4e9a62;
+  --positive-soft: rgba(78, 154, 98, 0.15);
+  --negative: #d9564e;
+  --negative-soft: rgba(217, 86, 78, 0.15);
+  --warning: #d9a441;
+  --warning-soft: rgba(217, 164, 65, 0.15);
+
+  --chart-1: #d4673f;
+  --chart-2: #c4553a;
+  --chart-3: #a9462f;
+  --chart-4: #823a2a;
+  --chart-5: #5d2c21;
+  --chart-grid: rgba(255, 255, 255, 0.06);
+
+  --glass: rgba(22, 22, 22, 0.72);
+  --scrim: rgba(10, 10, 10, 0.66);
+  --sidebar: #181818;
+  --shadow-color: 0 0 0;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  html {
+    scroll-padding-top: 0px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* Reserved scroll margin for sticky header navigation */
+  [id] {
+    scroll-margin-top: 0px;
+  }
+
+  body {
+    @apply bg-page font-sans text-ink antialiased;
+    min-height: 100vh;
+    text-rendering: optimizeLegibility;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* Clear default focus outline for mouse clicks across all interactive elements */
+  :focus:not(:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-ink;
+    text-wrap: balance;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-muted);
+  }
+
+  /* Subtle premium scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-3) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--surface-3);
+    border-radius: 999px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer components {
+  .surface-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.12), 0 16px 40px -32px rgb(0 0 0 / 0.5);
+  }
+
+  .glass {
+    background: var(--glass);
+    backdrop-filter: blur(18px) saturate(1.15);
+    -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  }
+
+  .text-gradient-accent {
+    background: linear-gradient(100deg, var(--accent), var(--accent-strong));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .indic,
+  .font-devanagari,
+  .font-gujarati {
+    font-family: 'Noto Sans Devanagari', 'Noto Sans Gujarati', Inter, sans-serif;
+    line-height: 1.6;
+  }
+
+  .drawer-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+@layer utilities {
+  .animate-delay-75 {
+    animation-delay: 75ms;
+  }
+  .animate-delay-150 {
+    animation-delay: 150ms;
+  }
+  .animate-delay-300 {
+    animation-delay: 300ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

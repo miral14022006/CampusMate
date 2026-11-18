@@ -20,14 +20,14 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter (PDF, DOCX, TXT only)
+// File filter (PDF, DOCX, TXT and image scans for OCR ingestion)
 const fileFilter = (req, file, cb) => {
-  const allowed = ['.pdf', '.docx', '.txt'];
+  const allowed = ['.pdf', '.docx', '.txt', '.png', '.jpg', '.jpeg'];
   const ext = path.extname(file.originalname).toLowerCase();
   if (allowed.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error(`Invalid file type ${ext}. Only PDF, DOCX, and TXT files are permitted.`));
+    cb(new Error(`Invalid file type ${ext}. Only PDF, DOCX, TXT, PNG and JPG files are permitted.`));
   }
 };
 

@@ -1,176 +1,233 @@
-# CampusMate — Multilingual College Assistant (Backend & NLP Engine)
+# CampusMate — Multilingual College Assistant
 
-A production-grade, citation-grounded multilingual assistant backend for higher-education campuses. Understands English, Hindi, Gujarati, Hinglish, and Gujlish queries, retrieving official notices and circulars via hybrid neural search (BM25 + FAISS) with strict hallucination verification.
+A citation-grounded campus assistant for higher-education institutions. Students ask questions in **English, Hindi, Gujarati, Hinglish, or Gujlish**; CampusMate retrieves official notices and circulars through hybrid neural search (BM25 + FAISS), verifies the answer against the source, and returns a grounded response with citations. An admin workspace covers document ingestion, analytics, feedback review, and cache operations.
+
+The repository contains three runnable pieces:
+
+| Piece | Stack | Dev port | Container port |
+|---|---|---|---|
+| React SPA (`client/`) | React 18, Vite, Tailwind, React Router, Framer Motion, Recharts | `5173` | `3000` (compose) / `80` |
+| API gateway (`server/`) | Node.js, Express, MongoDB, Redis, Telegram adapter | `5005` via `run.sh`, `5000` via Docker | `5000` |
+| NLP engine (`nlp-service/`) | FastAPI, MuRIL intent, BM25 + FAISS, RAG | `8080` via `run.sh`, `8000` via Docker | `8000` |
 
 ---
 
-## 🏛️ Architecture Overview
-
-The system operates as a decoupled microservice backend:
+## Architecture
 
 ```mermaid
 flowchart LR
-    A["Channel Consumers<br/>(Telegram / REST Clients)"] -->|HTTP / JSON| B["Node.js API Gateway<br/>(Express :5000 / :5005)"]
-    B -->|Cache / Sessions| C["Redis :6379"]
-    B -->|History / Analytics / Docs| D["MongoDB :27017"]
-    B -->|REST API Key| E["Python NLP Microservice<br/>(FastAPI :8000 / :8080)"]
-    E -->|Sparse Match| F["BM25 Index"]
-    E -->|Dense Vectors| G["FAISS Vector Store"]
-    E -->|Inference| H["MuRIL Intent + RAG"]
+    S["React SPA<br/>(student chat + admin)"] -->|/api| B["Node.js API Gateway<br/>(Express)"]
+    B -->|Cache / Sessions| C["Redis"]
+    B -->|Docs / History / Analytics| D["MongoDB"]
+    B -->|REST + API key| E["Python NLP Microservice<br/>(FastAPI)"]
+    E --> F["BM25 Index"]
+    E --> G["FAISS Vector Store"]
+    E --> H["MuRIL Intent + RAG"]
+    T["Telegram"] --> B
 ```
 
-1. **Node.js Gateway (`server/`)**: Express API gateway managing authentication, rate limiting, dialogue session history, Redis caching, telemetry, and Telegram bot webhook/polling adapters.
-2. **FastAPI NLP Engine (`nlp-service/`)**: High-throughput inference service executing language identification, phonetic transliteration (IndicTrans), transformer intent classification (MuRIL), hybrid retrieval (BM25 + FAISS + Cross-Encoder reranker), and RAG grounded synthesis.
-3. **Data Stores**:
-   - **MongoDB**: Primary document metadata, feedback annotations, latency logs, and conversation transcripts.
-   - **Redis**: Low-latency query caching and active session state.
+- **Frontend** (`client/`) — the student-facing landing/chat experience and the admin console (dashboard, documents, analytics, feedback, cache, settings). All data comes from the gateway; there is no mock data. Design and screen references live in [`client/DESIGN_SPEC.md`](client/DESIGN_SPEC.md), and the endpoint/auth contract is documented in [`client/src/services/API_CONTRACT.md`](client/src/services/API_CONTRACT.md).
+- **Gateway** (`server/`) — authentication, rate limiting, conversation persistence, Redis caching, telemetry, admin APIs, and the Telegram bot.
+- **NLP service** (`nlp-service/`) — language identification, transliteration, intent classification, hybrid retrieval, reranking, and grounded answer synthesis.
 
 ---
 
-## 🚀 Quickstart: Run All Services
+## Quickstart with Docker
 
-Start MongoDB, Redis, the NLP engine, and the API gateway with a single command:
+```bash
+cp .env.example .env          # fill in secrets if needed
+docker compose up --build
+```
+
+Then open:
+
+- Student app / admin console: **http://localhost:3000**
+- API gateway health: **http://localhost:5000/health**
+- NLP health: **http://localhost:8000/v1/health**
+
+The browser calls `/api` on the same origin. The client container's nginx proxies `/api` to the gateway, so no CORS configuration is required for the SPA.
+
+Seed the default admin (inside the running server container):
+
+```bash
+docker compose exec server node scripts/seedAdmin.js
+```
+
+Credentials come from `ADMIN_DEFAULT_USER` / `ADMIN_DEFAULT_PASS` / `ADMIN_DEFAULT_EMAIL` (defaults: `admin` / `Admin@123` / `admin@college.edu.in`). Change them in production.
+
+Seed demo analytics for the dashboard:
+
+```bash
+docker compose exec server node scripts/seedAnalytics.js
+```
+
+This inserts 2,000 synthetic query logs. The UI can include or exclude seeded rows via the analytics filter, and `includeSeeded=only` isolates them.
+
+---
+
+## Local development
+
+### 1. Backend + NLP
 
 ```bash
 ./run.sh
 ```
 
-*(or via npm: `npm start`)*
+This starts MongoDB/Redis checks, the NLP service on `:8080`, and the gateway on `:5005`. Use the Docker setup instead if you prefer MongoDB/Redis in containers.
 
-To run via Docker:
+### 2. Frontend
+
 ```bash
-docker compose up --build
+cd client
+cp .env.example .env.local
+npm ci
+npm run dev
 ```
+
+Open **http://localhost:5173**. Vite proxies `/api` to the gateway. Because `run.sh` uses port `5005`, set the following in `client/.env.local`:
+
+```dotenv
+VITE_GATEWAY_URL=http://localhost:5005
+```
+
+If you use Docker for the backend (`:5000`), the default in `.env.example` is correct.
+
+### Frontend scripts
+
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Vite dev server with HMR on `:5173` |
+| `npm run build` | Production build into `client/dist` |
+| `npm run preview` | Serve the production build locally |
+| `npm run lint` | ESLint over `src/` |
+
+### Frontend environment variables
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `VITE_API_BASE_URL` | `/api` | Gateway base path used by the fetch wrapper |
+| `VITE_GATEWAY_URL` | `http://localhost:5000` | Vite dev proxy target for `/api` |
+| `VITE_NLP_URL` | `http://localhost:8000` | Optional dev proxy target for `/nlp` |
+| `VITE_STUDENT_PORTAL_URL` | `https://www.pdeu.ac.in` | Student Portal link in the sidebar/footer |
+| `VITE_API_TIMEOUT_MS` | `20000` | Fetch timeout |
+
+Environment values are baked in at build time. For container builds, either edit `client/.env.production` or pass them as build arguments.
+
+### Hero image
+
+`client/public/images/campus-hero.jpg` is a stylized placeholder generated with `scripts/generate_hero.py`. Replace it with a real campus photo before launch:
+
+1. Use a portrait/landscape image of at least **1200 × 1400 px** (JPG/WebP, ideally under 400 KB).
+2. Overwrite `client/public/images/campus-hero.jpg` (or update the path in `client/src/pages/Landing.jsx`).
+3. Rebuild with `npm run build`. The image is masked and receives a subtle parallax, so leave some breathing room around the subject.
+
+Use imagery you have the rights to (institutional photography or a properly licensed stock photo).
 
 ---
 
-## 📡 Core API Usage Examples
+## Core API
 
-### 1. Multilingual Chat Inquiry (`POST /api/chat`)
+Full details, payload shapes, auth rules, and known gaps: [`client/src/services/API_CONTRACT.md`](client/src/services/API_CONTRACT.md).
 
-**Hinglish Query Example:**
 ```bash
+# Chat (anonymous, optional X-Client-Id)
 curl -X POST http://localhost:5005/api/chat \
   -H "Content-Type: application/json" \
-  -d '{
-    "query": "Exam form bharne ki last date kya hai for 5th sem?",
-    "sessionId": "session_student_01"
-  }'
-```
+  -d '{"query":"Exam form bharne ki last date kya hai for 5th sem?","sessionId":"demo-session"}'
 
-**Response:**
-```json
-{
-  "answer": "The last date to submit the exam form for Semester 5 is November 25, 2024 without late penalty fees.",
-  "language": "hi",
-  "intent": "exam_deadline",
-  "confidence": 0.96,
-  "retrieved_chunks": [
-    {
-      "doc_name": "academic_regulations_2024.pdf",
-      "page": 4,
-      "score": 0.94
-    }
-  ],
-  "latency_ms": 142,
-  "cached": false
-}
-```
-
----
-
-### 2. Admin Authentication (`POST /api/admin/login`)
-
-First seed the default administrator account (if not already seeded):
-```bash
-node server/scripts/seedAdmin.js
-```
-
-Authenticate and obtain a JWT bearer token:
-```bash
+# Admin login
 curl -X POST http://localhost:5005/api/admin/login \
   -H "Content-Type: application/json" \
-  -d '{
-    "username": "admin",
-    "password": "AdminPassword123!"
-  }'
-```
+  -d '{"username":"admin","password":"Admin@123"}'
 
----
-
-### 3. Upload & Ingest Notice Document (`POST /api/admin/documents`)
-
-Upload a PDF or scanned circular to be chunked and re-indexed into BM25 and FAISS:
-
-```bash
-curl -X POST http://localhost:5005/api/admin/documents \
-  -H "Authorization: Bearer <YOUR_JWT_TOKEN>" \
-  -F "file=@/path/to/circular.pdf" \
-  -F "title=End Semester Examination Schedule 2024" \
+# Upload a notice (admin JWT)
+curl -X POST http://localhost:5005/api/admin/documents/upload \
+  -H "Authorization: Bearer <JWT>" \
+  -F "file=@circular.pdf" \
+  -F "title=End Semester Examination Schedule" \
   -F "topic_key=exam_schedule" \
-  -F "doc_type=notice" \
-  -F "department=Examination Cell" \
-  -F "effective_date=2024-11-20"
+  -F "doc_type=notice"
 ```
+
+Admin routes require a Bearer JWT (24 h, HS256). The cache admin routes (`/api/admin/cache-stats`, `/api/admin/cache/invalidate`, `/api/admin/latency-stats`) are also protected now. Any admin `401` clears the local session and redirects the UI to `/admin/login`.
 
 ---
 
-### 4. Trigger Full Index Re-index (`POST /api/admin/reindex`)
+## Smoke tests
+
+With the stack running:
 
 ```bash
-curl -X POST http://localhost:5005/api/admin/reindex \
-  -H "Authorization: Bearer <YOUR_JWT_TOKEN>"
+./deploy/smoke_test.sh http://localhost:3000
 ```
 
----
+The script runs **6 checks**: gateway health, English chat, Hindi chat, Hinglish chat, Telegram status, and the SPA HTML shell at `/`.
 
-### 5. Telegram Bot Integration (`/api/telegram`)
+The SPA check is skipped automatically when the target is an API-only host (for example `http://localhost:5005`), so the same script still works against the gateway alone. For a full pass, point it at the client origin (`:3000` in Docker, or the production nginx origin).
 
-The bot operates automatically via polling in development or webhook in production:
-```bash
-# Check Telegram channel status
-curl http://localhost:5005/api/telegram/status
-```
-
----
-
-## 🧪 Testing & Verification
-
-Run automated test suites across all backend components:
+Backend and frontend test/build commands:
 
 ```bash
-# 1. Run Node.js Server Tests
-cd server && npm test
-
-# 2. Run Python NLP Engine Tests
-cd nlp-service && pytest
-
-# 3. Run Production Smoke Test Suite
-./deploy/smoke_test.sh http://localhost:5005
+cd server && npm test          # Jest (runInBand)
+cd nlp-service && pytest       # FastAPI / NLP suites
+cd client && npm run build     # Vite production build
 ```
 
 ---
 
-## 📂 Project Structure
+## Production deployment
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+In production, the outer nginx (`deploy/nginx/nginx.conf`) terminates TLS and routes:
+
+- `/api/` → gateway
+- `/nlp/` → NLP service
+- `/assets/` → client container with a one-year immutable cache policy
+- `/` → client container, which applies the SPA `try_files` history fallback
+
+The client service has **no published host ports** in the production compose file; only nginx exposes `80`/`443`. Gzip is enabled for text assets and `gzip_static` is on for precompressed files. Brotli requires the `ngx_brotli` module in the nginx image and is not enabled by default; enable it there if your image includes it.
+
+Put TLS certificates in `deploy/nginx/ssl/`. Set `CORS_ORIGIN` if the SPA is ever served from a different origin than the API (the default same-origin proxy setup does not need it).
+
+---
+
+## Project structure
 
 ```
-├── deploy/                     # Production deployment artifacts
-│   ├── nginx/nginx.conf        # Reverse proxy config (SSL, rate limiting, routing)
-│   └── smoke_test.sh           # 5-stage automated smoke test
-├── docker-compose.yml          # Local container setup (Mongo, Redis, NLP, Gateway)
-├── docker-compose.prod.yml     # Production container orchestration
-├── docs/                       # Technical architecture & feature specifications
-├── eval/                       # Accuracy benchmarks, test sets, and error analysis
-├── nlp-service/                # Python FastAPI NLP Microservice
-│   ├── app/                    # FastAPI core, routes, schemas, and pipeline
-│   ├── features/               # NLP modules (retrieval, MuRIL intent, OCR, RAG)
-│   ├── data/index/             # Pre-built BM25 and FAISS index artifacts
-│   └── tests/                  # Pytest unit and integration test suites
-├── run.sh                      # All-in-one background runner
-├── server/                     # Node.js API Gateway & Telegram Bot
-│   ├── features/               # Gateway modules (sessions, caching, analytics, admin)
-│   ├── models/                 # Mongoose schemas (Document, Feedback, Analytics)
-│   ├── routes/                 # REST endpoints
-│   ├── scripts/                # Seeding and benchmark scripts
-│   └── tests/                  # Jest test suites
+├── client/                     # React SPA
+│   ├── DESIGN_SPEC.md          # 8-screen design source of truth
+│   ├── Dockerfile              # Multi-stage Vite build → nginx
+│   ├── nginx.conf              # SPA fallback, API proxy, cache headers, gzip
+│   └── src/
+│       ├── components/         # UI kit, brand, shared primitives
+│       ├── context/            # Theme + admin auth
+│       ├── features/           # chat and admin feature modules
+│       ├── layouts/            # public, chat, admin shells
+│       ├── pages/              # landing, chat, admin screens, settings
+│       ├── services/           # API wrapper + API_CONTRACT.md
+│       └── styles/             # design tokens and global CSS
+├── deploy/
+│   ├── nginx/nginx.conf        # TLS reverse proxy for production
+│   └── smoke_test.sh           # 6-check automated smoke test
+├── docker-compose.yml          # Local stack incl. client on :3000
+├── docker-compose.prod.yml     # Production stack (nginx-only ingress)
+├── nlp-service/                # FastAPI NLP microservice
+├── server/                     # Express gateway, admin APIs, Telegram bot
+│   └── scripts/                # seedAdmin.js, seedAnalytics.js, benchmarks
+└── run.sh                      # All-in-one local backend runner
 ```
+
+---
+
+## Accessibility and UX notes
+
+- Dark theme is the default; first visit follows `prefers-color-scheme`, and the choice is persisted in `localStorage`.
+- Every interactive control has a visible 2 px accent focus ring, and keyboard-only navigation is supported through dialogs, drawers, tabs, and the chat composer.
+- Layouts are exercised at 360, 768, 1280, and 1920 px widths.
+- Motion respects `prefers-reduced-motion`; the typewriter, tassel, and page transitions reduce to simple fades.
+- Text on accent surfaces is white and meets WCAG AA contrast against the terracotta gradient.
+
+Admin settings (profile name/email, interface language) are stored locally because the backend does not expose profile or preference endpoints yet. Logout clears the client-side JWT; the stateless token stays valid until expiry.

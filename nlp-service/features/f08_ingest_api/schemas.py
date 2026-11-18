@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 class IngestRequest(BaseModel):
     file_path: str
@@ -16,6 +16,7 @@ class IngestResponse(BaseModel):
     chunks_created: int
     total_chunks: int
     new_index_version: str
+    calendar_candidates: Optional[List[Dict[str, Any]]] = None
 
 class ReindexResponse(BaseModel):
     status: str

@@ -12,5 +12,6 @@
   "clarification_fallback": true,
   "dialogue_state": true,
   "rag_generation": true,
-  "document_versioning": true
+  "document_versioning": true,
+  "calendar": true
 }

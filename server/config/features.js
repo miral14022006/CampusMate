@@ -16,5 +16,8 @@ module.exports = {
   clarification_fallback: true,
   dialogue_state: true,
   rag_generation: true,
-  document_versioning: true
+  document_versioning: true,
+  calendar: true,
+  calendar_google_oauth: process.env.FEATURE_CALENDAR_GOOGLE_OAUTH === 'true', // off by default
+  auth: true
 };

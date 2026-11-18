@@ -53,7 +53,9 @@ function getQueriesOverTimePipeline(filterMatch) {
         _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
         count: { $sum: 1 },
         unanswered: { $sum: { $cond: ['$isUnanswered', 1, 0] } },
-        cached: { $sum: { $cond: ['$cached', 1, 0] } }
+        cached: { $sum: { $cond: ['$cached', 1, 0] } },
+        avgLatencyMs: { $avg: '$totalLatencyMs' },
+        latencies: { $push: '$totalLatencyMs' }
       }
     },
     { $sort: { _id: 1 } },
@@ -63,7 +65,9 @@ function getQueriesOverTimePipeline(filterMatch) {
         date: '$_id',
         count: 1,
         unanswered: 1,
-        cached: 1
+        cached: 1,
+        avgLatencyMs: { $round: ['$avgLatencyMs', 1] },
+        latencies: 1
       }
     }
   ];

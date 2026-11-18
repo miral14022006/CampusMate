@@ -23,6 +23,7 @@ const DocumentSchema = new mongoose.Schema({
   file_path: { type: String, required: true },
   file_name: { type: String, required: true },
   checksum: { type: String, required: true, index: true },
+  original_name: { type: String, default: null },
   language: { type: String, default: 'en' },
   processing_status: {
     type: String,

@@ -12,6 +12,11 @@ const ConversationSchema = new mongoose.Schema({
     required: true,
     index: true
   },
+  userId: {
+    type: String,
+    default: null,
+    index: true
+  },
   title: {
     type: String,
     default: 'New Conversation'

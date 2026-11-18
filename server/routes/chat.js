@@ -8,6 +8,8 @@ const { serverCacheManager } = require('../features/f12_cache');
 const { logImplicitFailureIfNeeded } = require('../features/f10_feedback');
 const { logQueryAnalytics } = require('../features/f11_analytics');
 const { PersistentConversation } = require('../features/f00_history');
+const { optionalAuth } = require('../features/f16_auth');
+const { recordInBackground } = require('../features/f17_activity');
 
 const router = express.Router();
 
@@ -103,7 +105,8 @@ const handleChat = async (req, res) => {
         intent: nlpData.intent,
         confidence: nlpData.confidence,
         sourceDoc: nlpData.source_doc,
-        entities: nlpData.entities || []
+        entities: nlpData.entities || [],
+        calendarEvents: nlpData.calendar_events || []
       });
       createdMessageId = String(assistantMsg._id);
 
@@ -177,6 +180,18 @@ const handleChat = async (req, res) => {
       });
     }
 
+    recordInBackground({
+      req,
+      type: 'chat_query',
+      meta: {
+        conversationId: sessionId,
+        intent: nlpData.intent || 'unknown',
+        language: nlpData.language || 'en',
+        category: nlpData.decision || 'ANSWER',
+        messageId: createdMessageId
+      }
+    });
+
     return res.json({
       messageId: createdMessageId,
       sessionId,
@@ -189,6 +204,7 @@ const handleChat = async (req, res) => {
       source_doc: nlpData.source_doc,
       entities: nlpData.entities || [],
       citations: nlpData.citations || [],
+      calendar_events: nlpData.calendar_events || [],
       grounded: nlpData.grounded !== undefined ? nlpData.grounded : true,
       generation_mode: nlpData.generation_mode || "rag",
       hallucination_score: nlpData.hallucination_score || 0.0,
@@ -208,8 +224,8 @@ const handleChat = async (req, res) => {
   }
 };
 
-router.post('/', handleChat);
-router.post('/message', handleChat);
+router.post('/', optionalAuth, handleChat);
+router.post('/message', optionalAuth, handleChat);
 
 /**
  * GET /api/chat/history/:sessionId

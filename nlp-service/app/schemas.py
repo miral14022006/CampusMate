@@ -72,6 +72,7 @@ class QueryResponse(BaseModel):
     is_follow_up: Optional[bool] = False
     is_reset: Optional[bool] = False
     dialogue_state: Optional[Dict[str, Any]] = None
+    calendar_events: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
     analysis: Optional[AnalyzeResponse] = None
     execution_time_ms: float
 

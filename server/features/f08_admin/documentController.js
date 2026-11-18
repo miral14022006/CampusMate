@@ -6,6 +6,8 @@ const { generateToken, requireAdminAuth, requireRole } = require('./auth');
 const { upload, calculateChecksum } = require('./uploadMiddleware');
 const { nlpClient } = require('../../services/nlpClient');
 const { serverCacheManager } = require('../f12_cache');
+const { processCandidateEvents, markEventsSupersededByDocId } = require('../f15_calendar/calendarController');
+const { recordAuditLog } = require('../f16_auth/auditService');
 
 const router = express.Router();
 
@@ -126,6 +128,11 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
         // Mark previous document as superseded
         priorDoc.status = 'superseded';
         await priorDoc.save();
+        try {
+          await markEventsSupersededByDocId(priorDoc._id);
+        } catch (calSupErr) {
+          console.warn(`[Admin] Failed marking prior events superseded: ${calSupErr.message}`);
+        }
       }
     }
 
@@ -163,6 +170,7 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
         status: 'active',
         file_path: req.file.path,
         file_name: req.file.filename,
+        original_name: req.file.originalname,
         checksum,
         processing_status: 'completed',
         chunk_count: ingestResult.chunks_created,
@@ -178,11 +186,31 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
       };
     }
 
+    // Process candidate calendar events if returned by ingest API
+    let calendarEventsCreated = [];
+    if (ingestResult.calendar_candidates && Array.isArray(ingestResult.calendar_candidates)) {
+      try {
+        calendarEventsCreated = await processCandidateEvents(ingestResult.calendar_candidates, newDoc);
+      } catch (calErr) {
+        console.warn(`[Admin] Failed processing candidate calendar events: ${calErr.message}`);
+      }
+    }
+
+    await recordAuditLog({
+      actorId: req.admin?.id,
+      action: 'document_upload',
+      targetType: 'document',
+      targetId: newDoc._id ? String(newDoc._id) : null,
+      meta: { title, topic_key, version: nextVersion, department },
+      req
+    });
+
     return res.status(201).json({
       message: 'Document uploaded, versioned, and indexed successfully.',
       document: newDoc,
       superseded_prior_version: Boolean(priorDoc),
-      new_index_version: ingestResult.new_index_version
+      new_index_version: ingestResult.new_index_version,
+      calendar_candidates_count: calendarEventsCreated.length
     });
   } catch (err) {
     return res.status(500).json({ error: `Upload processing failed: ${err.message}` });
@@ -225,11 +253,67 @@ router.patch('/documents/:id/status', requireAdminAuth, async (req, res) => {
       await nlpClient.client.post('/v1/documents/reindex');
       await serverCacheManager.invalidateAll();
 
+      await recordAuditLog({
+        actorId: req.admin?.id,
+        action: 'document_status_change',
+        targetType: 'document',
+        targetId: req.params.id,
+        meta: { newStatus: status, title: doc.title },
+        req
+      });
+
       return res.json({ message: 'Document status updated', document: doc });
     }
     return res.json({ message: 'Updated status (transient mode)' });
   } catch (err) {
     return res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * DELETE /api/admin/documents/:id
+ * Permanently removes a document record, its uploaded file, and re-indexes.
+ */
+router.delete('/documents/:id', requireAdminAuth, async (req, res) => {
+  try {
+    if (!(Document.db && Document.db.readyState === 1)) {
+      return res.status(503).json({ error: 'Document deletion requires MongoDB to be connected.' });
+    }
+
+    const doc = await Document.findByIdAndDelete(req.params.id);
+    if (!doc) return res.status(404).json({ error: 'Document not found.' });
+
+    // Remove the stored file, but never touch anything outside the upload directory.
+    try {
+      const fs = require('fs');
+      const { UPLOAD_DIR } = require('./uploadMiddleware');
+      const resolved = require('path').resolve(doc.file_path || '');
+      if (doc.file_path && resolved.startsWith(UPLOAD_DIR) && fs.existsSync(resolved)) {
+        fs.unlinkSync(resolved);
+      }
+    } catch (fileErr) {
+      console.warn(`[Admin] Could not remove file for document ${req.params.id}: ${fileErr.message}`);
+    }
+
+    try {
+      await nlpClient.client.post('/v1/documents/reindex');
+    } catch (reindexErr) {
+      console.warn(`[Admin] Re-index after delete skipped: ${reindexErr.message}`);
+    }
+    await serverCacheManager.invalidateAll();
+
+    await recordAuditLog({
+      actorId: req.admin?.id,
+      action: 'document_delete',
+      targetType: 'document',
+      targetId: req.params.id,
+      meta: { title: doc.title, topic_key: doc.topic_key },
+      req
+    });
+
+    return res.json({ success: true, deletedId: req.params.id });
+  } catch (err) {
+    return res.status(500).json({ error: `Delete failed: ${err.message}` });
   }
 });
 

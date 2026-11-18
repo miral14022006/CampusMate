@@ -130,6 +130,7 @@ def process_query(request_body: QueryRequest, request: Request):
         is_follow_up=ctx.is_follow_up,
         is_reset=ctx.is_reset,
         dialogue_state=ctx.dialogue_state,
+        calendar_events=getattr(ctx, "calendar_events", []),
         analysis=analysis,
         execution_time_ms=ctx.total_latency_ms
     )

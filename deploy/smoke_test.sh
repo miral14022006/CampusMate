@@ -12,6 +12,7 @@ echo "========================================================="
 
 PASSED=0
 FAILED=0
+SKIPPED=0
 
 run_check() {
   local NAME="$1"
@@ -41,6 +42,27 @@ run_check() {
   fi
 }
 
+# The frontend is served by the client container (compose) or by nginx (prod).
+# When the target is the API gateway only, mark the SPA check as skipped rather
+# than failing an otherwise healthy backend.
+run_spa_check() {
+  echo -n "[TEST] 6. SPA HTML at / ... "
+  RESPONSE=$(curl -s --max-time 10 "$TARGET_URL/" 2>/dev/null)
+
+  if echo "$RESPONSE" | grep -q '<div id="root">'; then
+    echo "PASSED ✅"
+    PASSED=$((PASSED + 1))
+  elif echo "$RESPONSE" | grep -q '"service"\|campus-mate-backend'; then
+    echo "SKIPPED ⏭️  (target is API-only; use the client origin to verify the SPA)"
+    SKIPPED=$((SKIPPED + 1))
+  else
+    echo "FAILED ❌"
+    echo "  Expected the Vite HTML shell with <div id=\"root\">"
+    echo "  Actual Response: $(echo "$RESPONSE" | head -c 200)"
+    FAILED=$((FAILED + 1))
+  fi
+}
+
 echo ""
 # 1. Healthcheck
 run_check "1. Gateway Healthcheck" "/health" "GET" "" "status"
@@ -63,9 +85,12 @@ run_check "4. Gujlish Code-Mixed (Admission Fees)" "/api/chat" "POST" \
 # 5. Telegram Bot Channel Status
 run_check "5. Telegram Bot Channel Status" "/api/telegram/status" "GET" "" "telegram"
 
+# 6. SPA HTML shell (skipped automatically for API-only targets)
+run_spa_check
+
 echo ""
 echo "========================================================="
-echo "Smoke Test Summary: $PASSED Passed, $FAILED Failed"
+echo "Smoke Test Summary: $PASSED Passed, $FAILED Failed, $SKIPPED Skipped (6 checks)"
 if [ $FAILED -eq 0 ]; then
   echo "All production smoke tests passed successfully! 🎉"
   exit 0

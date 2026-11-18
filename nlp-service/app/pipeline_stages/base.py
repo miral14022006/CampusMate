@@ -20,6 +20,7 @@ class PipelineContext(BaseModel):
     answer: str = ""
     source_doc: Optional[str] = None
     citations: List[Dict[str, Any]] = Field(default_factory=list)
+    calendar_events: List[Dict[str, Any]] = Field(default_factory=list)
     grounded: bool = True
     generation_mode: str = "rag"
     hallucination_score: float = 0.0

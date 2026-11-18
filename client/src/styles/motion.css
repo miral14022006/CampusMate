@@ -1,0 +1,145 @@
+/* ------------------------------------------------------------------
+   CampusMate Motion System Styles
+   Tokens: durations 150/250/400/700ms, easing cubic-bezier(0.22, 1, 0.36, 1)
+   Only transform + opacity are animated.
+------------------------------------------------------------------ */
+
+:root {
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-medium: 400ms;
+  --duration-slow: 700ms;
+
+  --stagger-delay: 60ms;
+}
+
+/* Card hover lift & cursor spotlight */
+.cm-spotlight-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--duration-base) var(--ease-premium),
+              border-color var(--duration-base) var(--ease-premium),
+              box-shadow var(--duration-base) var(--ease-premium);
+}
+
+.cm-spotlight-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    600px circle at var(--mx, -1000px) var(--my, -1000px),
+    rgba(212, 103, 63, 0.12),
+    transparent 65%
+  );
+  transition: opacity var(--duration-base) var(--ease-premium);
+  z-index: 1;
+}
+
+.cm-spotlight-card:hover::before {
+  opacity: 1;
+}
+
+.cm-spotlight-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Floating chips drifting animation */
+@keyframes cmDriftUp {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes cmDriftDown {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+
+.cm-drift-1 {
+  animation: cmDriftUp 6.5s ease-in-out infinite;
+}
+
+.cm-drift-2 {
+  animation: cmDriftDown 7.5s ease-in-out infinite;
+}
+
+/* Window lighting up sequence for campus SVG */
+@keyframes cmWindowGlow {
+  0%, 100% {
+    opacity: 0.15;
+    fill: #ffffff;
+  }
+  50% {
+    opacity: 0.95;
+    fill: #ffd299;
+  }
+}
+
+.cm-win-1 {
+  animation: cmWindowGlow 4s var(--ease-premium) infinite;
+}
+.cm-win-2 {
+  animation: cmWindowGlow 4s var(--ease-premium) 0.6s infinite;
+}
+.cm-win-3 {
+  animation: cmWindowGlow 4s var(--ease-premium) 1.2s infinite;
+}
+.cm-win-4 {
+  animation: cmWindowGlow 4s var(--ease-premium) 1.8s infinite;
+}
+
+/* Button arrow slide on hover */
+.cm-btn-arrow {
+  transition: transform var(--duration-fast) var(--ease-premium);
+}
+
+button:hover .cm-btn-arrow,
+a:hover .cm-btn-arrow {
+  transform: translateX(4px);
+}
+
+/* Button press scale 0.98 */
+.cm-btn-press {
+  transition: transform var(--duration-fast) var(--ease-premium);
+}
+
+.cm-btn-press:active {
+  transform: scale(0.98);
+}
+
+/* Pause animations when off-screen or when reduced-motion is requested */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .cm-spotlight-card:hover {
+    transform: none !important;
+  }
+
+  .cm-drift-1,
+  .cm-drift-2,
+  .cm-win-1,
+  .cm-win-2,
+  .cm-win-3,
+  .cm-win-4 {
+    animation: none !important;
+  }
+}
