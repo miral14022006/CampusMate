@@ -274,7 +274,7 @@ export default function Chat() {
 
 function ChatHeader({ onOpenMobile, onNewChat }) {
   return (
-    <header className="flex h-16 shrink-0 items-center gap-3 border-b border-hairline bg-app px-4 backdrop-blur sm:px-6">
+    <header className="relative z-30 flex h-16 shrink-0 items-center gap-3 border-b border-hairline bg-app px-4 backdrop-blur sm:px-6">
       <button
         type="button"
         onClick={onOpenMobile}

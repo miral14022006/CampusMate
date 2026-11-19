@@ -8,7 +8,7 @@ import { useOnClickOutside } from '../../lib/hooks';
 import { popover } from '../../lib/motion';
 import { cn } from '../../lib/cn';
 
-export function StudentMenu({ collapsed = false, align = 'end', className = '' }) {
+export function StudentMenu({ collapsed = false, align = 'end', className = '', dropUp = false }) {
   const { user, isAuthenticated, isGuest, logout } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -111,7 +111,8 @@ export function StudentMenu({ collapsed = false, align = 'end', className = '' }
             onMouseDown={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
             className={cn(
-              'absolute z-50 mt-2 w-56 overflow-hidden rounded-md border border-hairline bg-surface-1 p-1.5 shadow-lift',
+              'absolute z-50 w-56 overflow-hidden rounded-md border border-hairline bg-surface-1 p-1.5 shadow-lift',
+              dropUp ? 'bottom-full mb-2' : 'mt-2',
               align === 'end' ? 'right-0' : 'left-0'
             )}
           >

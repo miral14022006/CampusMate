@@ -209,9 +209,9 @@ export function Sidebar({
           </nav>
 
           {/* Footer Area */}
-          <div className={cn('space-y-2 border-t border-hairline px-3 py-3', collapsed && 'px-2')}>
+          <div className={cn('relative z-20 space-y-2 border-t border-hairline px-3 py-3', collapsed && 'px-2')}>
             {variant === 'chat' ? (
-              <StudentMenu collapsed={collapsed} />
+              <StudentMenu collapsed={collapsed} dropUp={true} align={collapsed ? 'start' : 'end'} />
             ) : null}
             {/* Anonymous Student Admin Link or Admin User Badge */}
             {variant === 'admin' && !collapsed && !isAdmin && (
