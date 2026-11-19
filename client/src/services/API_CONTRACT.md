@@ -219,6 +219,63 @@ Legacy fallback admin route `POST /api/admin/login` remains available during mig
 | GET | `/health` | none | – | `{ status: "ok", service, mongo: "connected"\|"disconnected" }` |
 | POST | `/api/legacy/chat` | none | legacy body | legacy shape (not used by the UI) |
 
+### Activity beacons (Feature 17)
+
+| Method | Path | Auth | Request | Response |
+|---|---|---|---|---|
+| POST | `/api/activity/page-view` | optional Bearer / `X-Client-Id` | `{ path? }` | `202 { success: true }` |
+| POST | `/api/activity/calendar-add` | optional | `{ eventId?, sourceDocId?, category?, semester?, page?, conversationId? }` | `202 { success: true, id? }` |
+| POST | `/api/activity/event` | optional | `{ type: "page_view"\|"calendar_add"\|"document_view", meta? }` | `202 { success: true }` or `400` for unsupported types |
+
+### Dashboard (Feature 11)
+
+All routes require an admin/superadmin Bearer token. `:type` is one of
+`activity`, `chats`, `documents`, `students`.
+
+| Method | Path | Request | Response |
+|---|---|---|---|
+| GET | `/api/admin/dashboard/overview` | query: `range?`, `includeDemo?` | KPI/chart object (same shape as analytics overview) |
+| GET | `/api/admin/dashboard/students` | query: `page?`, `limit?`, `search?`, `includeDemo?` | paginated student usage |
+| PATCH | `/api/admin/dashboard/students/:id/status` | `{ status }` | updated student status |
+| GET | `/api/admin/dashboard/students/:id/usage` | – | per-student usage detail |
+| GET | `/api/admin/dashboard/documents` | query filters | document health table |
+| GET | `/api/admin/dashboard/chats` | query: `page?`, `limit?`, `search?`, `language?` | paginated chat log |
+| GET | `/api/admin/dashboard/chats/:id` | – | chat transcript |
+| GET | `/api/admin/dashboard/activity` | query: `page?`, `limit?`, `type?`, `from?`, `to?` | paginated activity events |
+| GET | `/api/admin/dashboard/:type/export` | `type` = `activity`/`chats`/`documents`/`students`; same query filters | `text/csv` attachment |
+
+Legacy `/api/admin/analytics/overview` and `/api/admin/analytics/export-csv` remain as documented compatibility aliases for the dashboard aggregation endpoints.
+
+### Public documents (Feature 18)
+
+| Method | Path | Auth | Response |
+|---|---|---|---|
+| GET | `/api/documents` | optional | approved public document catalog |
+| GET | `/api/documents/:id` | optional | document metadata |
+| GET | `/api/documents/:id/file` | optional | file stream / signed URL |
+
+### Auth config and invitations
+
+| Method | Path | Auth | Response |
+|---|---|---|---|
+| GET | `/api/auth/config` | none | `{ signupEnabled, guestMode, allowedDomains }` |
+| GET | `/api/auth/invite/:token` | none | invite metadata or `404` when expired/used |
+| POST | `/api/auth/sessions/sign-out-others` | Bearer | revokes all sessions except the current one |
+| DELETE | `/api/admin/team/invites/:id` | superadmin | revokes a pending invite |
+
+### Legacy aliases
+
+The following aliases are retained for compatibility and are covered by the same
+handlers/tests as their canonical routes:
+
+| Alias | Canonical |
+|---|---|
+| `POST /api/admin/login` | `POST /api/admin/auth/login` |
+| `/api/admin/auth/team*` | `/api/admin/team*` |
+| `/api/admin/auth/audit` | `/api/admin/audit` |
+| `POST /api/legacy/chat` / `POST /api/legacy/chat/message` | `POST /api/chat` (legacy shape) |
+| `/api/feedback/queue`, `/api/feedback/export`, `/api/feedback/:id/review` | `/api/admin/feedback/*` |
+
 ## UI mapping
 
 | UI need | Endpoint |
@@ -239,7 +296,7 @@ Legacy fallback admin route `POST /api/admin/login` remains available during mig
 
 ## Backend gaps (UI needs, backend does not provide)
 
-1. **Document detail / chunk listing** — no `GET /api/admin/documents/:id`; chunk details only exist as `chunk_count` on the list.
+1. **Admin document detail / chunk listing** — public `GET /api/documents/:id` exists, but there is no admin-scoped chunk-detail endpoint; chunk details only exist as `chunk_count` on the admin list.
 2. **Admin logout** — JWT is stateless; no revoke endpoint. The client clears the token locally.
 3. **Admin profile / settings** — no `GET/PATCH /api/admin/me` or preferences API; profile name/email and language are local-only.
 4. **Cache entry listing** — only aggregate stats and a flush call; no keys/values endpoint (the Cache page states this explicitly).
@@ -264,5 +321,9 @@ Legacy fallback admin route `POST /api/admin/login` remains available during mig
 | `VITE_API_BASE_URL` | default `/api` |
 | `VITE_GATEWAY_URL` | Vite dev proxy target, default `http://localhost:5000` |
 | `VITE_NLP_URL` | optional `/nlp` dev proxy target |
-| `VITE_STUDENT_PORTAL_URL` | sidebar "Student Portal / PDEU" link |
 | `VITE_API_TIMEOUT_MS` | default 20000 |
+| `VITE_STUDENT_PORTAL_URL` | optional Student Portal link (hidden when empty) |
+| `VITE_HELPDESK_EMAIL` / `VITE_HELPDESK_PHONE` / `VITE_HELPDESK_HOURS` / `VITE_CAMPUS_ADDRESS` | verified helpdesk details; hidden when empty |
+| `VITE_FEATURE_CALENDAR` | show calendar navigation |
+| `VITE_FEATURE_CALENDAR_GOOGLE_OAUTH` | enable optional Google OAuth controls |
+| `VITE_FEATURE_SCENE_SNAP` | landing-page scene snapshots |

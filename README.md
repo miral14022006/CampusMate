@@ -132,8 +132,6 @@ If you use Docker for the backend (`:5000`), the default in `.env.example` is co
 | `VITE_CAMPUS_ADDRESS` | empty | Verified campus address; hidden when empty |
 | `VITE_FEATURE_CALENDAR` | `true` | Show calendar navigation and routes |
 | `VITE_FEATURE_CALENDAR_GOOGLE_OAUTH` | `false` | Enable Google Calendar OAuth |
-| `VITE_FEATURE_ANALYTICS` | `true` | Show analytics surfaces |
-| `VITE_FEATURE_FEEDBACK` | `true` | Show feedback controls |
 | `VITE_FEATURE_SCENE_SNAP` | `false` | Landing-page scene snapshots |
 
 Environment values are baked in at build time. For container builds, either edit `client/.env.production` or pass them as build arguments. Placeholder contact data is never shipped: empty values are hidden in the UI.
