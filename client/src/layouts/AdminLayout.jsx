@@ -1,19 +1,22 @@
 import { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Menu, ChevronRight, LogOut, Shield } from 'lucide-react';
-import Sidebar from './Sidebar';
-import Logo from '../components/brand/Logo';
+import { Menu, ChevronRight, LogOut } from 'lucide-react';
+import AdminSidebar from './AdminSidebar';
 import AnimatedOutlet from '../components/AnimatedOutlet';
-import AdminTabsNav from './nav/AdminTabsNav';
+import DashboardFilters from '../features/admin/dashboard/DashboardFilters';
 import { useAdminAuth } from '../context/AuthContext';
 
 const CRUMBS = {
   '/admin': 'Dashboard',
+  '/admin/dashboard': 'Dashboard',
+  '/admin/students': 'Students',
   '/admin/documents': 'Documents',
-  '/admin/analytics': 'Analytics',
-  '/admin/feedback': 'Review Queue',
-  '/admin/cache': 'Cache & Latency',
-  '/admin/settings': 'Settings'
+  '/admin/chats': 'Chats',
+  '/admin/activity': 'Activity',
+  '/admin/review': 'Review Queue',
+  '/admin/dates': 'Dates & Events',
+  '/admin/team': 'Administrative Team',
+  '/admin/audit': 'Security Audit Log'
 };
 
 export function AdminLayout() {
@@ -31,11 +34,13 @@ export function AdminLayout() {
   };
 
   const crumb = CRUMBS[location.pathname] || 'Dashboard';
+  const displayName = user?.name || user?.username || user?.email || 'Staff';
+  const roleLabel = user?.role === 'superadmin' ? 'Superadmin' : 'Admin';
 
   return (
     <div className="flex min-h-screen bg-app">
-      <Sidebar
-        variant="admin"
+      {/* Dedicated Left Admin Navigation Panel */}
+      <AdminSidebar
         collapsed={collapsed}
         onToggleCollapse={handleToggleCollapse}
         mobileOpen={mobileOpen}
@@ -43,7 +48,7 @@ export function AdminLayout() {
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Top bar with Breadcrumbs, Live Status pill, Theme & User Menu */}
+        {/* Top Header Bar */}
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-hairline bg-app/90 px-4 backdrop-blur sm:px-6">
           <div className="flex items-center gap-3">
             <button
@@ -57,7 +62,7 @@ export function AdminLayout() {
 
             {/* Breadcrumbs */}
             <nav aria-label="Breadcrumbs" className="flex items-center gap-1.5 text-xs">
-              <Link to="/admin" className="font-semibold text-ink-muted hover:text-ink">
+              <Link to="/admin/dashboard" className="font-semibold text-ink-muted hover:text-ink">
                 Admin
               </Link>
               <ChevronRight className="h-3.5 w-3.5 text-ink-muted" />
@@ -74,12 +79,16 @@ export function AdminLayout() {
 
             {/* User Profile info and logout */}
             <div className="flex items-center gap-2 border-l border-hairline pl-3 text-xs">
-              <span className="hidden md:inline font-medium text-ink truncate max-w-[120px]">
-                {user?.username || 'Staff'}
+              <span className="hidden text-right md:block">
+                <span className="block max-w-[150px] truncate text-[11.5px] font-semibold text-ink">{displayName}</span>
+                <span className="block text-[9.5px] uppercase tracking-[0.08em] text-ink-muted">{roleLabel}</span>
               </span>
               <button
                 type="button"
-                onClick={logout}
+                onClick={async () => {
+                  await logout();
+                  window.location.assign('/admin/login');
+                }}
                 className="rounded-full p-1.5 text-ink-muted hover:bg-negative-soft hover:text-[color:var(--negative)] transition-colors"
                 aria-label="Logout from administrative console"
               >
@@ -89,11 +98,11 @@ export function AdminLayout() {
           </div>
         </header>
 
-        {/* Admin Tabs Bar */}
-        <AdminTabsNav />
+        {/* Global Dashboard Filters */}
+        <DashboardFilters />
 
-        {/* Content View */}
-        <main className="mx-auto w-full max-w-[1360px] flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8" id="main-content">
+        {/* Main Routed Admin Content */}
+        <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-8" id="main-content">
           <AnimatedOutlet />
         </main>
       </div>

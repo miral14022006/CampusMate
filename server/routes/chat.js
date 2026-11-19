@@ -9,7 +9,7 @@ const { logImplicitFailureIfNeeded } = require('../features/f10_feedback');
 const { logQueryAnalytics } = require('../features/f11_analytics');
 const { PersistentConversation } = require('../features/f00_history');
 const { optionalAuth } = require('../features/f16_auth');
-const { recordInBackground } = require('../features/f17_activity');
+const { recordInBackground } = require('../features/f17_activity/activityService');
 
 const router = express.Router();
 
@@ -94,7 +94,8 @@ const handleChat = async (req, res) => {
         sessionId,
         sender: 'user',
         text: query,
-        language: nlpData.language
+        language: nlpData.language,
+        channel: 'web'
       });
 
       const assistantMsg = await Message.create({
@@ -102,6 +103,7 @@ const handleChat = async (req, res) => {
         sender: 'assistant',
         text: nlpData.answer,
         language: nlpData.language,
+        channel: 'web',
         intent: nlpData.intent,
         confidence: nlpData.confidence,
         sourceDoc: nlpData.source_doc,
@@ -127,6 +129,7 @@ const handleChat = async (req, res) => {
         query: query.trim(),
         normalizedQuery: query.trim().toLowerCase().replace(/[^\w\s]/g, ''),
         language: nlpData.language || 'en',
+        channel: 'web',
         intent: nlpData.intent || 'unknown',
         confidence: nlpData.confidence || 0.0,
         sourceDoc: nlpData.source_doc || null,
@@ -144,7 +147,7 @@ const handleChat = async (req, res) => {
         { sessionId },
         {
           $inc: { messageCount: 2 },
-          $set: { dominantLanguage: nlpData.language, lastActivity: new Date() }
+          $set: { dominantLanguage: nlpData.language, channel: 'web', lastActivity: new Date() }
         },
         { upsert: true, new: true }
       );

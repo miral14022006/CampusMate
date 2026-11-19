@@ -24,6 +24,7 @@ import { Tooltip } from '../components/ui/Tooltip';
 import { useToast } from '../components/ui/Toast';
 import { UploadDialog } from '../features/admin/UploadDialog';
 import { DatesReview } from '../features/admin/DatesReview';
+import DashboardDocuments from '../features/admin/dashboard/DashboardDocuments';
 import { api } from '../services/api';
 import { useDocumentTitle } from '../lib/hooks';
 import { formatDate, formatNumber } from '../lib/format';
@@ -73,11 +74,17 @@ export default function Documents() {
   const [status, setStatus] = useState('all');
   const [uploadOpen, setUploadOpen] = useState(false);
   const [viewing, setViewing] = useState(null);
-  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') === 'dates' ? 'dates' : 'documents');
+  const [activeTab, setActiveTab] = useState(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'dates') return 'dates';
+    if (tab === 'usage') return 'usage';
+    return 'documents';
+  });
 
   useEffect(() => {
     const tab = searchParams.get('tab');
     if (tab === 'dates') setActiveTab('dates');
+    else if (tab === 'usage') setActiveTab('usage');
     else if (!tab) setActiveTab('documents');
   }, [searchParams]);
 
@@ -180,6 +187,18 @@ export default function Documents() {
         </button>
         <button
           type="button"
+          onClick={() => switchTab('usage')}
+          className={cn(
+            'pb-2.5 transition-colors border-b-2 font-medium',
+            activeTab === 'usage'
+              ? 'border-accent text-accent font-semibold'
+              : 'border-transparent text-ink-muted hover:text-ink'
+          )}
+        >
+          Usage
+        </button>
+        <button
+          type="button"
           onClick={() => switchTab('dates')}
           className={cn(
             'pb-2.5 transition-colors border-b-2 flex items-center gap-1.5 font-medium',
@@ -195,6 +214,8 @@ export default function Documents() {
 
       {activeTab === 'dates' ? (
         <DatesReview />
+      ) : activeTab === 'usage' ? (
+        <DashboardDocuments />
       ) : (
         <>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

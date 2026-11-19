@@ -41,7 +41,7 @@ services:
         limits:
           memory: 256M
 
-  # 3. Node.js API Gateway & Telegram Bot
+  # 3. Node.js API Gateway
   server:
     build:
       context: ./server
@@ -56,8 +56,6 @@ services:
       - NLP_SERVICE_URL=http://nlp-service:8000
       - NLP_SERVICE_API_KEY=${NLP_SERVICE_API_KEY}
       - JWT_SECRET=${JWT_SECRET}
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TELEGRAM_WEBHOOK_URL=${TELEGRAM_WEBHOOK_URL}
       - CORS_ORIGIN=${CORS_ORIGIN}
     depends_on:
       - nlp-service

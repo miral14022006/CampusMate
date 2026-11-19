@@ -1,13 +1,11 @@
-# Feature 13: Public Deployment & Telegram Bot Front End
+# Feature 13: Public Deployment
 
 ## 1. Architecture Overview
 
 ```mermaid
 flowchart TD
-    subgraph Clients ["Client Ingestion Channels"]
+    subgraph Clients ["Client"]
         WebUser["Student (React Web App)"]
-        TelegramUser["Student (Telegram App)"]
-        WhatsAppUser["Student (WhatsApp - Stub)"]
     end
 
     subgraph EdgeProxy ["Edge Reverse Proxy & Security"]
@@ -16,8 +14,7 @@ flowchart TD
 
     subgraph NodeGateway ["Node.js API Gateway (Express)"]
         Security["Security Middleware: Helmet + CORS + Input Limits"]
-        ChannelRouter["Channel Dispatcher (web | telegram | whatsapp)"]
-        TgBot["TelegramBotManager (Webhook / Long Polling)"]
+        ChatAPI["Chat, History & Admin APIs"]
         RedisCache["Redis (ioredis Cache & Dialogue TTL)"]
     end
 
@@ -33,15 +30,12 @@ flowchart TD
     end
 
     WebUser -->|HTTPS| Nginx
-    TelegramUser -->|Telegram Webhook| Nginx
-    WhatsAppUser -.->|Webhook Stub| Nginx
 
     Nginx --> Security
-    Security --> ChannelRouter
-    TgBot --> ChannelRouter
-    ChannelRouter <--> RedisCache
-    ChannelRouter -->|REST /v1/query| NLPService
-    ChannelRouter --> Atlas
+    Security --> ChatAPI
+    ChatAPI <--> RedisCache
+    ChatAPI -->|REST /v1/query| NLPService
+    ChatAPI --> Atlas
     RedisCache <--> RedisDB
 ```
 
@@ -60,7 +54,7 @@ flowchart TD
    - Root directory: `server/`
    - Build command: `npm install`
    - Start command: `node server.js`
-   - Add environment variables: `MONGODB_URI`, `REDIS_URL`, `NLP_SERVICE_URL`, `TELEGRAM_BOT_TOKEN`, `JWT_SECRET`, `CORS_ORIGIN`.
+   - Add environment variables: `MONGODB_URI`, `REDIS_URL`, `NLP_SERVICE_URL`, `JWT_SECRET`, `CORS_ORIGIN`.
 
 3. **FastAPI NLP Service (Render / Railway)**:
    - Root directory: `nlp-service/`
@@ -86,31 +80,11 @@ flowchart TD
 | `NLP_SERVICE_URL` | Internal URL to Python FastAPI service | `http://nlp-service:8000` |
 | `NLP_SERVICE_API_KEY` | Shared secret header between gateway & NLP | `super-secret-key-123` |
 | `JWT_SECRET` | Signing secret for admin authentication | `your-jwt-production-secret` |
-| `TELEGRAM_BOT_TOKEN` | Bot API token obtained from @BotFather | `123456789:ABCdefGhIJKlmNoPQRstuVWXyz` |
-| `TELEGRAM_WEBHOOK_URL` | Public HTTPS domain for Telegram webhook | `https://campus-mate.example.edu` |
 | `CORS_ORIGIN` | Allowed web origins | `https://campus-mate.vercel.app` |
 
 ---
 
-## 4. Telegram Bot Features
-
-The Telegram integration is embedded directly into the Node server:
-- **Commands**:
-  - `/start`: Welcome message with language guide.
-  - `/help`: Example questions across all 5 language styles.
-  - `/language`: Multilingual typing instructions.
-  - `/reset`: Clears session history and dialogue memory.
-- **Natural Language Inquiry**:
-  - Automatically queries the core pipeline preserving multi-turn context (Feature 06).
-  - Formats citations (`[1] Notice (Page 2)`) (Feature 04).
-  - Displays inline quick-reply buttons on ambiguity (`CLARIFY`) (Feature 05).
-  - Displays inline thumbs up 👍 and thumbs down 👎 buttons to capture real student feedback into the Feature 10 review queue.
-- **Protection**:
-  - Built-in per-user sliding window rate limiter (max 20 requests/minute).
-
----
-
-## 5. Security & Monitoring
+## 4. Security & Monitoring
 
 - **Security Stack**:
   - `helmet`: Protects HTTP headers against clickjacking, MIME-sniffing, and XSS.
@@ -119,14 +93,11 @@ The Telegram integration is embedded directly into the Node server:
   - Strict JWT protection on `/api/admin/*` routes.
 - **Monitoring & Healthchecks**:
   - `GET /health`: Returns gateway status and MongoDB connection state.
-  - `GET /api/telegram/status`: Returns status of Telegram bot and WhatsApp channel adapter.
   - Production smoke test suite: `deploy/smoke_test.sh <URL>`.
 
 ---
 
-## 6. Live Deploy Placeholders
+## 5. Live Deploy Placeholders
 
 - **Web App Live URL**: `https://campus-mate-assistant.vercel.app` *(Placeholder)*
 - **API Gateway URL**: `https://api.campus-mate.example.edu` *(Placeholder)*
-- **Telegram Bot Username**: `@CampusMateCollegeBot` *(Placeholder)*
-

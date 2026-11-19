@@ -10,8 +10,8 @@ const { generateAccessToken, generateRefreshToken } = require('../authUtils');
 
 // Helper to clean collections if mongo is connected
 async function clearCollections() {
-  if (mongoose.connection && mongoose.connection.readyState === 1) {
-    await User.deleteMany({});
+  if (User.db && User.db.readyState === 1) {
+    await User.deleteMany({ email: /pdeu\.ac\.in/ });
     await SessionFamily.deleteMany({});
     await Invite.deleteMany({});
     await AuditLog.deleteMany({});
@@ -38,13 +38,14 @@ describe('Feature 16: Authentication & Roles Test Suite', () => {
       await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 3000 }).catch(() => {});
     }
 
+    // Clean test fixture emails
+    await clearCollections();
+
     // Create fixture users
     const salt = await bcrypt.genSalt(12);
     const pwdHash = await bcrypt.hash('CorrectHorseBattery99!', salt);
 
-    if (mongoose.connection && mongoose.connection.readyState === 1) {
-      await clearCollections();
-
+    if (User.db && User.db.readyState === 1) {
       superadminUser = await User.create({
         name: 'Super Admin',
         email: 'superadmin@pdeu.ac.in',

@@ -19,6 +19,10 @@ const MessageSchema = new mongoose.Schema({
     type: String,
     default: 'en'
   },
+  channel: {
+    type: String,
+    default: 'web'
+  },
   intent: {
     type: String,
     default: null

@@ -4,7 +4,7 @@ const Feedback = require('../../models/Feedback');
 const { requireAdminAuth } = require('../f08_admin');
 const { recordAuditLog } = require('../f16_auth/auditService');
 const { optionalAuth } = require('../f16_auth');
-const { recordInBackground } = require('../f17_activity');
+const { recordInBackground } = require('../f17_activity/activityService');
 
 // In-memory fallback repository when MongoDB is in transient/offline mode
 const memoryFeedbackStore = [];

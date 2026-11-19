@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 const User = require('../../features/f16_auth/models/User');
 const ActivityEvent = require('../f17_activity/models/ActivityEvent');
-const { memoryEvents } = require('../f17_activity');
+const { memoryEvents } = require('../f17_activity/activityService');
 const Document = require('../../models/Document');
 const PersistentConversation = require('../f00_history/conversationModel');
 const Message = require('../../models/Message');
@@ -253,7 +253,7 @@ async function topDocuments(match, limit = 6) {
     : [];
 }
 
-async function recentActivity(limit = 12) {
+async function recentActivity(limit = 12, role = 'admin') {
   if (!dbReady(ActivityEvent)) {
     return memoryEvents
       .slice(-limit)
@@ -278,7 +278,9 @@ async function recentActivity(limit = 12) {
     type: row.type,
     actorType: row.actorType,
     createdAt: row.createdAt,
-    userName: row.userId ? maskName(byId.get(String(row.userId))?.name) : null,
+    userName: row.userId
+      ? identityFor(byId.get(String(row.userId)) || { name: 'Student' }, role).name
+      : null,
     meta: row.meta
   }));
 }
@@ -321,7 +323,7 @@ async function buildOverview(req) {
     queryStats(previous, includeDemo),
     semesterBreakdown(match),
     topDocuments(match),
-    recentActivity()
+    recentActivity(12, req.user?.role)
   ]);
 
   const registered = dbReady(User)
@@ -775,17 +777,29 @@ router.get('/documents', async (req, res) => {
 });
 
 async function buildChats(req) {
-  const { range } = dateFilters(req);
+  const { range, includeDemo } = dateFilters(req);
   const page = Math.max(Number(req.query.page) || 1, 1);
   const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
   const search = String(req.query.search || '').trim();
-  const match = { updatedAt: { $gte: range.from, $lte: range.to } };
+  const match = {
+    updatedAt: { $gte: range.from, $lte: range.to },
+    ...(includeDemo === 'only' ? { isDemo: true } : includeDemo === 'true' ? {} : { isDemo: { $ne: true } })
+  };
   if (search) {
     const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
     match.$or = [{ title: rx }, { lastMessagePreview: rx }];
   }
-  if (req.query.language && req.query.language !== 'all') {
-    match.dominantLanguage = req.query.language;
+
+  const filters = [];
+  if (req.query.language && req.query.language !== 'all') filters.push({ language: req.query.language });
+  if (req.query.intent && req.query.intent !== 'all') filters.push({ intent: req.query.intent });
+  if (req.query.fallback === 'true' || req.query.fallback === true) filters.push({ fallback: true });
+  if (req.query.feedback && req.query.feedback !== 'all') {
+    filters.push(
+      req.query.feedback === 'none'
+        ? { feedback: null }
+        : { 'feedback.rating': req.query.feedback }
+    );
   }
 
   const pipeline = [
@@ -806,6 +820,7 @@ async function buildChats(req) {
         feedback: { $ifNull: [{ $first: { $filter: { input: '$analytics', as: 'a', cond: { $ne: ['$$a.rating', null] } } } }, null] }
       }
     },
+    ...(filters.length ? [{ $match: { $and: filters } }] : []),
     { $sort: { updatedAt: -1 } },
     { $facet: { data: [{ $skip: (page - 1) * limit }, { $limit: limit }], meta: [{ $count: 'total' }] } }
   ];
@@ -813,14 +828,8 @@ async function buildChats(req) {
   const result = dbReady(PersistentConversation)
     ? await PersistentConversation.aggregate(pipeline)
     : [[{ data: [], meta: [] }]];
-  let rows = result[0]?.data || [];
+  const rows = result[0]?.data || [];
   const total = result[0]?.meta?.[0]?.total || 0;
-
-  if (req.query.intent && req.query.intent !== 'all') rows = rows.filter((row) => row.intent === req.query.intent);
-  if (req.query.fallback === 'true') rows = rows.filter((row) => row.fallback);
-  if (req.query.feedback && req.query.feedback !== 'all') {
-    rows = rows.filter((row) => (row.feedback?.rating || 'none') === req.query.feedback);
-  }
 
   const userIds = rows.map((row) => row.userId).filter((id) => mongoose.isValidObjectId(id));
   const users = userIds.length ? await User.find({ _id: { $in: userIds } }).select('name email role').lean() : [];
@@ -859,7 +868,28 @@ router.get('/chats', async (req, res) => {
   }
 });
 
+async function sendChatsCsv(req, res) {
+  try {
+    req.query.limit = 100;
+    req.query.page = 1;
+    const result = await buildChats(req);
+    const isSuper = req.user?.role === 'superadmin';
+    const headers = isSuper
+      ? ['Conversation', 'Student', 'Email', 'Language', 'Intent', 'Fallback', 'Feedback', 'Messages', 'Updated']
+      : ['Conversation', 'Language', 'Intent', 'Fallback', 'Feedback', 'Messages', 'Updated'];
+    const rows = result.chats.map((chat) =>
+      isSuper
+        ? [chat.title, chat.identity.name, chat.identity.email, chat.language, chat.intent, chat.fallback, chat.feedback, chat.messageCount, chat.updatedAt]
+        : [chat.title, chat.language, chat.intent, chat.fallback, chat.feedback, chat.messageCount, chat.updatedAt]
+    );
+    return sendCsv(res, 'chats.csv', toCsv(headers, rows));
+  } catch (err) {
+    return res.status(500).json({ error: 'Could not export chats.' });
+  }
+}
+
 router.get('/chats/:id', async (req, res) => {
+  if (req.params.id === 'export') return sendChatsCsv(req, res);
   try {
     if (!dbReady(PersistentConversation)) return res.status(404).json({ error: 'Conversation not found.' });
     const conversation = await PersistentConversation.findOne({ sessionId: req.params.id }).lean()
@@ -1002,25 +1032,7 @@ router.get('/documents/export', async (req, res) => {
   }
 });
 
-router.get('/chats/export', async (req, res) => {
-  try {
-    req.query.limit = 100;
-    req.query.page = 1;
-    const result = await buildChats(req);
-    const isSuper = req.user?.role === 'superadmin';
-    const headers = isSuper
-      ? ['Conversation', 'Student', 'Email', 'Language', 'Intent', 'Fallback', 'Feedback', 'Messages', 'Updated']
-      : ['Conversation', 'Language', 'Intent', 'Fallback', 'Feedback', 'Messages', 'Updated'];
-    const rows = result.chats.map((chat) =>
-      isSuper
-        ? [chat.title, chat.identity.name, chat.identity.email, chat.language, chat.intent, chat.fallback, chat.feedback, chat.messageCount, chat.updatedAt]
-        : [chat.title, chat.language, chat.intent, chat.fallback, chat.feedback, chat.messageCount, chat.updatedAt]
-    );
-    return sendCsv(res, 'chats.csv', toCsv(headers, rows));
-  } catch (err) {
-    return res.status(500).json({ error: 'Could not export chats.' });
-  }
-});
+router.get('/chats/export', sendChatsCsv);
 
 router.get('/activity/export', async (req, res) => {
   try {

@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Copy, FileText, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { Check, Copy, FileText, ThumbsDown, ThumbsUp, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Logo from '../../components/brand/Logo';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
@@ -69,6 +70,7 @@ const MARKDOWN_COMPONENTS = {
 function CitationChip({ citation, index }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const navigate = useNavigate();
   useOnClickOutside(ref, () => setOpen(false), open);
 
   useEffect(() => {
@@ -82,6 +84,26 @@ function CitationChip({ citation, index }) {
 
   const docLabel = citation.doc_name || citation.docName || `Source ${index + 1}`;
   const page = citation.page ?? citation.page_number;
+  const docId =
+    citation.docId ||
+    citation.doc_id ||
+    citation.documentId ||
+    citation.document_id ||
+    citation.doc_name ||
+    citation.docName;
+  const viewerPath = docId
+    ? `/documents/${encodeURIComponent(docId)}${page ? `?page=${encodeURIComponent(page)}` : ''}`
+    : null;
+
+  const openDocument = () => {
+    if (!viewerPath) return;
+    if (typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches) {
+      window.open(viewerPath, '_blank', 'noopener,noreferrer');
+    } else {
+      navigate(viewerPath);
+    }
+    setOpen(false);
+  };
 
   return (
     <span ref={ref} className="relative inline-flex">
@@ -121,13 +143,25 @@ function CitationChip({ citation, index }) {
             <p className="mt-1.5 max-h-40 overflow-y-auto text-[11.5px] leading-relaxed text-ink-secondary">
               {citation.snippet || citation.text || 'No preview text is available for this citation.'}
             </p>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="mt-2 text-[10.5px] font-semibold text-accent hover:underline"
-            >
-              Close
-            </button>
+            <div className="mt-2 flex items-center justify-between gap-2">
+              {viewerPath ? (
+                <button
+                  type="button"
+                  onClick={openDocument}
+                  className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-accent hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                  Open document{page ? ` at page ${page}` : ''}
+                </button>
+              ) : <span />}
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="text-[10.5px] font-semibold text-ink-muted hover:text-ink hover:underline"
+              >
+                Close
+              </button>
+            </div>
           </motion.div>
         ) : null}
       </AnimatePresence>

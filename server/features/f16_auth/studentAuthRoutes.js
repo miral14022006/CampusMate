@@ -21,7 +21,7 @@ const {
 const { requireAuth, requireRole, optionalAuth } = require('./authMiddleware');
 const { recordAuditLog } = require('./auditService');
 const { sendInviteEmail } = require('./emailService');
-const { recordInBackground } = require('../f17_activity');
+const { recordInBackground } = require('../f17_activity/activityService');
 
 const router = express.Router();
 
@@ -50,13 +50,15 @@ function clearRefreshTokenCookie(res) {
 }
 
 // Rate limiters for auth endpoints
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests. Please try again later.' }
-});
+const authLimiter = process.env.NODE_ENV === 'production'
+  ? rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 100,
+      standardHeaders: true,
+      legacyHeaders: false,
+      message: { error: 'Too many requests. Please try again later.' }
+    })
+  : (req, res, next) => next();
 
 const signupSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -487,6 +489,27 @@ router.get('/sessions', requireAuth, async (req, res) => {
 });
 
 /**
+ * POST /api/auth/sessions/sign-out-others
+ * Revokes every session family except the one used by the current browser.
+ */
+router.post('/sessions/sign-out-others', requireAuth, async (req, res) => {
+  const rawRefreshToken = req.cookies?.refreshToken;
+  const tokenHash = rawRefreshToken ? hashToken(rawRefreshToken) : null;
+  const current = tokenHash
+    ? await SessionFamily.findOne({ tokenHash, userId: req.user._id }).lean()
+    : null;
+
+  const filter = { userId: req.user._id, isRevoked: false };
+  if (current?.familyId) filter.familyId = { $ne: current.familyId };
+  const result = await SessionFamily.updateMany(filter, { isRevoked: true });
+  return res.json({
+    success: true,
+    revoked: result.modifiedCount || 0,
+    message: 'Other devices have been signed out.'
+  });
+});
+
+/**
  * DELETE /api/auth/sessions/:id
  */
 router.delete('/sessions/:id', requireAuth, async (req, res) => {
@@ -561,6 +584,36 @@ router.post('/claim-guest-history', requireAuth, async (req, res) => {
   } catch (err) {
     return res.status(500).json({ error: `Claim error: ${err.message}` });
   }
+});
+
+/**
+ * GET /api/auth/invite/:token
+ * Validates an invitation without consuming it.
+ */
+router.get('/invite/:token', async (req, res) => {
+  const tokenHash = hashToken(req.params.token);
+  const invite = await Invite.findOne({ tokenHash }).lean();
+  if (!invite) {
+    return res.status(404).json({ status: 'invalid', error: 'This invitation link is not valid.' });
+  }
+  if (invite.used) {
+    return res.status(410).json({ status: 'used', error: 'This invitation has already been used.' });
+  }
+  if (invite.revoked) {
+    return res.status(410).json({ status: 'revoked', error: 'This invitation has been revoked.' });
+  }
+  if (invite.expiresAt < new Date()) {
+    return res.status(410).json({ status: 'expired', error: 'This invitation has expired.' });
+  }
+  return res.json({
+    status: 'valid',
+    invite: {
+      name: invite.name,
+      email: invite.email,
+      role: invite.role,
+      expiresAt: invite.expiresAt
+    }
+  });
 });
 
 /**
@@ -658,6 +711,24 @@ router.post('/invite/accept', async (req, res) => {
   } catch (err) {
     return res.status(500).json({ error: `Invite acceptance error: ${err.message}` });
   }
+});
+
+/**
+ * GET /api/auth/config
+ * Public feature discovery used by the auth screens. No secrets.
+ */
+router.get('/config', (req, res) => {
+  return res.json({
+    guestMode: process.env.GUEST_MODE !== 'false',
+    signupEnabled: process.env.SIGNUP_ENABLED !== 'false',
+    emailResetEnabled: process.env.EMAIL_RESET_ENABLED === 'true',
+    inviteEnabled: true,
+    allowedEmailDomains: (process.env.ALLOWED_EMAIL_DOMAINS || 'pdeu.ac.in,campus.edu')
+      .split(',')
+      .map((domain) => domain.trim())
+      .filter(Boolean),
+    passwordMinLength: 8
+  });
 });
 
 module.exports = router;

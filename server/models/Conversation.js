@@ -15,6 +15,10 @@ const ConversationSchema = new mongoose.Schema({
     type: String,
     default: 'en'
   },
+  channel: {
+    type: String,
+    default: 'web'
+  },
   messageCount: {
     type: Number,
     default: 0

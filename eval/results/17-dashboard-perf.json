@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-11-18T13:08:50.114Z",
+  "dataset": {
+    "eventsCount": 20009
+  },
+  "targetLatencySlaMs": 300,
+  "benchmarks": {
+    "GET /api/admin/dashboard/overview": {
+      "status": 200,
+      "durationMs": 22
+    },
+    "GET /api/admin/dashboard/students": {
+      "status": 200,
+      "durationMs": 22
+    },
+    "GET /api/admin/dashboard/documents": {
+      "status": 200,
+      "durationMs": 19
+    },
+    "GET /api/admin/dashboard/chats": {
+      "status": 200,
+      "durationMs": 21
+    },
+    "GET /api/admin/dashboard/activity": {
+      "status": 200,
+      "durationMs": 19
+    }
+  },
+  "slaPassed": true
+}

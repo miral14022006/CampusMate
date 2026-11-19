@@ -7,13 +7,15 @@ async function recordAuditLog({
   targetType,
   targetId = null,
   meta = {},
-  ip = null
+  ip = null,
+  req = null
 }) {
+  const rawIp = ip || req?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || req?.ip || null;
   try {
     if (!AuditLog.db || AuditLog.db.readyState !== 1) {
       return null;
     }
-    const ipHash = ip ? hashIp(ip) : null;
+    const ipHash = rawIp ? hashIp(rawIp) : null;
     return await AuditLog.create({
       actorId,
       action,

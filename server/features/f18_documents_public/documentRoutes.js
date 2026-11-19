@@ -4,7 +4,7 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 const Document = require('../../models/Document');
 const { optionalAuth } = require('../f16_auth');
-const { recordInBackground } = require('../f17_activity');
+const { recordInBackground } = require('../f17_activity/activityService');
 const { UPLOAD_DIR } = require('../f08_admin/uploadMiddleware');
 
 const router = express.Router();

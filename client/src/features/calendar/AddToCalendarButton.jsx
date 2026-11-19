@@ -42,12 +42,31 @@ export function AddToCalendarButton({ events = [], variant = 'compact' }) {
   const sourcePage = firstEvent.sourcePage || firstEvent.page || 1;
   const tooltipText = `Date taken from ${sourceDoc}, p.${sourcePage}. Check the notice before relying on it.`;
 
+  const trackCalendarAdd = (source) => {
+    if (!firstEvent) return;
+    api.activity
+      .calendarAdd({
+        eventId: firstEvent._id || firstEvent.uid || null,
+        sourceDocId:
+          firstEvent.docId ||
+          firstEvent.documentId ||
+          firstEvent.sourceDocId ||
+          null,
+        page: sourcePage,
+        category: firstEvent.category || firstEvent.type || 'event',
+        semester: firstEvent.semester || null,
+        source
+      })
+      .catch(() => {});
+  };
+
   const handleOpenGoogle = () => {
     // If single event or we open the first
     const gcalUrl = firstEvent.googleCalendarUrl;
     if (gcalUrl) {
       window.open(gcalUrl, '_blank', 'noopener,noreferrer');
     }
+    trackCalendarAdd('google_calendar');
     setClickedGcal(true);
     setOpen(false);
     setTimeout(() => {
@@ -61,6 +80,7 @@ export function AddToCalendarButton({ events = [], variant = 'compact' }) {
     try {
       const res = await api.calendar.oauth.insertDirect(firstEvent._id);
       if (res.success) {
+        trackCalendarAdd('direct_insert');
         setClickedGcal(true);
         setOpen(false);
         setTimeout(() => setClickedGcal(false), 3500);
@@ -81,6 +101,7 @@ export function AddToCalendarButton({ events = [], variant = 'compact' }) {
   };
 
   const handleDownloadIcs = async () => {
+    trackCalendarAdd('ics_download');
     try {
       if (!isMultiple && firstEvent._id) {
         window.open(`/api/calendar/events/${firstEvent._id}.ics`, '_blank');

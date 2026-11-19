@@ -10,6 +10,18 @@ const CLIENT_ID_KEY = 'campusmate_client_id';
 const ADMIN_TOKEN_KEY = 'campusmate_admin_token';
 const ADMIN_USER_KEY = 'campusmate_admin_user';
 
+// The access token lives in memory for the lifetime of the tab. The refresh
+// token is an httpOnly cookie and is never readable from JavaScript.
+let memoryAccessToken = null;
+
+export function setAccessToken(token) {
+  memoryAccessToken = token || null;
+}
+
+export function getAccessToken() {
+  return memoryAccessToken;
+}
+
 export class ApiError extends Error {
   constructor(message, { status = 0, data = null, code = 'API_ERROR' } = {}) {
     super(message);
@@ -39,6 +51,7 @@ export function getClientId() {
 }
 
 export function getAdminToken() {
+  if (memoryAccessToken) return memoryAccessToken;
   try {
     return window.localStorage.getItem(ADMIN_TOKEN_KEY);
   } catch {
@@ -55,6 +68,7 @@ export function getAdminUser() {
 }
 
 export function setAdminSession(token, user) {
+  setAccessToken(token);
   try {
     window.localStorage.setItem(ADMIN_TOKEN_KEY, token);
     window.localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(user || null));
@@ -65,6 +79,7 @@ export function setAdminSession(token, user) {
 }
 
 export function clearAdminSession({ redirect = false } = {}) {
+  setAccessToken(null);
   try {
     window.localStorage.removeItem(ADMIN_TOKEN_KEY);
     window.localStorage.removeItem(ADMIN_USER_KEY);
@@ -105,13 +120,37 @@ function messageFromPayload(payload, fallback) {
   return payload.error || payload.detail || payload.message || fallback;
 }
 
+export async function refreshSession() {
+  try {
+    const response = await fetch(`${BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'X-Client-Id': getClientId() },
+      credentials: 'include'
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (data?.accessToken) {
+      setAccessToken(data.accessToken);
+      window.dispatchEvent(
+        new CustomEvent('campusmate:auth', {
+          detail: { token: data.accessToken, user: data.user || null, reason: 'refresh' }
+        })
+      );
+      return data;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Core request.
  * @param {string} path - path after /api, e.g. "/chat"
  */
 export async function request(
   path,
-  { method = 'GET', body, auth = false, headers, signal, timeout = DEFAULT_TIMEOUT, responseType = 'json' } = {}
+  { method = 'GET', body, auth = false, headers, signal, timeout = DEFAULT_TIMEOUT, responseType = 'json', _retried = false } = {}
 ) {
   const controller = new AbortController();
   const timer = timeout ? setTimeout(() => controller.abort(new DOMException('Request timed out', 'TimeoutError')), timeout) : null;
@@ -129,7 +168,7 @@ export async function request(
       headers: buildHeaders({ auth, body, headers }),
       body: body === undefined || body instanceof FormData ? body : JSON.stringify(body),
       signal: controller.signal,
-      credentials: 'omit'
+      credentials: 'include'
     });
   } catch (err) {
     if (timer) clearTimeout(timer);
@@ -150,9 +189,13 @@ export async function request(
     if (signal) signal.removeEventListener?.('abort', onAbort);
   }
 
-  if (response.status === 401 && auth) {
-    clearAdminSession({ redirect: true });
-    throw new ApiError('Your admin session expired. Please sign in again.', {
+  if (response.status === 401 && auth && !_retried && !path.startsWith('/auth/')) {
+    const refreshed = await refreshSession();
+    if (refreshed?.accessToken) {
+      return request(path, { method, body, auth, headers, signal, timeout, responseType, _retried: true });
+    }
+    clearAdminSession();
+    throw new ApiError('Your session expired. Please sign in again.', {
       status: 401,
       code: 'UNAUTHORIZED'
     });
@@ -244,9 +287,76 @@ function uploadWithProgress(path, formData, { auth = true, onProgress } = {}) {
 export const api = {
   health: () => request('/../health', { timeout: 6000 }).catch(() => null),
 
+  auth: {
+    config: () => request('/auth/config', { timeout: 6000 }),
+    signup: (payload) => request('/auth/signup', { method: 'POST', body: payload, timeout: 15000 }),
+    login: (payload) => request('/auth/login', { method: 'POST', body: payload, timeout: 15000 }),
+    refresh: () => request('/auth/refresh', { method: 'POST', timeout: 15000 }),
+    logout: () => request('/auth/logout', { method: 'POST' }),
+    me: () => request('/auth/me', { auth: true }),
+    updateMe: (patch) => request('/auth/me', { method: 'PATCH', body: patch, auth: true }),
+    changePassword: (payload) => request('/auth/change-password', { method: 'POST', body: payload, auth: true }),
+    sessions: () => request('/auth/sessions', { auth: true }),
+    revokeSession: (id) => request(`/auth/sessions/${encodeURIComponent(id)}`, { method: 'DELETE', auth: true }),
+    signOutOthers: () => request('/auth/sessions/sign-out-others', { method: 'POST', auth: true }),
+    logoutAll: () => request('/auth/logout-all', { method: 'POST', auth: true }),
+    deleteAccount: () => request('/auth/me', { method: 'DELETE', auth: true }),
+    claimGuestHistory: () => request('/auth/claim-guest-history', { method: 'POST', auth: true }),
+    getInvite: (token) => request(`/auth/invite/${encodeURIComponent(token)}`),
+    acceptInvite: (payload) =>
+      request('/auth/invite/accept', { method: 'POST', body: payload, timeout: 15000 })
+  },
+
+  documents: {
+    list: ({ q, type, department, page, limit } = {}) =>
+      request(`/documents${qs({ q, type, department, page, limit })}`),
+    get: (id) => request(`/documents/${encodeURIComponent(id)}`),
+    fileUrl: (id, { page, download, source } = {}) => {
+      const params = qs({ page, download, source });
+      return `${BASE_URL}/documents/${encodeURIComponent(id)}/file${params}`;
+    }
+  },
+
+  activity: {
+    calendarAdd: (payload) => request('/activity/calendar-add', { method: 'POST', body: payload, auth: Boolean(getAdminToken()) }),
+    pageView: (path) => request('/activity/page-view', { method: 'POST', body: { path } })
+  },
+
+  dashboard: {
+    overview: (params) => request(`/admin/dashboard/overview${qs(params)}`, { auth: true, timeout: 30000 }),
+    students: (params) => request(`/admin/dashboard/students${qs(params)}`, { auth: true, timeout: 30000 }),
+    studentUsage: (id, params) =>
+      request(`/admin/dashboard/students/${encodeURIComponent(id)}/usage${qs(params)}`, { auth: true, timeout: 30000 }),
+    setStudentStatus: (id, status) =>
+      request(`/admin/dashboard/students/${encodeURIComponent(id)}/status`, {
+        method: 'PATCH',
+        auth: true,
+        body: { status }
+      }),
+    documents: (params) => request(`/admin/dashboard/documents${qs(params)}`, { auth: true, timeout: 30000 }),
+    chats: (params) => request(`/admin/dashboard/chats${qs(params)}`, { auth: true, timeout: 30000 }),
+    chat: (id) => request(`/admin/dashboard/chats/${encodeURIComponent(id)}`, { auth: true, timeout: 30000 }),
+    activity: (params) => request(`/admin/dashboard/activity${qs(params)}`, { auth: true, timeout: 30000 }),
+    exportUrl: (type, params) => `${BASE_URL}/admin/dashboard/${type}/export${qs(params)}`,
+    exportCsv: (type, params) =>
+      request(`/admin/dashboard/${type}/export${qs(params)}`, {
+        auth: true,
+        responseType: 'blob',
+        timeout: 60000
+      })
+  },
+
   chat: {
-    send: ({ query, sessionId }) =>
-      request('/chat', { method: 'POST', body: { query, sessionId }, timeout: 30000 }),
+    send: ({ query, sessionId }) => {
+      try {
+        if (!getAdminToken() && typeof window !== 'undefined') {
+          window.localStorage.setItem('campusmate_has_guest_chats', '1');
+        }
+      } catch {
+        /* noop */
+      }
+      return request('/chat', { method: 'POST', body: { query, sessionId }, timeout: 30000 });
+    },
     history: (sessionId) => request(`/chat/history/${encodeURIComponent(sessionId)}`)
   },
 
@@ -266,8 +376,28 @@ export const api = {
   },
 
   admin: {
-    login: ({ username, password }) =>
-      request('/admin/login', { method: 'POST', body: { username, password }, timeout: 15000 }),
+    login: ({ email, username, password, rememberMe }) =>
+      request('/admin/auth/login', {
+        method: 'POST',
+        body: { email: email || username, username: username || email, password, rememberMe },
+        timeout: 15000
+      }),
+
+    team: {
+      list: () => request('/admin/team', { auth: true }),
+      invite: (payload) => request('/admin/team/invites', { method: 'POST', auth: true, body: payload }),
+      invites: () => request('/admin/team/invites', { auth: true }),
+      revokeInvite: (id) => request(`/admin/team/invites/${encodeURIComponent(id)}`, { method: 'DELETE', auth: true }),
+      setStatus: (id, status) =>
+        request(`/admin/team/${encodeURIComponent(id)}`, { method: 'PATCH', auth: true, body: { status } }),
+      resetLink: (id) =>
+        request(`/admin/team/${encodeURIComponent(id)}/reset-link`, { method: 'POST', auth: true }),
+      remove: (id) => request(`/admin/team/${encodeURIComponent(id)}`, { method: 'DELETE', auth: true })
+    },
+
+    audit: {
+      list: (params) => request(`/admin/audit${qs(params)}`, { auth: true })
+    },
 
     documents: {
       list: ({ status, doc_type, search } = {}) =>
@@ -332,10 +462,6 @@ export const api = {
       disconnect: () => request('/calendar/oauth/disconnect', { method: 'POST', client: true }),
       insertDirect: (eventId) => request('/calendar/oauth/insert', { method: 'POST', client: true, body: { eventId } })
     }
-  },
-
-  telegram: {
-    status: () => request('/telegram/status', { timeout: 6000 })
   }
 };
 

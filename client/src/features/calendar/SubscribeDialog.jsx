@@ -70,7 +70,7 @@ export function SubscribeDialog({ open, onClose, semester }) {
             <div>
               <strong className="text-ink">Apple Calendar (Mac & iOS):</strong>
               <p className="mt-0.5 text-ink-muted leading-relaxed">
-                Open Calendar → File → <strong>New Calendar Subscription...</strong> → Paste the URL and choose your auto-refresh frequency.
+                Open Calendar → File → <strong>Calendar Subscription...</strong> → Paste the URL and choose your auto-refresh frequency.
               </p>
             </div>
 

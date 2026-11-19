@@ -84,7 +84,7 @@ export function DatesReview() {
           </div>
           <p className="text-sm font-medium text-ink">No pending dates for review</p>
           <p className="text-xs text-ink-muted mt-0.5">
-            When new circulars with dates are uploaded, candidate milestones will appear here.
+            When circulars with dates are uploaded, candidate milestones will appear here.
           </p>
         </Card>
       ) : (

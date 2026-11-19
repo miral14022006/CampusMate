@@ -1,6 +1,6 @@
 # CampusMate API contract
 
-Source read: `server/server.js`, `server/routes/chat.js`, `server/features/f00_history`, `f08_admin`, `f10_feedback`, `f11_analytics`, `f12_cache`, `f13_telegram`, `server/models`, `server/services/nlpClient.js`.
+Source read: `server/server.js`, `server/routes/chat.js`, `server/features/f00_history`, `f08_admin`, `f10_feedback`, `f11_analytics`, `f12_cache`, `server/models`, `server/services/nlpClient.js`.
 
 Base URL (dev): `http://localhost:5000`. The Vite dev server proxies `/api` → gateway, so the browser can call the relative path `/api/...`.
 
@@ -217,8 +217,6 @@ Legacy fallback admin route `POST /api/admin/login` remains available during mig
 | Method | Path | Auth | Request | Response |
 |---|---|---|---|---|
 | GET | `/health` | none | – | `{ status: "ok", service, mongo: "connected"\|"disconnected" }` |
-| GET | `/api/telegram/status` | none | – | `{ telegram: { enabled, mode }, whatsapp: { enabled, status } }` |
-| POST | `/api/telegram/webhook` | none (channel webhook) | Telegram update | 200 |
 | POST | `/api/legacy/chat` | none | legacy body | legacy shape (not used by the UI) |
 
 ## UI mapping

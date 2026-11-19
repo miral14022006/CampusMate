@@ -6,6 +6,7 @@ const QueryAnalyticsLogSchema = new mongoose.Schema({
   query: { type: String, required: true },
   normalizedQuery: { type: String, index: true },
   language: { type: String, index: true, default: 'en' },
+  channel: { type: String, index: true, default: 'web' },
   intent: { type: String, index: true },
   confidence: { type: Number, default: 0.0 },
   sourceDoc: { type: String, index: true, default: null },

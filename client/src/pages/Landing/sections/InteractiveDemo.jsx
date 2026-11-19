@@ -29,27 +29,30 @@ export function InteractiveDemo() {
   const containerRef = useRef(null);
   const inView = useInView(containerRef, { margin: '-40px' });
   const [isHovered, setIsHovered] = useState(false);
-  const [chatPhase, setChatPhase] = useState(0);
+  // Default to showing the answer immediately so users never wait on a blank demo
+  const [chatPhase, setChatPhase] = useState(1);
 
   const activeDemo = demos.find((d) => d.id === activeTab) || demos[0];
 
+  // Quick typing indication and snappy response loop
   useEffect(() => {
     if (!inView || isHovered) return undefined;
 
-    setChatPhase(0);
+    // Fast 350ms typing indicator -> snappy answer
     const t1 = setTimeout(() => {
       setChatPhase(1);
-    }, 1100);
+    }, 380);
 
+    // Keep answer visible for 4.2s, then flash a quick simulated refresh
     const t2 = setTimeout(() => {
       setChatPhase(0);
-    }, 5500);
+    }, 4500);
 
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [inView, isHovered, activeTab]);
+  }, [inView, isHovered, activeTab, chatPhase]);
 
   return (
     <Scene
@@ -81,9 +84,9 @@ export function InteractiveDemo() {
                     type="button"
                     onClick={() => {
                       setActiveTab(tab.id);
-                      setChatPhase(0);
+                      setChatPhase(1); // Instant answer on tab click
                     }}
-                    className={`relative rounded-pill px-4 py-2 text-[13.5px] font-medium transition-colors outline-none focus-visible:outline-2 focus-visible:outline-accent ${
+                    className={`relative rounded-pill px-4 py-2 text-[13.5px] font-medium transition-colors outline-none focus-visible:outline-2 focus-visible:outline-accent cursor-pointer ${
                       isActive ? 'text-white' : 'text-ink-secondary hover:text-ink'
                     }`}
                   >
@@ -153,7 +156,7 @@ export function InteractiveDemo() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
+                    transition={{ duration: 0.1 }}
                     className="flex justify-start"
                   >
                     <div className="inline-flex items-center gap-2 rounded-[18px] rounded-tl-sm border border-hairline bg-surface-2/60 px-5 py-3.5">
@@ -165,10 +168,10 @@ export function InteractiveDemo() {
                 ) : (
                   <m.div
                     key={activeDemo.id}
-                    initial={{ opacity: 0, y: 6 }}
+                    initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.25, ease: EASE }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15, ease: EASE }}
                     className="space-y-4"
                   >
                     <div className="max-w-[92%] rounded-[18px] rounded-tl-sm border border-hairline bg-surface-2/70 px-5 py-4 text-[14.5px] leading-relaxed text-ink-secondary">

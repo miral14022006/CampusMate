@@ -17,7 +17,7 @@ const {
 const { requireAuth, requireRole } = require('./authMiddleware');
 const { recordAuditLog } = require('./auditService');
 const { sendInviteEmail } = require('./emailService');
-const { recordInBackground } = require('../f17_activity');
+const { recordInBackground } = require('../f17_activity/activityService');
 
 const router = express.Router();
 
@@ -35,13 +35,15 @@ function setRefreshTokenCookie(res, token, rememberMe = false) {
   });
 }
 
-const adminLoginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many administrative attempts. Please wait 15 minutes.' }
-});
+const adminLoginLimiter = process.env.NODE_ENV === 'production'
+  ? rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 100,
+      standardHeaders: true,
+      legacyHeaders: false,
+      message: { error: 'Too many administrative attempts. Please wait a moment.' }
+    })
+  : (req, res, next) => next();
 
 const adminLoginSchema = z.object({
   email: z.string().email().optional(),
@@ -251,6 +253,52 @@ router.post('/team/invites', requireAuth, requireRole('superadmin'), async (req,
 });
 
 /**
+ * GET /api/admin/team/invites
+ * Pending (unused, unrevoked, unexpired) admin invitations.
+ */
+router.get('/team/invites', requireAuth, requireRole('superadmin'), async (req, res) => {
+  const invites = await Invite.find({
+    used: false,
+    revoked: false,
+    expiresAt: { $gt: new Date() }
+  })
+    .sort({ createdAt: -1 })
+    .limit(50)
+    .lean();
+
+  return res.json({
+    invites: invites.map((invite) => ({
+      id: String(invite._id),
+      name: invite.name,
+      email: invite.email,
+      role: invite.role,
+      expiresAt: invite.expiresAt,
+      createdAt: invite.createdAt
+    }))
+  });
+});
+
+/**
+ * DELETE /api/admin/team/invites/:id
+ * Revokes a pending invitation link.
+ */
+router.delete('/team/invites/:id', requireAuth, requireRole('superadmin'), async (req, res) => {
+  const invite = await Invite.findById(req.params.id);
+  if (!invite) return res.status(404).json({ error: 'Invitation not found.' });
+  invite.revoked = true;
+  await invite.save();
+  await recordAuditLog({
+    actorId: req.user._id,
+    action: 'admin_invite_revoked',
+    targetType: 'Invite',
+    targetId: invite._id,
+    meta: { email: invite.email },
+    ip: req.ip
+  });
+  return res.json({ success: true });
+});
+
+/**
  * GET /api/admin/team
  * List all admin and superadmin team members
  */
@@ -402,12 +450,21 @@ router.delete('/team/:id', requireAuth, requireRole('superadmin'), async (req, r
  * Superadmin-only audit log viewer with filtering and pagination
  */
 router.get('/audit', requireAuth, requireRole('superadmin'), async (req, res) => {
-  const { action, actorId, targetType, limit = 50, page = 1 } = req.query;
+  const { action, actorId, targetType, from, to, limit = 50, page = 1 } = req.query;
 
   const query = {};
   if (action) query.action = action;
   if (actorId) query.actorId = actorId;
   if (targetType) query.targetType = targetType;
+  if (from || to) {
+    query.at = {};
+    if (from) query.at.$gte = new Date(from);
+    if (to) {
+      const end = new Date(to);
+      end.setHours(23, 59, 59, 999);
+      query.at.$lte = end;
+    }
+  }
 
   const pageNum = Math.max(1, parseInt(page, 10));
   const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10)));

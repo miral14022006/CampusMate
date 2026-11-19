@@ -5,7 +5,8 @@ import {
   Cpu,
   FileCheck,
   Languages,
-  Search
+  Search,
+  Sparkles
 } from 'lucide-react';
 import Scene from '../components/Scene';
 import { ARCHITECTURE_STAGES } from '../../../config/landing';
@@ -48,7 +49,7 @@ export function HowItWorks() {
       <button
         type="button"
         onClick={() => setViewMode('simple')}
-        className={`relative rounded-pill px-5 py-2 text-[14px] font-semibold transition-colors outline-none focus-visible:outline-2 focus-visible:outline-accent ${
+        className={`relative rounded-pill px-5 py-2 text-[14px] font-semibold transition-colors outline-none focus-visible:outline-2 focus-visible:outline-accent cursor-pointer ${
           viewMode === 'simple' ? 'text-white' : 'text-ink-secondary hover:text-ink'
         }`}
       >
@@ -65,7 +66,7 @@ export function HowItWorks() {
       <button
         type="button"
         onClick={() => setViewMode('technical')}
-        className={`relative rounded-pill px-5 py-2 text-[14px] font-semibold transition-colors outline-none focus-visible:outline-2 focus-visible:outline-accent ${
+        className={`relative rounded-pill px-5 py-2 text-[14px] font-semibold transition-colors outline-none focus-visible:outline-2 focus-visible:outline-accent cursor-pointer ${
           viewMode === 'technical' ? 'text-white' : 'text-ink-secondary hover:text-ink'
         }`}
       >
@@ -97,10 +98,10 @@ export function HowItWorks() {
           {viewMode === 'simple' ? (
             <m.div
               key="simple"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: DURATION.base, ease: EASE }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: EASE }}
               className="w-full"
             >
               {/* 3 Steps connected flow */}
@@ -134,13 +135,9 @@ export function HowItWorks() {
                 {SIMPLE_STEPS.map((step) => {
                   const Icon = step.icon;
                   return (
-                    <m.div
+                    <div
                       key={step.num}
-                      variants={{
-                        hidden: { opacity: 0, y: 24 },
-                        show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } }
-                      }}
-                      className="h-full"
+                      className="h-full transition-transform duration-200 hover:-translate-y-1"
                     >
                       <Card
                         padding="lg"
@@ -165,7 +162,7 @@ export function HowItWorks() {
                           <CheckCircle2 className="h-4 w-4 text-accent" /> Grounded execution
                         </div>
                       </Card>
-                    </m.div>
+                    </div>
                   );
                 })}
               </div>
@@ -173,26 +170,22 @@ export function HowItWorks() {
           ) : (
             <m.div
               key="technical"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: DURATION.base, ease: EASE }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: EASE }}
               className="w-full"
             >
-              {/* 6-Stage Connected Pipeline */}
+              {/* 6-Stage Connected Pipeline - Instant appearance, zero delay */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6 pt-2">
                 {ARCHITECTURE_STAGES.map((stg) => (
-                  <m.div
+                  <div
                     key={stg.step}
-                    variants={{
-                      hidden: { opacity: 0, y: 24 },
-                      show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } }
-                    }}
-                    className="h-full"
+                    className="h-full transition-transform duration-200 hover:-translate-y-1"
                   >
                     <Card
                       padding="md"
-                      className="bg-surface-1/90 border-hairline p-5 sm:p-6 flex flex-col justify-between hover:border-[color:var(--border-strong)] transition-all h-full shadow-soft"
+                      className="bg-surface-1/95 border-hairline p-5 sm:p-6 flex flex-col justify-between hover:border-[color:var(--border-strong)] transition-all h-full shadow-soft"
                     >
                       <div>
                         <div className="flex items-center justify-between border-b border-hairline/60 pb-3">
@@ -211,8 +204,12 @@ export function HowItWorks() {
                           {stg.desc}
                         </p>
                       </div>
+
+                      <div className="mt-4 pt-3 border-t border-hairline/40 flex items-center gap-1.5 text-[11.5px] font-medium text-ink-muted">
+                        <Sparkles className="h-3.5 w-3.5 text-accent" /> Multilingual RAG Pipeline
+                      </div>
                     </Card>
-                  </m.div>
+                  </div>
                 ))}
               </div>
             </m.div>

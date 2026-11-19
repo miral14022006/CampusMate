@@ -1,8 +1,8 @@
 import { Suspense, lazy } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import Logo from './components/brand/Logo';
-import { useAdminAuth } from './context/AuthContext';
 import { CommandPalette } from './components/CommandPalette';
+import { ProtectedRoute, RoleGate } from './features/auth/guards';
 
 const PublicLayout = lazy(() => import('./layouts/PublicLayout'));
 const ChatLayout = lazy(() => import('./layouts/ChatLayout'));
@@ -11,8 +11,6 @@ const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
 const Landing = lazy(() => import('./pages/Landing'));
 const CalendarPage = lazy(() => import('./pages/CalendarPage'));
 const Chat = lazy(() => import('./pages/Chat'));
-const AdminLogin = lazy(() => import('./pages/AdminLogin'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Documents = lazy(() => import('./pages/Documents'));
 const Analytics = lazy(() => import('./pages/Analytics'));
 const Feedback = lazy(() => import('./pages/Feedback'));
@@ -20,6 +18,24 @@ const Cache = lazy(() => import('./pages/Cache'));
 const Settings = lazy(() => import('./pages/Settings'));
 const DevUI = lazy(() => import('./pages/DevUI'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+
+const LoginPage = lazy(() => import('./features/auth/LoginPage'));
+const AdminLoginPage = lazy(() => import('./features/auth/AdminLoginPage'));
+const InvitePage = lazy(() => import('./features/auth/InvitePage'));
+const ForgotPasswordPage = lazy(() => import('./features/auth/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./features/auth/ResetPasswordPage'));
+const ChangePasswordPage = lazy(() => import('./features/auth/ChangePasswordPage'));
+const ProfilePage = lazy(() => import('./features/auth/ProfilePage'));
+const DocumentLibrary = lazy(() => import('./features/documents/DocumentLibrary'));
+const DocumentViewer = lazy(() => import('./features/documents/DocumentViewer'));
+
+const DashboardOverview = lazy(() => import('./features/admin/dashboard/DashboardOverview'));
+const DashboardStudents = lazy(() => import('./features/admin/dashboard/DashboardStudents'));
+const DashboardChats = lazy(() => import('./features/admin/dashboard/DashboardChats'));
+const DashboardActivity = lazy(() => import('./features/admin/dashboard/DashboardActivity'));
+const DashboardTeam = lazy(() => import('./features/admin/dashboard/DashboardTeam'));
+const DashboardAudit = lazy(() => import('./features/admin/dashboard/DashboardAudit'));
+const AdminDatesPage = lazy(() => import('./features/admin/AdminDatesPage'));
 
 function Splash() {
   return (
@@ -32,13 +48,8 @@ function Splash() {
   );
 }
 
-function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAdminAuth();
-  const location = useLocation();
-  if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace state={{ from: location }} />;
-  }
-  return children;
+function AdminDatesRedirect() {
+  return <Navigate to="/admin/documents?tab=dates" replace />;
 }
 
 export default function App() {
@@ -53,31 +64,103 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Route>
 
-        <Route path="/chat" element={<ChatLayout />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/invite/:token" element={<InvitePage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+        <Route
+          path="/admin/change-password"
+          element={
+            <RoleGate>
+              <ChangePasswordPage forced />
+            </RoleGate>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute allowGuest={false}>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/documents"
+          element={
+            <ProtectedRoute allowGuest>
+              <DocumentLibrary />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/documents/:id"
+          element={
+            <ProtectedRoute allowGuest>
+              <DocumentViewer />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute allowGuest>
+              <ChatLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Chat />} />
           <Route path=":id" element={<Chat />} />
         </Route>
 
-        {/* Support /app as an alias for /chat as requested */}
-        <Route path="/app" element={<ChatLayout />}>
+        <Route
+          path="/app"
+          element={
+            <ProtectedRoute allowGuest>
+              <ChatLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Chat />} />
           <Route path=":id" element={<Chat />} />
         </Route>
-
-        <Route path="/admin/login" element={<AdminLogin />} />
 
         <Route
           path="/admin"
           element={
-            <ProtectedRoute>
+            <RoleGate>
               <AdminLayout />
-            </ProtectedRoute>
+            </RoleGate>
           }
         >
-          <Route index element={<Dashboard />} />
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardOverview />} />
+          <Route path="students" element={<DashboardStudents />} />
           <Route path="documents" element={<Documents />} />
+          <Route path="chats" element={<DashboardChats />} />
+          <Route path="activity" element={<DashboardActivity />} />
+          <Route path="review" element={<Feedback />} />
+          <Route path="dates" element={<AdminDatesPage />} />
+          <Route
+            path="team"
+            element={
+              <RoleGate superadminOnly>
+                <DashboardTeam />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="audit"
+            element={
+              <RoleGate superadminOnly>
+                <DashboardAudit />
+              </RoleGate>
+            }
+          />
           <Route path="analytics" element={<Analytics />} />
-          <Route path="feedback" element={<Feedback />} />
+          <Route path="feedback" element={<Navigate to="/admin/review" replace />} />
           <Route path="cache" element={<Cache />} />
           <Route path="settings" element={<Settings />} />
         </Route>

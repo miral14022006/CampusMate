@@ -13,7 +13,8 @@ import {
 } from 'lucide-react';
 import Logo from '../components/brand/Logo';
 import { Tooltip } from '../components/ui/Tooltip';
-import { useAdminAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
+import { StudentMenu } from '../features/auth/StudentMenu';
 import { appLinks } from '../config/navigation';
 import { prefetchRoute } from '../lib/prefetch';
 import { cn } from '../lib/cn';
@@ -90,10 +91,14 @@ export function Sidebar({
   onNewChat
 }) {
   const layoutId = `sidebar-pill-${useId().replace(/:/g, '')}`;
-  const { isAuthenticated, logout, user } = useAdminAuth();
+  const { isAuthenticated, isAdmin, logout, user } = useAuth();
 
   // Filter links: show admin tabs only if authenticated admin
-  const visibleLinks = appLinks.filter((link) => !link.requiresAdmin || isAuthenticated);
+  const visibleLinks = appLinks.filter((link) => {
+    if (link.requiresAdmin) return isAdmin;
+    if (link.requiresAuth) return isAuthenticated;
+    return true;
+  });
 
   return (
     <>
@@ -206,8 +211,11 @@ export function Sidebar({
 
           {/* Footer Area */}
           <div className={cn('space-y-2 border-t border-hairline px-3 py-3', collapsed && 'px-2')}>
+            {variant === 'chat' ? (
+              <StudentMenu collapsed={collapsed} />
+            ) : null}
             {/* Anonymous Student Admin Link or Admin User Badge */}
-            {!collapsed && !isAuthenticated && (
+            {variant === 'admin' && !collapsed && !isAdmin && (
               <div className="pt-1 text-center">
                 <NavLink
                   to="/admin/login"
@@ -217,7 +225,7 @@ export function Sidebar({
                 </NavLink>
               </div>
             )}
-            {!collapsed && isAuthenticated && (
+            {variant === 'admin' && !collapsed && isAuthenticated && (
               <div className="flex items-center justify-between pt-1 px-1 text-[11px] text-ink-muted border-t border-hairline">
                 <span className="truncate">{user?.username || 'Admin'}</span>
                 <button
@@ -229,7 +237,7 @@ export function Sidebar({
                 </button>
               </div>
             )}
-            {collapsed && isAuthenticated && (
+            {variant === 'admin' && collapsed && isAuthenticated && (
               <div className="flex justify-center w-full">
                 <Tooltip label={`Sign out (${user?.username || 'Admin'})`} side="right" className="w-full justify-center">
                   <button
@@ -243,7 +251,7 @@ export function Sidebar({
                 </Tooltip>
               </div>
             )}
-            {collapsed && !isAuthenticated && (
+            {variant === 'admin' && collapsed && !isAuthenticated && (
               <div className="flex justify-center w-full">
                 <Tooltip label="Staff login" side="right" className="w-full justify-center">
                   <NavLink

@@ -11,6 +11,7 @@ import { ChatEmpty } from '../features/chat/ChatEmpty';
 import { Composer } from '../features/chat/Composer';
 import { useChat } from '../features/chat/useChat';
 import { useToast } from '../components/ui/Toast';
+import { StudentMenu } from '../features/auth/StudentMenu';
 import { useDocumentTitle, useOnlineStatus, usePrefersReducedMotion } from '../lib/hooks';
 import { EASE, fadeUp } from '../lib/motion';
 
@@ -305,6 +306,9 @@ function ChatHeader({ onOpenMobile, onNewChat }) {
         <Plus className="h-3.5 w-3.5" aria-hidden="true" />
         New
       </button>
+      <div className="lg:ml-auto">
+        <StudentMenu />
+      </div>
     </header>
   );
 }

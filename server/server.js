@@ -9,12 +9,14 @@ const cookieParser = require('cookie-parser');
 
 const chatRouter = require('./routes/chat');
 const legacyChatRouter = require('./features/chat/chatController');
-const { latencyTrackerMiddleware, adminCacheRouter } = require('./features/f12_cache');
+const { latencyTrackerMiddleware, adminCacheRouter, serverCacheManager } = require('./features/f12_cache');
 const { documentAdminRouter } = require('./features/f08_admin');
 const { calendarRoutes } = require('./features/f15_calendar');
 const { feedbackRouter } = require('./features/f10_feedback');
 const { analyticsRouter } = require('./features/f11_analytics');
-const { botRoutes, telegramBotManager } = require('./features/f13_telegram');
+const dashboardRouter = require('./features/f11_analytics/dashboardRoutes');
+const { activityRoutes } = require('./features/f17_activity');
+const { documentRoutes } = require('./features/f18_documents_public');
 const { historyRouter } = require('./features/f00_history');
 const { studentAuthRoutes, adminAuthRoutes } = require('./features/f16_auth');
 
@@ -44,15 +46,17 @@ app.use(cors({
   credentials: true
 }));
 
-// Global Rate Limiting for Public APIs (100 requests per 15 minutes per IP)
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 150,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests from this IP, please try again after 15 minutes.' }
-});
-app.use('/api/', apiLimiter);
+// Global Rate Limiting for Public APIs disabled in development, generous in production
+if (process.env.NODE_ENV === 'production') {
+  const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 1000,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later.' }
+  });
+  app.use('/api/', apiLimiter);
+}
 
 // Input Length Limits on JSON
 app.use(express.json({ limit: '100kb' }));
@@ -79,8 +83,10 @@ app.use('/api/admin', documentAdminRouter);
 app.use('/api/feedback', feedbackRouter);
 app.use('/api/admin/feedback', feedbackRouter);
 app.use('/api/admin/analytics', analyticsRouter);
+app.use('/api/admin/dashboard', dashboardRouter);
+app.use('/api/documents', documentRoutes);
+app.use('/api/activity', activityRoutes);
 app.use('/api/calendar', calendarRoutes);
-app.use('/api/telegram', botRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -101,10 +107,25 @@ if (process.env.NODE_ENV !== 'test') {
     console.warn(`[Server] MongoDB connection failed (${err.message}). Continuing in transient mode.`);
   });
 
+  // Optional Redis connect. Dashboards use the f12 cache manager (60s TTL).
+  if (process.env.REDIS_URL) {
+    try {
+      const { createClient } = require('redis');
+      const redis = createClient({ url: process.env.REDIS_URL, socket: { reconnectStrategy: false } });
+      redis.on('error', (err) => console.warn(`[Server] Redis error: ${err.message}`));
+      redis.connect().then(() => {
+        serverCacheManager.setRedisClient(redis);
+        const { sessionManager } = require('./features/f06_sessions');
+        sessionManager.setRedisClient(redis);
+        console.log('[Server] Connected to Redis');
+      }).catch((err) => console.warn(`[Server] Redis unavailable (${err.message}). Using in-memory cache.`));
+    } catch (err) {
+      console.warn(`[Server] Redis client not initialised (${err.message}).`);
+    }
+  }
+
   app.listen(PORT, () => {
     console.log(`[Server] API Gateway listening on port ${PORT}`);
-    // Initialize Telegram Bot if configured
-    telegramBotManager.initialize();
   });
 }
 

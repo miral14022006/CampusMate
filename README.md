@@ -7,7 +7,7 @@ The repository contains three runnable pieces:
 | Piece | Stack | Dev port | Container port |
 |---|---|---|---|
 | React SPA (`client/`) | React 18, Vite, Tailwind, React Router, Framer Motion, Recharts | `5173` | `3000` (compose) / `80` |
-| API gateway (`server/`) | Node.js, Express, MongoDB, Redis, Telegram adapter | `5005` via `run.sh`, `5000` via Docker | `5000` |
+| API gateway (`server/`) | Node.js, Express, MongoDB, Redis | `5005` via `run.sh`, `5000` via Docker | `5000` |
 | NLP engine (`nlp-service/`) | FastAPI, MuRIL intent, BM25 + FAISS, RAG | `8080` via `run.sh`, `8000` via Docker | `8000` |
 
 ---
@@ -23,11 +23,10 @@ flowchart LR
     E --> F["BM25 Index"]
     E --> G["FAISS Vector Store"]
     E --> H["MuRIL Intent + RAG"]
-    T["Telegram"] --> B
 ```
 
 - **Frontend** (`client/`) — the student-facing landing/chat experience and the admin console (dashboard, documents, analytics, feedback, cache, settings). All data comes from the gateway; there is no mock data. Design and screen references live in [`client/DESIGN_SPEC.md`](client/DESIGN_SPEC.md), and the endpoint/auth contract is documented in [`client/src/services/API_CONTRACT.md`](client/src/services/API_CONTRACT.md).
-- **Gateway** (`server/`) — authentication, rate limiting, conversation persistence, Redis caching, telemetry, admin APIs, and the Telegram bot.
+- **Gateway** (`server/`) — authentication, rate limiting, conversation persistence, Redis caching, telemetry, and admin APIs.
 - **NLP service** (`nlp-service/`) — language identification, transliteration, intent classification, hybrid retrieval, reranking, and grounded answer synthesis.
 
 ---
@@ -161,9 +160,7 @@ With the stack running:
 ./deploy/smoke_test.sh http://localhost:3000
 ```
 
-The script runs **6 checks**: gateway health, English chat, Hindi chat, Hinglish chat, Telegram status, and the SPA HTML shell at `/`.
-
-The SPA check is skipped automatically when the target is an API-only host (for example `http://localhost:5005`), so the same script still works against the gateway alone. For a full pass, point it at the client origin (`:3000` in Docker, or the production nginx origin).
+The script runs **5 checks**: gateway health, an English chat query, a Hinglish chat query, a Hindi chat query, and a conversation history fetch.
 
 Backend and frontend test/build commands:
 
@@ -211,11 +208,11 @@ Put TLS certificates in `deploy/nginx/ssl/`. Set `CORS_ORIGIN` if the SPA is eve
 │       └── styles/             # design tokens and global CSS
 ├── deploy/
 │   ├── nginx/nginx.conf        # TLS reverse proxy for production
-│   └── smoke_test.sh           # 6-check automated smoke test
+│   └── smoke_test.sh           # 5-check automated smoke test
 ├── docker-compose.yml          # Local stack incl. client on :3000
 ├── docker-compose.prod.yml     # Production stack (nginx-only ingress)
 ├── nlp-service/                # FastAPI NLP microservice
-├── server/                     # Express gateway, admin APIs, Telegram bot
+├── server/                     # Express gateway and admin APIs
 │   └── scripts/                # seedAdmin.js, seedAnalytics.js, benchmarks
 └── run.sh                      # All-in-one local backend runner
 ```

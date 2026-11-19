@@ -6,7 +6,6 @@ module.exports = {
   multilingual_detection: true,
   rag_retrieval: true,
   cache_enabled: true,
-  telegram_bot: false,
   analytics: true,
   synthetic_data_generation: true,
   production_rest_api: true,
