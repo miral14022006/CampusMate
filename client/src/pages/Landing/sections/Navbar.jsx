@@ -76,11 +76,19 @@ export function Navbar({ activeLinkId = 'home', introFinished = true }) {
         if (el) {
           // If scrolling to the top hero section
           if (targetId === 'home') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (window.__lenis) {
+              window.__lenis.scrollTo(0, { duration: 1.2 });
+            } else {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
           } else {
             // For sections, scroll element exactly to viewport top (scenes already have top padding for the floating nav)
-            const targetTop = el.getBoundingClientRect().top + window.pageYOffset;
-            window.scrollTo({ top: targetTop, behavior: 'smooth' });
+            if (window.__lenis) {
+              window.__lenis.scrollTo(el, { offset: 0, duration: 1.2 });
+            } else {
+              const targetTop = el.getBoundingClientRect().top + window.pageYOffset;
+              window.scrollTo({ top: targetTop, behavior: 'smooth' });
+            }
           }
           window.history.pushState(null, '', `#${targetId}`);
         }

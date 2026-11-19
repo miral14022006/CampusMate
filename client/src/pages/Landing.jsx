@@ -1,6 +1,7 @@
-import { useEffect, useState, Suspense, lazy } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowUp } from 'lucide-react';
+import { useEffect, useRef, useState, Suspense, lazy } from 'react';
+import { motion, useScroll, useSpring } from 'framer-motion';
+import { ArrowUp, Sparkles } from 'lucide-react';
+import Lenis from 'lenis';
 import { useDocumentTitle, usePrefersReducedMotion } from '../lib/hooks';
 import { features } from '../config/features';
 
@@ -43,6 +44,44 @@ export default function Landing() {
 
   const [activeLinkId, setActiveLinkId] = useState('home');
   const [showMobileBackToTop, setShowMobileBackToTop] = useState(false);
+  const lenisRef = useRef(null);
+
+  // Scroll Progress indicator
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
+  // Lenis Smooth Momentum Scrolling Setup
+  useEffect(() => {
+    if (reducedMotion) return undefined;
+
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      touchMultiplier: 1.5,
+      infinite: false
+    });
+
+    lenisRef.current = lenis;
+    window.__lenis = lenis;
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    const rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+      lenisRef.current = null;
+      delete window.__lenis;
+    };
+  }, [reducedMotion]);
 
   // Prefetch lazy scene chunks when the preceding scene reaches 50% in view
   useEffect(() => {
@@ -134,7 +173,11 @@ export default function Landing() {
 
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (window.__lenis) {
+      window.__lenis.scrollTo(0, { duration: 1.2 });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   return (
@@ -143,6 +186,18 @@ export default function Landing() {
         features.sceneSnap ? 'lg:[@media(pointer:fine)]:snap-y lg:[@media(pointer:fine)]:snap-proximity' : ''
       }`}
     >
+      {/* Dynamic Top Scroll Indicator */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-accent via-[#e07b54] to-accent z-[60] origin-left pointer-events-none"
+        style={{ scaleX }}
+      />
+
+      {/* Ambient background particles for depth */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-30">
+        <div className="absolute top-[15%] left-[8%] h-48 w-48 rounded-full bg-accent/10 blur-3xl cm-particle-1" />
+        <div className="absolute top-[45%] right-[10%] h-64 w-64 rounded-full bg-amber-600/10 blur-3xl cm-particle-2" />
+        <div className="absolute top-[75%] left-[12%] h-56 w-56 rounded-full bg-accent-strong/10 blur-3xl cm-particle-3" />
+      </div>
       {/* 0. Session Intro Overlay */}
       {!reducedMotion && (
         <IntroOverlay onComplete={() => setIntroFinished(true)} />

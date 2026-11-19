@@ -46,20 +46,30 @@ export const Scene = forwardRef(function Scene(
         className
       )}
     >
-      {/* Soft radial glow */}
+      {/* Soft radial glow with gentle breathing animation */}
       <m.div
         variants={{
           hidden: { opacity: 0 },
-          show: { opacity: 0.18, transition: { duration: 0.8, ease: EASE } }
+          show: { opacity: 0.22, transition: { duration: 1, ease: EASE } }
         }}
         className={cn(
-          'pointer-events-none absolute h-[600px] w-[600px] rounded-full blur-[160px]',
+          'pointer-events-none absolute h-[600px] w-[600px] rounded-full blur-[160px] cm-glow-pulse',
           glowPosition === 'top-left' && '-left-40 top-12',
           glowPosition === 'top-right' && '-right-40 top-12',
           glowPosition === 'bottom-right' && '-right-32 bottom-8',
           glowPosition === 'center' && 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
         )}
         style={{ background: 'radial-gradient(circle, var(--accent), transparent 70%)' }}
+        aria-hidden="true"
+      />
+
+      {/* Decorative floating ambient light specks */}
+      <div
+        className="pointer-events-none absolute -left-12 top-1/3 h-24 w-24 rounded-full bg-accent/20 blur-2xl cm-particle-1 opacity-40"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute -right-16 bottom-1/4 h-32 w-32 rounded-full bg-amber-500/15 blur-2xl cm-particle-2 opacity-35"
         aria-hidden="true"
       />
 

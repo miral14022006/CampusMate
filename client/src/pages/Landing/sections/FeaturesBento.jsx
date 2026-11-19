@@ -42,16 +42,16 @@ function FeatureCard({ item }) {
   return (
     <m.div
       variants={{
-        hidden: { opacity: 0, y: 24 },
-        show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } }
+        hidden: { opacity: 0, y: 32, scale: 0.96 },
+        show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.55, ease: EASE } }
       }}
-      whileHover={{ y: -6, transition: { duration: 0.25, ease: EASE } }}
+      whileHover={{ y: -8, scale: 1.015, transition: { duration: 0.25, ease: EASE } }}
       className="h-full"
     >
       <div
         ref={cardRef}
         onMouseMove={handleMouseMove}
-        className="group relative flex h-full flex-col justify-between rounded-2xl bg-surface-1/90 border border-hairline hover:border-[color:var(--border-strong)] transition-all p-5 sm:p-6 overflow-hidden shadow-lift"
+        className="group relative flex h-full flex-col justify-between rounded-2xl bg-surface-1/90 border border-hairline hover:border-[color:var(--border-strong)] transition-all p-5 sm:p-6 overflow-hidden shadow-lift hover:shadow-2xl hover:shadow-accent/5 backdrop-blur-md"
         style={{
           '--mx': '-200px',
           '--my': '-200px'
@@ -62,7 +62,7 @@ function FeatureCard({ item }) {
           className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 group-hover:opacity-100"
           style={{
             background:
-              'radial-gradient(420px circle at var(--mx) var(--my), rgba(212, 103, 63, 0.14), transparent 70%)'
+              'radial-gradient(420px circle at var(--mx) var(--my), rgba(212, 103, 63, 0.18), transparent 70%)'
           }}
           aria-hidden="true"
         />
