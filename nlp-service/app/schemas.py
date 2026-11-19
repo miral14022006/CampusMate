@@ -41,7 +41,7 @@ class AnalyzeResponse(BaseModel):
     is_follow_up: Optional[bool] = False
     is_reset: Optional[bool] = False
     dialogue_state: Optional[Dict[str, Any]] = None
-    stage_latencies_ms: Dict[str, float]
+    stage_latencies_ms: Dict[str, Any]
     total_latency_ms: float
 
 class CitationSchema(BaseModel):
@@ -86,4 +86,4 @@ class VersionResponse(BaseModel):
     service: str
     version: str
     api_prefix: str
-    active_features: Dict[str, bool]
+    active_features: Dict[str, Any]

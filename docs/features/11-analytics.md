@@ -90,18 +90,14 @@ This generates **2,000 realistic logs** spanning the last 30 days with realistic
 
 ### A. Executive Overview & KPI Cards
 - Top statistics: Total Queries, Cache Hit Rate, Student Satisfaction, Unanswered Rate, Clarification Rate, Average Latency, and p95 Latency.
-- *[Screenshot Placeholder: Analytics KPI Banner]*
 
 ### B. Time Series & Multilingual Distribution
 - **Line Chart**: Daily query volume broken down by cached answers vs live NLP executions vs unanswered questions.
 - **Donut Chart**: Script distribution across English, Hindi (हिन्दी), Gujarati (ગુજરાતી), Hinglish, and Gujlish.
-- *[Screenshot Placeholder: Line & Donut Visualizations]*
 
 ### C. Top Intents Bar Chart
 - Horizontal frequency chart of top campus inquiries (exam deadlines, fee payment, hostel, admission, etc.).
-- *[Screenshot Placeholder: Intent Bar Chart]*
 
 ### D. Knowledge Gap Action Table
 - Lists top unanswered questions with occurrence frequency and a one-click button: **`+ Create Training Example`** which immediately sends the query to the Feature 10 feedback curation queue for model retraining.
-- *[Screenshot Placeholder: Unanswered Table & Action Buttons]*
 

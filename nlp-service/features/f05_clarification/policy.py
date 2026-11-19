@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from enum import Enum
@@ -247,14 +248,18 @@ class DecisionPolicy:
             lang, "I'm not sure how to answer that. Please contact our college office:"
         )
         contact = self.get_contact_info(intent, lang=lang)
-        fallback_text = (
-            f"{msg}\n\n"
-            f"🏛️ **{contact['name']}**\n"
-            f"📍 {contact['room']}\n"
-            f"📞 {contact['phone']}\n"
-            f"✉️ {contact['email']}\n"
-            f"⏰ Hours: {contact['hours']}"
-        )
+        lines = [msg, "", f"🏛️ **{contact['name']}**"]
+        # Contact details are only spoken when the deployment owner has marked
+        # them verified; otherwise the reply names the responsible office and
+        # asks the student to use the official channels.
+        if os.getenv("CAMPUS_CONTACTS_VERIFIED", "false").lower() == "true":
+            for icon, key in (("📍", "room"), ("📞", "phone"), ("✉️", "email"), ("⏰", "hours")):
+                if contact.get(key):
+                    label = "Hours" if key == "hours" else ""
+                    lines.append(f"{icon} {label + ': ' if label else ''}{contact[key]}")
+        else:
+            lines.append("Verified contact details have not been configured for this deployment yet.")
+        fallback_text = "\n".join(lines)
 
         return {
             "decision": DecisionOutcome.FALLBACK.value,

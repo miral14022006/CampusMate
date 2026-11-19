@@ -11,7 +11,7 @@ const { generateAccessToken } = require('../authUtils');
 // Helper to clean collections if mongo is connected
 async function clearCollections() {
   if (User.db && User.db.readyState === 1) {
-    await User.deleteMany({ email: /pdeu\.ac\.in/ });
+    await User.deleteMany({});
     await SessionFamily.deleteMany({});
     await Invite.deleteMany({});
     await AuditLog.deleteMany({});
@@ -33,7 +33,9 @@ describe('Feature 16: Authentication & Roles Test Suite', () => {
     process.env.SIGNUP_ENABLED = 'true';
     process.env.GUEST_MODE = 'true';
 
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/college_assistant';
+    // Use an isolated database so the last-superadmin guard is deterministic
+    // even when the development database already contains seeded users.
+    const mongoUri = process.env.MONGODB_URI_TEST || 'mongodb://localhost:27017/college_assistant_test';
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 3000 }).catch(() => {});
     }

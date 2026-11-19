@@ -60,11 +60,11 @@ flowchart TD
    - Root directory: `nlp-service/`
    - Start command: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
    - **Free-Tier "Lite Mode"**:
-     On free instances (512MB RAM limit), activate lite mode to avoid OOM:
+     On free instances (512MB RAM limit), disable the cross-encoder reranker and
+     use the lighter dense model to avoid OOM:
      ```env
-     LITE_MODE=true
-     EMBEDDING_MODEL=all-MiniLM-L6-v2
-     RERANKER_ENABLED=false
+     ENABLE_RERANKER=false
+     DENSE_MODEL_NAME=sentence-transformers/all-MiniLM-L6-v2
      ```
 
 ---
@@ -78,8 +78,10 @@ flowchart TD
 | `MONGODB_URI` | MongoDB connection string (Atlas or local) | `mongodb+srv://user:pass@cluster.mongodb.net/college_assistant` |
 | `REDIS_URL` | Redis cache & session connection string | `redis://default:pass@redis-host:6379` |
 | `NLP_SERVICE_URL` | Internal URL to Python FastAPI service | `http://nlp-service:8000` |
-| `NLP_SERVICE_API_KEY` | Shared secret header between gateway & NLP | `super-secret-key-123` |
-| `JWT_SECRET` | Signing secret for admin authentication | `your-jwt-production-secret` |
+| `NLP_API_KEY` | Shared secret header between gateway & NLP | `super-secret-key-123` |
+| `JWT_SECRET` | Legacy admin signing secret | `your-jwt-production-secret` |
+| `JWT_ACCESS_SECRET` | Access-token signing secret (≥32 chars) | `your-access-secret` |
+| `JWT_REFRESH_SECRET` | Refresh-token signing secret (≥32 chars) | `your-refresh-secret` |
 | `CORS_ORIGIN` | Allowed web origins | `https://campus-mate.vercel.app` |
 
 ---
@@ -97,7 +99,10 @@ flowchart TD
 
 ---
 
-## 5. Live Deploy Placeholders
+## 5. Deployment URLs
 
-- **Web App Live URL**: `https://campus-mate-assistant.vercel.app` *(Placeholder)*
-- **API Gateway URL**: `https://api.campus-mate.example.edu` *(Placeholder)*
+Live deployment URLs are intentionally not recorded here. They are environment-
+specific and must be supplied by the deployment owner (see "Needs your input" in
+`docs/CLEANUP.md`). The local Docker quickstart exposes the app on
+`http://localhost:3000`, the gateway on `http://localhost:5000`, and the NLP
+service on `http://localhost:8000`.

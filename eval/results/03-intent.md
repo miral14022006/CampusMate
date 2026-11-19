@@ -4,8 +4,8 @@ Evaluated on `255` held-out test queries across 20 intents and 5 language format
 
 | Model Architecture | Accuracy | Macro-F1 | ECE (Calibration) | Avg Latency (ms) |
 | :--- | :--- | :--- | :--- | :--- |
-| **Baseline (TF-IDF + LR)** | **28.24%** | **0.3588** | N/A | **0.663 ms** |
-| **Google MuRIL Transformer** | **95.29%** | **0.9569** | **0.1840** | **1.504 ms** |
+| **Baseline (TF-IDF + LR)** | **28.24%** | **0.3588** | N/A | **0.723 ms** |
+| **Google MuRIL Transformer** | **95.29%** | **0.9569** | **0.1840** | **1.594 ms** |
 
 ### Accuracy Breakdown by Language Style
 

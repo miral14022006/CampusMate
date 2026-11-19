@@ -73,47 +73,62 @@ export function AboutContact() {
               For admissions paperwork, physical fee receipts, or inquiries beyond published circulars, contact the campus administrative offices.
             </p>
 
-            {/* TODO verify: contact details against official pdeu.ac.in */}
             <ul className="mt-5 space-y-3.5">
               {[
-                // TODO verify against pdeu.ac.in
-                { icon: Mail, label: CAMPUS_CONTACT.helpdeskEmail, href: `mailto:${CAMPUS_CONTACT.helpdeskEmail}` },
-                // TODO verify against pdeu.ac.in
-                { icon: Phone, label: CAMPUS_CONTACT.phone, href: `tel:${CAMPUS_CONTACT.phoneTel}` },
-                // TODO verify against pdeu.ac.in
-                { icon: MapPin, label: CAMPUS_CONTACT.addressShort, href: null },
-                // TODO verify against pdeu.ac.in
-                { icon: Clock, label: CAMPUS_CONTACT.hours, href: null }
-              ].map(({ icon: Icon, label, href }) => (
-                <li key={label} className="flex items-center gap-3 text-[14px] text-ink-secondary">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  {href ? (
-                    <a
-                      href={href}
-                      className="hover:text-ink hover:underline outline-none focus-visible:outline-2 focus-visible:outline-accent rounded-sm"
-                    >
-                      {label}
-                    </a>
-                  ) : (
-                    <span>{label}</span>
-                  )}
-                </li>
-              ))}
+                CAMPUS_CONTACT.helpdeskEmail && {
+                  icon: Mail,
+                  label: CAMPUS_CONTACT.helpdeskEmail,
+                  href: `mailto:${CAMPUS_CONTACT.helpdeskEmail}`
+                },
+                CAMPUS_CONTACT.phone && {
+                  icon: Phone,
+                  label: CAMPUS_CONTACT.phone,
+                  href: `tel:${CAMPUS_CONTACT.phoneTel}`
+                },
+                CAMPUS_CONTACT.addressShort && {
+                  icon: MapPin,
+                  label: CAMPUS_CONTACT.addressShort,
+                  href: null
+                },
+                CAMPUS_CONTACT.hours && { icon: Clock, label: CAMPUS_CONTACT.hours, href: null }
+              ]
+                .filter(Boolean)
+                .map(({ icon: Icon, label, href }) => (
+                  <li key={label} className="flex items-center gap-3 text-[14px] text-ink-secondary">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    {href ? (
+                      <a
+                        href={href}
+                        className="hover:text-ink hover:underline outline-none focus-visible:outline-2 focus-visible:outline-accent rounded-sm"
+                      >
+                        {label}
+                      </a>
+                    ) : (
+                      <span>{label}</span>
+                    )}
+                  </li>
+                ))}
             </ul>
+            {!CAMPUS_CONTACT.helpdeskEmail && !CAMPUS_CONTACT.phone && !CAMPUS_CONTACT.addressShort && !CAMPUS_CONTACT.hours && (
+              <p className="mt-5 text-[13.5px] leading-relaxed text-ink-muted">
+                Verified helpdesk contact details have not been published for this deployment yet.
+              </p>
+            )}
           </div>
 
-          <div className="mt-6 pt-4 border-t border-hairline/60">
-            {/* TODO verify: student portal URL */}
-            <a
-              href={`mailto:${CAMPUS_CONTACT.helpdeskEmail}`}
-              className="inline-flex items-center gap-2 text-[14px] font-semibold text-accent hover:underline outline-none focus-visible:outline-2 focus-visible:outline-accent"
-            >
-              Email campus helpdesk directly
-              <ArrowUpRight className="h-4 w-4" />
-            </a>
-          </div>
+          {CAMPUS_CONTACT.helpdeskEmail && (
+            <div className="mt-6 pt-4 border-t border-hairline/60">
+              <a
+                href={`mailto:${CAMPUS_CONTACT.helpdeskEmail}`}
+                className="inline-flex items-center gap-2 text-[14px] font-semibold text-accent hover:underline outline-none focus-visible:outline-2 focus-visible:outline-accent"
+              >
+                Email campus helpdesk directly
+                <ArrowUpRight className="h-4 w-4" />
+              </a>
+            </div>
+          )}
         </Card>
       </div>
     </Scene>

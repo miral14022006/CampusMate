@@ -33,7 +33,7 @@ class PipelineContext(BaseModel):
     standalone_query: Optional[str] = None
     is_follow_up: bool = False
     is_reset: bool = False
-    stage_latencies_ms: Dict[str, float] = Field(default_factory=dict)
+    stage_latencies_ms: Dict[str, Any] = Field(default_factory=dict)
     total_latency_ms: float = 0.0
 
 class PipelineStage(ABC):

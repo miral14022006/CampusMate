@@ -56,7 +56,14 @@ class TestEndToEndQueries(unittest.TestCase):
 
             self.assertEqual(data["language"], item["expected_lang"], f"Lang mismatch for '{q}'")
             self.assertTrue(len(data["answer"]) > 10, f"Empty answer for '{q}'")
-            self.assertIsNotNone(data["source_doc"], f"Missing source doc for '{q}'")
+            # Low-confidence intents are intentionally routed to a clarification
+            # or helpdesk fallback by Feature 05 instead of guessing a source.
+            self.assertTrue(
+                data["source_doc"] is not None
+                or data["decision"] in ("CLARIFY", "FALLBACK")
+                or (data["clarification_question"] or "").strip() != "",
+                f"Missing source doc and clarification for '{q}'"
+            )
             self.assertGreater(data["execution_time_ms"], 0.0)
 
 if __name__ == "__main__":

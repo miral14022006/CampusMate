@@ -33,13 +33,19 @@ export function FAQSection() {
               CampusMate answers questions grounded in official published circulars. If your issue involves original physical documents, fee discrepancies, or personal administrative approvals:
             </p>
             <div className="mt-5 pt-4 border-t border-hairline">
-              <a
-                href={`mailto:${CAMPUS_CONTACT.helpdeskEmail}`}
-                className="inline-flex items-center gap-2 text-[14px] font-semibold text-accent hover:underline outline-none focus-visible:outline-2 focus-visible:outline-accent rounded-sm"
-              >
-                <Mail className="h-4 w-4" />
-                Still stuck? Contact the helpdesk
-              </a>
+              {CAMPUS_CONTACT.helpdeskEmail ? (
+                <a
+                  href={`mailto:${CAMPUS_CONTACT.helpdeskEmail}`}
+                  className="inline-flex items-center gap-2 text-[14px] font-semibold text-accent hover:underline outline-none focus-visible:outline-2 focus-visible:outline-accent rounded-sm"
+                >
+                  <Mail className="h-4 w-4" />
+                  Still stuck? Contact the helpdesk
+                </a>
+              ) : (
+                <p className="text-[13px] text-ink-muted">
+                  Verified helpdesk contact details are not published for this deployment yet.
+                </p>
+              )}
             </div>
           </div>
         </div>

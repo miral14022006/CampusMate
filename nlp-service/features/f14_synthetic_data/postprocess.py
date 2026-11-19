@@ -11,12 +11,14 @@ class SyntheticDataPostprocessor:
         self.fuzzy_sim_threshold = fuzzy_sim_threshold
 
     def exact_deduplicate(self, df: pd.DataFrame) -> pd.DataFrame:
+        initial = len(df)
         df_clean = df.drop_duplicates(subset=["text"]).copy()
         logger.info(f"Exact deduplication removed {initial - len(df_clean)} duplicates.")
         return df_clean
 
     def fuzzy_deduplicate(self, df: pd.DataFrame) -> pd.DataFrame:
         """Deduplicates texts having fuzzy ratio > threshold within the same intent."""
+        initial = len(df)
         kept_rows = []
 
         # Process per intent group for performance

@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import List, Dict, Any, Optional
 
 from features.f04_rag.schemas import RAGResponse, CitationItem
@@ -29,10 +30,10 @@ class RAGEngine:
     def __init__(
         self,
         min_evidence_score: float = 0.005,
-        llm_provider_name: str = "mock"
+        llm_provider_name: Optional[str] = None
     ):
         self.min_evidence_score = min_evidence_score
-        self.llm_provider_name = llm_provider_name
+        self.llm_provider_name = llm_provider_name or os.getenv("LLM_PROVIDER", "gemini")
         self._llm = None
 
     def _get_llm(self):

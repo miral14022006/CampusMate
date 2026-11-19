@@ -42,6 +42,12 @@ class IntentStage(PipelineStage):
 
         # Store top-3 candidates in stage latency/metadata dict if available
         if "top3" in res:
-            context.stage_latencies_ms["top3_intents"] = res["top3"]
+            context.stage_latencies_ms["top3_intents"] = [
+                {
+                    **candidate,
+                    "confidence": candidate.get("confidence", candidate.get("score", 0.0))
+                }
+                for candidate in res["top3"]
+            ]
 
         return context

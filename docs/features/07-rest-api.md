@@ -1,5 +1,7 @@
 # Feature 07: Production-Style REST API for NLP Service
 
+> Paths in this document that start with `app/`, `features/`, `config/` or `tests/` are relative to `nlp-service/`.
+
 ## What It Does
 Feature 07 upgrades the `nlp-service` into an enterprise-grade, high-throughput RESTful microservice with a decoupled **modular pipeline stage architecture**, header-based API key authentication, request correlation IDs, JSON structured logging with file rotation, real-time counters/metrics, and a production-grade resilient Node.js client service with retry and timeout mechanisms.
 

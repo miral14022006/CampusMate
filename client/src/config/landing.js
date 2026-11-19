@@ -16,25 +16,23 @@ export function getSampleDate(daysAhead = 12, locale = 'en-IN') {
 }
 
 /**
- * PDEU Campus and Helpdesk contact information.
- * // TODO verify against pdeu.ac.in
+ * Campus helpdesk contact information.
+ *
+ * These values are intentionally empty until the institution supplies verified
+ * details. Set the matching VITE_* variables in client/.env.local (see
+ * client/.env.example). Empty values are hidden by the UI instead of showing
+ * unverified contact data.
  */
+const env = typeof import.meta !== 'undefined' ? import.meta.env : {};
+
 export const CAMPUS_CONTACT = {
-  // TODO verify against pdeu.ac.in
-  helpdeskEmail: 'helpdesk@pdeu.ac.in',
-  // TODO verify against pdeu.ac.in
-  phone: '+91 79 2395 2000',
-  phoneTel: '+917923952000',
-  // TODO verify against pdeu.ac.in
-  address: 'PDEU, Knowledge Corridor, Raisan, Gandhinagar, Gujarat 382007',
-  addressShort: 'PDEU, Gandhinagar, Gujarat',
-  // TODO verify against pdeu.ac.in
-  hours: 'Mon–Fri · 9:00 AM – 5:00 PM',
-  // TODO verify against pdeu.ac.in
-  studentPortalUrl:
-    typeof import.meta !== 'undefined' && import.meta.env?.VITE_STUDENT_PORTAL_URL
-      ? import.meta.env.VITE_STUDENT_PORTAL_URL
-      : 'https://www.pdeu.ac.in'
+  helpdeskEmail: env?.VITE_HELPDESK_EMAIL || '',
+  phone: env?.VITE_HELPDESK_PHONE || '',
+  phoneTel: (env?.VITE_HELPDESK_PHONE || '').replace(/[^+\d]/g, ''),
+  address: env?.VITE_CAMPUS_ADDRESS || '',
+  addressShort: env?.VITE_CAMPUS_ADDRESS || '',
+  hours: env?.VITE_HELPDESK_HOURS || '',
+  studentPortalUrl: env?.VITE_STUDENT_PORTAL_URL || ''
 };
 
 /**

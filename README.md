@@ -46,13 +46,20 @@ Then open:
 
 The browser calls `/api` on the same origin. The client container's nginx proxies `/api` to the gateway, so no CORS configuration is required for the SPA.
 
-Seed the default admin (inside the running server container):
+Seed the default admin and the initial superadmin (inside the running server container):
 
 ```bash
 docker compose exec server node scripts/seedAdmin.js
+docker compose exec server node scripts/seedSuperadmin.js
 ```
 
-Credentials come from `ADMIN_DEFAULT_USER` / `ADMIN_DEFAULT_PASS` / `ADMIN_DEFAULT_EMAIL` (defaults: `admin` / `Admin@123` / `admin@college.edu.in`). Change them in production.
+The superadmin credentials come from `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD` (defaults in `.env.example`); the admin fallback uses `ADMIN_DEFAULT_USER` / `ADMIN_DEFAULT_PASS` / `ADMIN_DEFAULT_EMAIL`. Change them in production.
+
+Build the retrieval index once (writes to the mounted `data/index/`):
+
+```bash
+docker compose exec nlp-service python -m features.f01_hybrid_retrieval.build_index
+```
 
 Seed demo analytics for the dashboard:
 
@@ -60,7 +67,11 @@ Seed demo analytics for the dashboard:
 docker compose exec server node scripts/seedAnalytics.js
 ```
 
-This inserts 2,000 synthetic query logs. The UI can include or exclude seeded rows via the analytics filter, and `includeSeeded=only` isolates them.
+This inserts 2,000 synthetic query logs. The UI can include or exclude seeded rows via the analytics filter, and `includeSeeded=only` isolates them. For a fully populated demo (documents, calendar, feedback, chat), run the richer root seeder after installing the server dependencies:
+
+```bash
+cd server && npm install && node ../scripts/seedAnalytics.js
+```
 
 ---
 
@@ -72,7 +83,13 @@ This inserts 2,000 synthetic query logs. The UI can include or exclude seeded ro
 ./run.sh
 ```
 
-This starts MongoDB/Redis checks, the NLP service on `:8080`, and the gateway on `:5005`. Use the Docker setup instead if you prefer MongoDB/Redis in containers.
+This starts MongoDB/Redis checks, the NLP service on `:8080`, and the gateway on `:5005`. The gateway reads `server/.env`, so copy the example first:
+
+```bash
+cp .env.example server/.env
+```
+
+Use the Docker setup instead if you prefer MongoDB/Redis in containers.
 
 ### 2. Frontend
 
@@ -107,10 +124,19 @@ If you use Docker for the backend (`:5000`), the default in `.env.example` is co
 | `VITE_API_BASE_URL` | `/api` | Gateway base path used by the fetch wrapper |
 | `VITE_GATEWAY_URL` | `http://localhost:5000` | Vite dev proxy target for `/api` |
 | `VITE_NLP_URL` | `http://localhost:8000` | Optional dev proxy target for `/nlp` |
-| `VITE_STUDENT_PORTAL_URL` | `https://www.pdeu.ac.in` | Student Portal link in the sidebar/footer |
 | `VITE_API_TIMEOUT_MS` | `20000` | Fetch timeout |
+| `VITE_STUDENT_PORTAL_URL` | empty | Optional Student Portal link; hidden when empty |
+| `VITE_HELPDESK_EMAIL` | empty | Verified helpdesk email; hidden when empty |
+| `VITE_HELPDESK_PHONE` | empty | Verified helpdesk phone; hidden when empty |
+| `VITE_HELPDESK_HOURS` | empty | Verified helpdesk hours; hidden when empty |
+| `VITE_CAMPUS_ADDRESS` | empty | Verified campus address; hidden when empty |
+| `VITE_FEATURE_CALENDAR` | `true` | Show calendar navigation and routes |
+| `VITE_FEATURE_CALENDAR_GOOGLE_OAUTH` | `false` | Enable Google Calendar OAuth |
+| `VITE_FEATURE_ANALYTICS` | `true` | Show analytics surfaces |
+| `VITE_FEATURE_FEEDBACK` | `true` | Show feedback controls |
+| `VITE_FEATURE_SCENE_SNAP` | `false` | Landing-page scene snapshots |
 
-Environment values are baked in at build time. For container builds, either edit `client/.env.production` or pass them as build arguments.
+Environment values are baked in at build time. For container builds, either edit `client/.env.production` or pass them as build arguments. Placeholder contact data is never shipped: empty values are hidden in the UI.
 
 ### Hero image
 
@@ -148,7 +174,7 @@ curl -X POST http://localhost:5005/api/admin/documents/upload \
   -F "doc_type=notice"
 ```
 
-Admin routes require a Bearer JWT (24 h, HS256). The cache admin routes (`/api/admin/cache-stats`, `/api/admin/cache/invalidate`, `/api/admin/latency-stats`) are also protected now. Any admin `401` clears the local session and redirects the UI to `/admin/login`.
+Admin routes require a Bearer access JWT (15 min, HS256) plus a rotating refresh cookie. The cache admin routes (`/api/admin/cache-stats`, `/api/admin/cache/invalidate`, `/api/admin/latency-stats`) are also protected now. Any admin `401` clears the local session and redirects the UI to `/admin/login`.
 
 ---
 
@@ -169,6 +195,29 @@ cd server && npm test          # Jest (runInBand)
 cd nlp-service && pytest       # FastAPI / NLP suites
 cd client && npm run build     # Vite production build
 ```
+
+### Regenerating generated assets
+
+```bash
+# Retrieval index (TF-IDF, BM25, FAISS) — writes data/index/
+PYTHONPATH=nlp-service python3 -m features.f01_hybrid_retrieval.build_index
+# or inside Docker:
+docker compose exec nlp-service python -m features.f01_hybrid_retrieval.build_index
+
+# Demo documents and analytics (labeled as demo/seeded)
+cd server && node ../scripts/seedAnalytics.js
+node scripts/seedAnalytics.js          # synthetic query-log seeder (2,000 rows)
+
+# Evaluation results — writes eval/results/
+python3 eval/eval_language_detection.py
+python3 eval/run_intent.py
+python3 eval/run_retrieval.py
+
+# Hero placeholder image (replace with licensed artwork before launch)
+python3 scripts/generate_hero.py
+```
+
+Large generated files (`*.joblib`, `*.faiss`, `data/index/`, `data/uploads/`, `client/dist/`, `node_modules/`, local `.env` files) are ignored and never committed.
 
 ---
 
@@ -194,26 +243,35 @@ Put TLS certificates in `deploy/nginx/ssl/`. Set `CORS_ORIGIN` if the SPA is eve
 ## Project structure
 
 ```
-├── client/                     # React SPA
+├── client/                     # React 18 SPA (Vite)
 │   ├── DESIGN_SPEC.md          # 8-screen design source of truth
 │   ├── Dockerfile              # Multi-stage Vite build → nginx
 │   ├── nginx.conf              # SPA fallback, API proxy, cache headers, gzip
 │   └── src/
 │       ├── components/         # UI kit, brand, shared primitives
-│       ├── context/            # Theme + admin auth
-│       ├── features/           # chat and admin feature modules
+│       ├── config/             # navigation, feature flags, landing copy
+│       ├── context/            # auth and theme providers
+│       ├── features/           # chat, calendar, auth, admin, documents
 │       ├── layouts/            # public, chat, admin shells
 │       ├── pages/              # landing, chat, admin screens, settings
-│       ├── services/           # API wrapper + API_CONTRACT.md
-│       └── styles/             # design tokens and global CSS
-├── deploy/
-│   ├── nginx/nginx.conf        # TLS reverse proxy for production
-│   └── smoke_test.sh           # 5-check automated smoke test
+│       └── services/           # API wrapper + API_CONTRACT.md
+├── server/                     # Express gateway, auth, analytics, calendar
+│   ├── features/               # f00–f18 feature modules and tests
+│   ├── models/                 # shared Mongoose models
+│   ├── routes/                 # chat routes
+│   └── scripts/                # seedAdmin, seedSuperadmin, seedAnalytics, perf
+├── nlp-service/                # FastAPI NLP microservice
+│   ├── app/                    # pipeline, stages, API, schemas
+│   ├── features/               # f01–f15 NLP feature modules and tests
+│   └── tests/                  # API, stage and end-to-end tests
+├── data/                       # datasets, lexicons, patterns, seed docs
+├── eval/                       # evaluation scripts and real result JSON/MD
+├── scripts/                    # documented demos, seeders, generators
+├── deploy/                     # production nginx config and smoke test
+├── docs/                       # feature documentation + CLEANUP.md
+├── notebooks/                  # MuRIL training notebook
 ├── docker-compose.yml          # Local stack incl. client on :3000
 ├── docker-compose.prod.yml     # Production stack (nginx-only ingress)
-├── nlp-service/                # FastAPI NLP microservice
-├── server/                     # Express gateway and admin APIs
-│   └── scripts/                # seedAdmin.js, seedAnalytics.js, benchmarks
 └── run.sh                      # All-in-one local backend runner
 ```
 
@@ -221,7 +279,7 @@ Put TLS certificates in `deploy/nginx/ssl/`. Set `CORS_ORIGIN` if the SPA is eve
 
 ## Accessibility and UX notes
 
-- Dark theme is the default; first visit follows `prefers-color-scheme`, and the choice is persisted in `localStorage`.
+- The interface is intentionally dark-only; the theme provider locks `data-theme="dark"` so no unsupported light theme is exposed.
 - Every interactive control has a visible 2 px accent focus ring, and keyboard-only navigation is supported through dialogs, drawers, tabs, and the chat composer.
 - Layouts are exercised at 360, 768, 1280, and 1920 px widths.
 - Motion respects `prefers-reduced-motion`; the typewriter, tassel, and page transitions reduce to simple fades.

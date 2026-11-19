@@ -1,3 +1,4 @@
+import os
 import unittest
 from features.f05_clarification.policy import DecisionPolicy, DecisionOutcome
 
@@ -109,7 +110,22 @@ class TestDecisionPolicy(unittest.TestCase):
         )
         self.assertEqual(res["decision"], DecisionOutcome.FALLBACK.value)
         self.assertEqual(res["contact_info"]["department"], "exam_cell")
-        self.assertIn("exams@college.edu.in", res["clarification_question"])
+        # Unverified contact details must not be shown by default.
+        self.assertNotIn("exams@college.edu.in", res["clarification_question"])
+        self.assertIn("not been configured", res["clarification_question"])
+
+        # When the deployment owner marks contacts verified, details are shown.
+        os.environ["CAMPUS_CONTACTS_VERIFIED"] = "true"
+        try:
+            verified = self.policy.evaluate(
+                top_intents=[{"intent": "re-evaluation", "confidence": 0.20}],
+                entities=[],
+                retrieved_chunks=[],
+                language="en"
+            )
+            self.assertIn("exams@college.edu.in", verified["clarification_question"])
+        finally:
+            del os.environ["CAMPUS_CONTACTS_VERIFIED"]
 
 if __name__ == "__main__":
     unittest.main()

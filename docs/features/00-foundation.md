@@ -1,5 +1,7 @@
 # Feature 00: Foundation & Baseline Pipeline
 
+> Paths in this document that start with `app/`, `features/`, `config/` or `tests/` are relative to `nlp-service/`.
+
 ## What It Does
 The Foundation module establishes the end-to-end baseline architecture for the **Multilingual College Assistant**. It supports student inquiries across English, Hindi, Gujarati, Hinglish (code-mixed Hindi-English), and Gujlish (code-mixed Gujarati-English). 
 

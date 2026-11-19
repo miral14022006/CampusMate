@@ -1,17 +1,17 @@
 {
   "feature": "03-transformer-intent-classification",
-  "timestamp": "2026-11-17 14:31:12",
+  "timestamp": "2026-11-19 16:42:58",
   "total_test_queries": 255,
   "models_evaluated": {
     "baseline_tfidf_lr": {
       "accuracy": 0.2824,
       "macro_f1": 0.3588,
-      "avg_latency_ms": 0.663
+      "avg_latency_ms": 0.723
     },
     "transformer_muril": {
       "accuracy": 0.9529,
       "macro_f1": 0.9569,
-      "avg_latency_ms": 1.504,
+      "avg_latency_ms": 1.594,
       "ece": 0.184
     }
   },

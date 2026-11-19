@@ -72,9 +72,9 @@ python3 scripts/demo_clarification.py
 
 Evaluated across **256 held-out validation samples** in `data/datasets/val.csv` using the MuRIL fine-tuned model and TF-IDF baseline.
 
-### Optimal Thresholds
-- **$T_{high}$**: `0.55`
-- **$T_{low}$**: `0.25`
+### Thresholds
+- **Evaluation optimum** (`eval/results/05-clarification.json`): `T_high=0.55`, `T_low=0.25`
+- **Runtime defaults** (`features/f05_clarification/policy.py`): `T_high=0.65`, `T_low=0.35`
 - **Margin ($\Delta$)**: `0.15`
 
 ### Comparative Impact Table
@@ -89,5 +89,5 @@ Evaluated across **256 held-out validation samples** in `data/datasets/val.csv` 
 1. **100% Zero-Hallucination Precision**: Enforcing the $T_{high}=0.55$ threshold on calibrated probabilities ensures that all directly answered queries are verified accurate.
 2. **Ambiguity Prevention**: Ambiguous queries with margins $< 0.15$ are caught before incorrect information is returned.
 3. **Missing Slot Proactivity**: Intents such as `exam_timetable` immediately request the specific semester without failing silently.
-4. **Resilient Fallback**: Unknown queries present structured helpline cards with specific department contacts, phone numbers, and room locations.
+4. **Resilient Fallback**: Unknown queries name the responsible office. Room, phone, email and hours are shown only when `CAMPUS_CONTACTS_VERIFIED=true`; otherwise the reply states that verified details are not configured yet.
 
