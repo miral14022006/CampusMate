@@ -33,6 +33,23 @@ jest.mock('../features/f00_history', () => ({
   historyRouter: (req, res, next) => next()
 }));
 
+jest.mock('../features/f16_auth', () => {
+  const express = require('express');
+  return {
+    requireAuth: (req, res, next) => {
+      req.user = { id: 'mock_user_1', role: 'student', branch: 'Computer Engineering', semester: 4 };
+      next();
+    },
+    optionalAuth: (req, res, next) => {
+      req.user = { id: 'mock_user_1', role: 'student', branch: 'Computer Engineering', semester: 4 };
+      next();
+    },
+    requireRole: (...roles) => (req, res, next) => next(),
+    studentAuthRoutes: express.Router(),
+    adminAuthRoutes: express.Router()
+  };
+});
+
 jest.mock('../features/f06_sessions', () => ({
   sessionManager: {
     getState: jest.fn().mockResolvedValue(null),

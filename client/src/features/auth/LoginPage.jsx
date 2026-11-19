@@ -17,6 +17,18 @@ import { EASE } from '../../lib/motion';
 const NOTE =
   'Administrators can see anonymized usage statistics and review conversations to improve the assistant.';
 
+export const PDEU_BRANCHES = [
+  'Computer Engineering',
+  'Information & Communication Technology',
+  'Artificial Intelligence & Data Science',
+  'Chemical Engineering',
+  'Petroleum Engineering',
+  'Mechanical Engineering',
+  'Electrical Engineering',
+  'Civil Engineering',
+  'Electronics & Communication Engineering'
+];
+
 const signInSchema = z.object({
   email: z.string().min(1, 'Enter your college email.').email('Enter a valid email address.'),
   password: z.string().min(1, 'Enter your password.'),
@@ -370,13 +382,30 @@ export default function LoginPage() {
                     />
                   </div>
                 </div>
-                <AuthField
-                  label="Branch (optional)"
-                  icon={GraduationCap}
-                  placeholder="e.g. Computer Science"
-                  error={signUp.formState.errors.branch?.message}
-                  {...signUp.register('branch')}
-                />
+                <div>
+                  <label htmlFor="signup-branch" className="mb-1.5 block text-[13.5px] font-semibold text-zinc-100">
+                    Branch <span className="font-normal text-zinc-400">(optional)</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="signup-branch"
+                      className="h-11 w-full appearance-none rounded-xl border border-white/15 bg-[#141414]/90 pl-3.5 pr-10 text-[14px] text-white outline-none transition-all hover:border-white/30 focus:border-accent focus:ring-2 focus:ring-accent/30 backdrop-blur-md cursor-pointer"
+                      {...signUp.register('branch')}
+                    >
+                      <option value="" className="bg-[#181818] text-zinc-400">Select branch</option>
+                      {PDEU_BRANCHES.map((b) => (
+                        <option key={b} value={b} className="bg-[#181818] text-white">
+                          {b}
+                        </option>
+                      ))}
+                      <option value="Other" className="bg-[#181818] text-white">Other</option>
+                    </select>
+                    <ChevronDown
+                      className="pointer-events-none absolute right-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-zinc-400 transition-colors"
+                      aria-hidden="true"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="rounded-xl border border-white/10 bg-black/40 p-3">

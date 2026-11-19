@@ -33,10 +33,48 @@ const handleChat = async (req, res) => {
       dialogueState = await sessionManager.getState(sessionId);
     }
 
+    // Branch-awareness & Student context personalization:
+    // If the student has a registered branch or semester, seed them into the dialogue slots
+    // so intent templates, clarifications, and document retrieval automatically filter/ground on their branch.
+    if (req.user?.branch || req.user?.semester) {
+      dialogueState = dialogueState || { session_id: sessionId, slots: {} };
+      if (!dialogueState.slots) dialogueState.slots = {};
+      if (req.user.branch && !dialogueState.slots.branch) {
+        dialogueState.slots.branch = req.user.branch;
+        if (!dialogueState.slots.course) {
+          dialogueState.slots.course = req.user.branch;
+        }
+      }
+      if (req.user.semester && !dialogueState.slots.semester) {
+        dialogueState.slots.semester = String(req.user.semester);
+      }
+    }
+
+    // For timetable, schedule, or exam queries, if query does not explicitly specify the student's branch,
+    // inject the branch context into the query sent to the NLP retriever to ensure proper document grounding.
+    let queryToProcess = query.trim();
+    if (req.user?.branch) {
+      const qLower = queryToProcess.toLowerCase();
+      const isScheduleOrTimetable = /timetable|time\s*table|schedule|exam|datesheet|date\s*sheet|class/i.test(qLower);
+      const userBranchNormalized = req.user.branch.toLowerCase();
+      const alreadyMentionsBranch = qLower.includes(userBranchNormalized) ||
+        (userBranchNormalized.includes('computer') && (qLower.includes('cs') || qLower.includes('cse') || qLower.includes('ce'))) ||
+        (userBranchNormalized.includes('information') && (qLower.includes('it') || qLower.includes('ict'))) ||
+        (userBranchNormalized.includes('chemical') && (qLower.includes('chemical') || qLower.includes('che'))) ||
+        (userBranchNormalized.includes('petroleum') && (qLower.includes('petroleum') || qLower.includes('pe'))) ||
+        (userBranchNormalized.includes('mechanical') && (qLower.includes('mechanical') || qLower.includes('me'))) ||
+        (userBranchNormalized.includes('electrical') && (qLower.includes('electrical') || qLower.includes('ee'))) ||
+        (userBranchNormalized.includes('civil') && (qLower.includes('civil')));
+
+      if (isScheduleOrTimetable && !alreadyMentionsBranch) {
+        queryToProcess = `${queryToProcess} for ${req.user.branch}`;
+      }
+    }
+
     // Feature 12: Check Redis server-side cache for stateless answerable queries
     let isFromCache = false;
     if (featureFlags.cache_enabled && (!dialogueState || !dialogueState.last_intent)) {
-      const cachedEntry = await serverCacheManager.get(query.trim(), 'en', dialogueState?.slots);
+      const cachedEntry = await serverCacheManager.get(queryToProcess, 'en', dialogueState?.slots);
       if (cachedEntry.cached && cachedEntry.data) {
         nlpData = cachedEntry.data;
         isFromCache = true;
@@ -46,11 +84,11 @@ const handleChat = async (req, res) => {
     if (!nlpData) {
       try {
         // Use production nlpClient with retry, timeout, session ID & dialogue state
-        nlpData = await nlpClient.query(query.trim(), null, sessionId, dialogueState);
+        nlpData = await nlpClient.query(queryToProcess, null, sessionId, dialogueState);
 
         // Feature 12: Cache valid answerable query result
         if (featureFlags.cache_enabled && nlpData) {
-          await serverCacheManager.set(query.trim(), nlpData.language, dialogueState?.slots, nlpData);
+          await serverCacheManager.set(queryToProcess, nlpData.language, dialogueState?.slots, nlpData);
         }
       } catch (nlpErr) {
         console.warn(`[Server] NLP service unavailable (${nlpErr.message}), returning graceful baseline fallback.`);

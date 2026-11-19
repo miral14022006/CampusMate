@@ -12,6 +12,7 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { useDocumentTitle } from '../../lib/hooks';
 import { AuthField, FormMessage, PasswordStrength } from './AuthField';
+import { PDEU_BRANCHES } from './LoginPage';
 
 const profileSchema = z.object({
   name: z.string().trim().min(2, 'Enter your full name.').max(100),
@@ -224,7 +225,24 @@ export default function ProfilePage() {
                     ))}
                   </select>
                 </div>
-                <AuthField label="Branch" placeholder="Computer Engineering" error={profileForm.formState.errors.branch?.message} {...profileForm.register('branch')} />
+                <div>
+                  <label htmlFor="profile-branch" className="mb-1.5 block text-[11.5px] font-semibold text-ink-secondary">
+                    Branch
+                  </label>
+                  <select
+                    id="profile-branch"
+                    className="h-11 w-full rounded-pill border border-hairline bg-surface-2 px-3 text-[13px] text-ink outline-none focus:border-accent"
+                    {...profileForm.register('branch')}
+                  >
+                    <option value="">Not set</option>
+                    {PDEU_BRANCHES.map((b) => (
+                      <option key={b} value={b}>
+                        {b}
+                      </option>
+                    ))}
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
               </div>
               <FormMessage>{profileError}</FormMessage>
               <FormMessage variant="success">{profileMessage}</FormMessage>
