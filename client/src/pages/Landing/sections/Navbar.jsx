@@ -4,10 +4,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowRight,
   Menu,
-  X
+  X,
+  UserRound,
+  LogOut
 } from 'lucide-react';
 import Logo from '../../../components/brand/Logo';
 import { Button } from '../../../components/ui/Button';
+import { StudentMenu } from '../../../features/auth/StudentMenu';
+import { useAuth } from '../../../context/AuthContext';
 import { landingLinks } from '../../../config/navigation';
 import { prefetchRoute } from '../../../lib/prefetch';
 import { DURATION, EASE } from '../../../lib/motion';
@@ -23,6 +27,7 @@ export function Navbar({ activeLinkId = 'home', introFinished = true }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hoveredLink, setHoveredLink] = useState(null);
+  const { isAuthenticated, user, logout } = useAuth();
 
   const navRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -177,8 +182,8 @@ export function Navbar({ activeLinkId = 'home', introFinished = true }) {
               );
             })}
 
-            {/* Start Chatting CTA on the far right */}
-            <div className="pl-2">
+            {/* Start Chatting CTA & Student Profile on the far right */}
+            <div className="flex items-center gap-3 pl-2">
               <Link to="/app" className="inline-flex min-h-[44px] items-center">
                 <Button
                   size="sm"
@@ -188,6 +193,16 @@ export function Navbar({ activeLinkId = 'home', introFinished = true }) {
                   Start Chatting
                 </Button>
               </Link>
+              {isAuthenticated ? (
+                <StudentMenu />
+              ) : (
+                <Link
+                  to="/login"
+                  className="text-[13px] font-semibold text-ink-secondary hover:text-accent transition-colors"
+                >
+                  Sign in
+                </Link>
+              )}
             </div>
           </div>
 
@@ -227,6 +242,41 @@ export function Navbar({ activeLinkId = 'home', introFinished = true }) {
             className="fixed inset-x-4 top-24 z-50 rounded-3xl border border-hairline bg-[#181818]/98 p-6 shadow-2xl backdrop-blur-2xl lg:hidden max-h-[calc(100svh-120px)] overflow-y-auto"
           >
             <div className="space-y-4">
+              {isAuthenticated ? (
+                <div className="rounded-2xl border border-hairline bg-surface-2 p-3.5 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-ink flex items-center gap-1.5 truncate">
+                      <UserRound className="h-4 w-4 text-accent shrink-0" />
+                      <span className="truncate">{user?.name || user?.email || 'Student'}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setMobileOpen(false);
+                        try {
+                          await logout();
+                        } catch {
+                          /* ignore */
+                        }
+                        window.location.assign('/login');
+                      }}
+                      className="text-xs text-[color:var(--negative)] font-medium hover:underline flex items-center gap-1 shrink-0 ml-2 cursor-pointer"
+                    >
+                      <LogOut className="h-3 w-3" /> Logout
+                    </button>
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <Link
+                      to="/profile"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex-1 rounded-pill bg-surface-1 border border-hairline py-1.5 text-xs font-semibold text-ink text-center hover:bg-surface-3 transition-colors"
+                    >
+                      My Profile
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
+
               <p className="text-[11px] font-semibold uppercase tracking-wider text-accent">
                 Navigation
               </p>
@@ -254,6 +304,13 @@ export function Navbar({ activeLinkId = 'home', introFinished = true }) {
                     Start Chatting
                   </Button>
                 </Link>
+                {!isAuthenticated && (
+                  <Link to="/login" onClick={() => setMobileOpen(false)} className="w-full block">
+                    <Button variant="secondary" className="w-full h-12 text-[14.5px]">
+                      Sign In
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
           </motion.div>

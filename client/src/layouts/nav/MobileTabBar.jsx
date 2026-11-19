@@ -8,10 +8,11 @@ import {
   Menu as MenuIcon,
   X,
   Shield,
-  LogOut
+  LogOut,
+  UserRound
 } from 'lucide-react';
 
-import { useAdminAuth } from '../../context/AuthContext';
+import { useAdminAuth, useAuth } from '../../context/AuthContext';
 import { EASE } from '../../lib/motion';
 import { cn } from '../../lib/cn';
 
@@ -20,7 +21,8 @@ export function MobileTabBar({ onToggleHistory }) {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, logout, user } = useAdminAuth();
+  const adminAuth = useAdminAuth();
+  const studentAuth = useAuth();
 
   // Detect virtual keyboard opening to hide bottom bar
   useEffect(() => {
@@ -157,17 +159,78 @@ export function MobileTabBar({ onToggleHistory }) {
               </div>
 
               <div className="py-4 space-y-3">
-                {/* Admin Access / Status */}
-                {isAuthenticated ? (
+                {/* Student Profile / Logout */}
+                {studentAuth.isAuthenticated ? (
                   <div className="rounded-lg border border-hairline bg-surface-2 p-3 space-y-2">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-ink flex items-center gap-1.5">
-                        <Shield className="h-4 w-4 text-accent" /> Admin: {user?.username || 'Staff'}
+                      <span className="font-semibold text-ink flex items-center gap-1.5 truncate">
+                        <UserRound className="h-4 w-4 text-accent shrink-0" />
+                        <span className="truncate">{studentAuth.user?.name || studentAuth.user?.email || 'Student'}</span>
                       </span>
                       <button
                         type="button"
-                        onClick={logout}
-                        className="text-xs text-[color:var(--negative)] font-medium hover:underline flex items-center gap-1"
+                        onClick={async () => {
+                          setSheetOpen(false);
+                          try {
+                            await studentAuth.logout();
+                          } catch {
+                            /* ignore */
+                          }
+                          window.location.assign('/login');
+                        }}
+                        className="text-xs text-[color:var(--negative)] font-medium hover:underline flex items-center gap-1 shrink-0 ml-2 cursor-pointer"
+                      >
+                        <LogOut className="h-3 w-3" /> Logout
+                      </button>
+                    </div>
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSheetOpen(false);
+                          navigate('/profile');
+                        }}
+                        className="flex-1 rounded-sm bg-accent py-1.5 text-xs font-semibold text-white text-center cursor-pointer"
+                      >
+                        My Profile
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-hairline bg-surface-2 p-3 flex items-center justify-between">
+                    <span className="text-xs text-ink-muted">Guest / Not signed in</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSheetOpen(false);
+                        navigate('/login');
+                      }}
+                      className="rounded-sm bg-accent px-3 py-1 text-xs font-semibold text-white cursor-pointer"
+                    >
+                      Sign In
+                    </button>
+                  </div>
+                )}
+
+                {/* Admin Access / Status */}
+                {adminAuth.isAuthenticated ? (
+                  <div className="rounded-lg border border-hairline bg-surface-2 p-3 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-ink flex items-center gap-1.5">
+                        <Shield className="h-4 w-4 text-accent" /> Admin: {adminAuth.user?.username || 'Staff'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setSheetOpen(false);
+                          try {
+                            await adminAuth.logout();
+                          } catch {
+                            /* ignore */
+                          }
+                          window.location.assign('/admin/login');
+                        }}
+                        className="text-xs text-[color:var(--negative)] font-medium hover:underline flex items-center gap-1 cursor-pointer"
                       >
                         <LogOut className="h-3 w-3" /> Logout
                       </button>

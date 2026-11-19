@@ -52,10 +52,25 @@ export function StudentMenu({ collapsed = false, align = 'end', className = '' }
 
   const name = user?.name || user?.email || 'Student';
 
-  const handleLogout = async () => {
+  const handleLogout = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setOpen(false);
-    await logout();
-    navigate('/login', { replace: true });
+    try {
+      await logout();
+    } catch {
+      /* ignore */
+    }
+    window.location.assign('/login');
+  };
+
+  const handleProfileClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setOpen(false);
+    navigate('/profile');
   };
 
   return (
@@ -93,6 +108,8 @@ export function StudentMenu({ collapsed = false, align = 'end', className = '' }
             initial="hidden"
             animate="show"
             exit="exit"
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
             className={cn(
               'absolute z-50 mt-2 w-56 overflow-hidden rounded-md border border-hairline bg-surface-1 p-1.5 shadow-lift',
               align === 'end' ? 'right-0' : 'left-0'
@@ -102,20 +119,20 @@ export function StudentMenu({ collapsed = false, align = 'end', className = '' }
               <p className="truncate text-[12px] font-semibold text-ink">{user?.name || 'Student'}</p>
               <p className="truncate text-[10.5px] text-ink-muted">{user?.email}</p>
             </div>
-            <Link
+            <button
               role="menuitem"
-              to="/profile"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2 rounded-sm px-2.5 py-2 text-[12px] text-ink-secondary transition-colors hover:bg-surface-2 hover:text-ink"
+              type="button"
+              onClick={handleProfileClick}
+              className="flex w-full items-center gap-2 rounded-sm px-2.5 py-2 text-left text-[12px] text-ink-secondary transition-colors hover:bg-surface-2 hover:text-ink cursor-pointer"
             >
               <UserRound className="h-3.5 w-3.5" aria-hidden="true" />
               Profile
-            </Link>
+            </button>
             <button
               role="menuitem"
               type="button"
               onClick={handleLogout}
-              className="flex w-full items-center gap-2 rounded-sm px-2.5 py-2 text-left text-[12px] text-ink-secondary transition-colors hover:bg-negative-soft hover:text-[color:var(--negative)]"
+              className="flex w-full items-center gap-2 rounded-sm px-2.5 py-2 text-left text-[12px] text-ink-secondary transition-colors hover:bg-negative-soft hover:text-[color:var(--negative)] cursor-pointer"
             >
               <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
               Sign out

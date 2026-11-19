@@ -229,8 +229,15 @@ export function Sidebar({
                 <span className="truncate">{user?.username || 'Admin'}</span>
                 <button
                   type="button"
-                  onClick={logout}
-                  className="text-[color:var(--negative)] hover:underline flex items-center gap-1 font-medium"
+                  onClick={async () => {
+                    try {
+                      await logout();
+                    } catch {
+                      /* ignore */
+                    }
+                    window.location.assign('/admin/login');
+                  }}
+                  className="text-[color:var(--negative)] hover:underline flex items-center gap-1 font-medium cursor-pointer"
                 >
                   <LogOut className="h-3 w-3" /> Logout
                 </button>
@@ -241,8 +248,15 @@ export function Sidebar({
                 <Tooltip label={`Sign out (${user?.username || 'Admin'})`} side="right" className="w-full justify-center">
                   <button
                     type="button"
-                    onClick={logout}
-                    className="flex h-10 w-10 mx-auto items-center justify-center rounded-full text-ink-muted hover:bg-negative-soft hover:text-[color:var(--negative)] transition-colors"
+                    onClick={async () => {
+                      try {
+                        await logout();
+                      } catch {
+                        /* ignore */
+                      }
+                      window.location.assign('/admin/login');
+                    }}
+                    className="flex h-10 w-10 mx-auto items-center justify-center rounded-full text-ink-muted hover:bg-negative-soft hover:text-[color:var(--negative)] transition-colors cursor-pointer"
                     aria-label="Sign out"
                   >
                     <LogOut className="h-4 w-4" aria-hidden="true" />

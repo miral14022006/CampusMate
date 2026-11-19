@@ -171,10 +171,14 @@ export default function ProfilePage() {
         <button
           type="button"
           onClick={async () => {
-            await logout();
-            navigate('/login', { replace: true });
+            try {
+              await logout();
+            } catch {
+              /* ignore */
+            }
+            window.location.assign('/login');
           }}
-          className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-ink-muted hover:text-ink"
+          className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-ink-muted hover:text-ink cursor-pointer"
         >
           <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
           Sign out
