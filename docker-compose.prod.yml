@@ -70,8 +70,10 @@ services:
       - GEMINI_MODEL=gemini-1.5-flash
       - ENABLE_RERANKER=true
       - HF_HOME=/home/appuser/.cache/huggingface
+      - DATA_DIR=/data
     volumes:
-      - /opt/campusmate/data/index:/app/data/index
+      - ./data:/data
+      - /opt/campusmate/data/index:/data/index
       - /opt/campusmate/models/huggingface:/home/appuser/.cache/huggingface
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
