@@ -3,13 +3,13 @@
 }
 
 # Frontend & Static Assets
-campus_mate.miralpatel.tech {
+campus-mate.miralpatel.tech {
     reverse_proxy client:80
 }
 
 # Redirect www to apex
-www.campus_mate.miralpatel.tech {
-    redir https://campus_mate.miralpatel.tech{uri} permanent
+www.campus-mate.miralpatel.tech {
+    redir https://campus-mate.miralpatel.tech{uri} permanent
 }
 
 # Backend API
