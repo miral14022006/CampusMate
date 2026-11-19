@@ -85,7 +85,7 @@ export default function App() {
         <Route
           path="/documents"
           element={
-            <ProtectedRoute allowGuest>
+            <ProtectedRoute allowGuest={false}>
               <DocumentLibrary />
             </ProtectedRoute>
           }
@@ -93,7 +93,7 @@ export default function App() {
         <Route
           path="/documents/:id"
           element={
-            <ProtectedRoute allowGuest>
+            <ProtectedRoute allowGuest={false}>
               <DocumentViewer />
             </ProtectedRoute>
           }
@@ -102,7 +102,7 @@ export default function App() {
         <Route
           path="/chat"
           element={
-            <ProtectedRoute allowGuest>
+            <ProtectedRoute allowGuest={false}>
               <ChatLayout />
             </ProtectedRoute>
           }
@@ -114,7 +114,7 @@ export default function App() {
         <Route
           path="/app"
           element={
-            <ProtectedRoute allowGuest>
+            <ProtectedRoute allowGuest={false}>
               <ChatLayout />
             </ProtectedRoute>
           }

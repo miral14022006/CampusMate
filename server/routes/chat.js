@@ -8,7 +8,7 @@ const { serverCacheManager } = require('../features/f12_cache');
 const { logImplicitFailureIfNeeded } = require('../features/f10_feedback');
 const { logQueryAnalytics } = require('../features/f11_analytics');
 const { PersistentConversation } = require('../features/f00_history');
-const { optionalAuth } = require('../features/f16_auth');
+const { requireAuth, optionalAuth } = require('../features/f16_auth');
 const { recordInBackground } = require('../features/f17_activity/activityService');
 
 const router = express.Router();
@@ -227,8 +227,8 @@ const handleChat = async (req, res) => {
   }
 };
 
-router.post('/', optionalAuth, handleChat);
-router.post('/message', optionalAuth, handleChat);
+router.post('/', requireAuth, handleChat);
+router.post('/message', requireAuth, handleChat);
 
 /**
  * GET /api/chat/history/:sessionId

@@ -42,7 +42,7 @@ services:
       - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
       - ALLOWED_EMAIL_DOMAINS=${ALLOWED_EMAIL_DOMAINS:-pdeu.ac.in,campus.edu,gmail.com}
-      - GUEST_MODE=true
+      - GUEST_MODE=false
       - APP_BASE_URL=https://campus-mate.miralpatel.tech
       - CORS_ORIGIN=https://campus-mate.miralpatel.tech,https://www.campus-mate.miralpatel.tech
       - SUPERADMIN_EMAIL=${SUPERADMIN_EMAIL:-admin18@pdpu.ac.in}
