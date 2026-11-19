@@ -1,17 +1,13 @@
-import os
-import sys
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
 import numpy as np
-import pandas as pd
 import joblib
 
 from features.f03_transformer_intent.base import BaseIntentClassifier
 from features.f03_transformer_intent.calibration import apply_temperature_scaling
 from app.modules.preprocessing import preprocessor
-from features.f02_transliteration.engine import transliteration_engine
 
 logger = logging.getLogger("nlp_service.muril_intent")
 

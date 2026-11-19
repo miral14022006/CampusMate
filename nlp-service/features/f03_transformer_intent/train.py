@@ -1,14 +1,11 @@
-import os
-import sys
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Any, List, Tuple
 import pandas as pd
 import numpy as np
 import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression, SGDClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import FeatureUnion
 from sklearn.utils.class_weight import compute_class_weight
 

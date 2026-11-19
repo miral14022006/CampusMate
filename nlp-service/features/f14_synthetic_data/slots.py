@@ -1,6 +1,4 @@
-import re
 import random
-from typing import List, Dict, Any
 
 COURSES = ["BTech", "B.Tech", "MTech", "Diploma", "BCA", "MCA"]
 BRANCHES = ["Computer Engineering", "Computer Science", "Information Technology", "Civil Engineering", "Mechanical", "Electrical", "CSE", "IT"]

@@ -1,8 +1,5 @@
-import os
-import re
-import hashlib
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import List
 
 from features.f09_ocr.engine import ocr_engine
 

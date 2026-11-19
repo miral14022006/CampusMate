@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CalendarDays, RefreshCw, Check, X, AlertCircle } from 'lucide-react';
+import { CalendarDays, RefreshCw, Check, X } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';

@@ -47,7 +47,7 @@ async function requireAuth(req, res, next) {
     }
 
     next();
-  } catch (err) {
+  } catch {
     return res.status(401).json({ error: 'Invalid or expired token.' });
   }
 }
@@ -103,7 +103,7 @@ async function optionalAuth(req, res, next) {
         name: decoded.name
       };
     }
-  } catch (err) {
+  } catch {
     req.user = null;
   }
   next();

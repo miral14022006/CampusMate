@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { StatusPill } from '../../components/ui/Badge';
+
 import { cn } from '../../lib/cn';
 
 export function MonthGrid({

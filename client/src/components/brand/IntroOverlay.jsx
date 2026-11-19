@@ -22,7 +22,7 @@ export function IntroOverlay({ onComplete }) {
     // Check sessionStorage
     try {
       return !sessionStorage.getItem('cm_intro_seen');
-    } catch (e) {
+    } catch {
       return false;
     }
   });
@@ -32,7 +32,9 @@ export function IntroOverlay({ onComplete }) {
   const finish = useCallback(() => {
     try {
       sessionStorage.setItem('cm_intro_seen', 'true');
-    } catch (e) {}
+    } catch {
+      // storage can be unavailable in private mode
+    }
     setPhase('lifting');
     setTimeout(() => {
       setVisible(false);

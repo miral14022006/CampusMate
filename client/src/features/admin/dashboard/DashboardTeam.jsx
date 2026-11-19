@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Copy, KeyRound, Mail, Shield, ShieldCheck, Trash2, UserPlus, UserX, Clock } from 'lucide-react';
+import { Copy, KeyRound, Mail, ShieldCheck, Trash2, UserPlus, UserX, Clock } from 'lucide-react';
 import { api } from '../../../services/api';
 import { useAuth } from '../../../context/AuthContext';
 import { Badge, StatusPill } from '../../../components/ui/Badge';

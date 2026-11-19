@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Calendar as CalendarIcon, Download, ExternalLink, MessageSquare, Clock, FileText, Check } from 'lucide-react';
+import { Calendar as CalendarIcon, Download, MessageSquare, Clock, FileText, Check } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { StatusPill } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { formatDate } from '../../lib/format';
+
 import { cn } from '../../lib/cn';
 
-function getCountdown(startDate, endDate) {
+function getCountdown(startDate) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   const start = new Date(startDate);
@@ -37,7 +37,7 @@ export function EventCard({
   lang = 'en'
 }) {
   const [clickedGcal, setClickedGcal] = useState(false);
-  const countdown = getCountdown(event.startDate, event.endDate);
+  const countdown = getCountdown(event.startDate);
   const isRecent = isRecentlyUpdated(event.updatedAt || event.createdAt);
 
   const title = (event.titles && event.titles[lang]) || event.title || 'Academic Milestone';

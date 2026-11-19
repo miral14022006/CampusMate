@@ -3,7 +3,7 @@ import json
 import logging
 from pathlib import Path
 from functools import lru_cache
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, Tuple
 
 logger = logging.getLogger("nlp_service.transliteration")
 

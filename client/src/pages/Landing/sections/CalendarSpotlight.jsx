@@ -6,7 +6,6 @@ import {
   Calendar,
   Check,
   Clock,
-  ExternalLink,
   FileCheck2
 } from 'lucide-react';
 import Scene from '../components/Scene';

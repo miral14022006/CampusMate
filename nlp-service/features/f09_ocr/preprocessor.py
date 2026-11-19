@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import logging
-from typing import Tuple, Optional
+from typing import Tuple
 
 logger = logging.getLogger(__name__)
 

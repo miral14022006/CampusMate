@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { m, useInView } from 'framer-motion';
-import { DURATION, EASE, STAGGER, fadeUp, staggerContainer, viewportOnce } from '../../lib/motion';
+import { DURATION, EASE, STAGGER, viewportOnce } from '../../lib/motion';
 
 /**
  * <Reveal>

@@ -1,7 +1,5 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
-from typing import Dict, Any, Optional
-import os
 import json
 from pathlib import Path
 
@@ -24,7 +22,6 @@ def get_dataset_statistics():
 @router.post("/trigger")
 def trigger_generation(req: GenerateRequest, background_tasks: BackgroundTasks):
     """Triggers asynchronous dataset generation job."""
-    from features.f14_synthetic_data.run_generation import main as run_gen
 
     # Feature flag check
     features_json = Path(__file__).resolve().parent.parent.parent / "config" / "features.json"

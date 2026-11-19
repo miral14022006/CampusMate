@@ -6,7 +6,7 @@ const User = require('../models/User');
 const SessionFamily = require('../models/SessionFamily');
 const Invite = require('../models/Invite');
 const AuditLog = require('../models/AuditLog');
-const { generateAccessToken, generateRefreshToken } = require('../authUtils');
+const { generateAccessToken } = require('../authUtils');
 
 // Helper to clean collections if mongo is connected
 async function clearCollections() {

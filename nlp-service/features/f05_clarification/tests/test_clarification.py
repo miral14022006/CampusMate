@@ -1,5 +1,4 @@
 import unittest
-from pathlib import Path
 from features.f05_clarification.policy import DecisionPolicy, DecisionOutcome
 
 class TestDecisionPolicy(unittest.TestCase):

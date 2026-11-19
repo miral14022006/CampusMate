@@ -6,7 +6,7 @@ import { api } from '../../services/api';
 import { popover } from '../../lib/motion';
 import { features } from '../../config/features';
 
-export function AddToCalendarButton({ events = [], variant = 'compact' }) {
+export function AddToCalendarButton({ events = [] }) {
   const eventList = Array.isArray(events) ? events : [events];
   const [open, setOpen] = useState(false);
   const [clickedGcal, setClickedGcal] = useState(false);

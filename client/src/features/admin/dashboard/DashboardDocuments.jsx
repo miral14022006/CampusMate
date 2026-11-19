@@ -6,7 +6,7 @@ import { useDashboardFilters } from './DashboardFilters';
 import { Button } from '../../../components/ui/Button';
 import { StatusPill } from '../../../components/ui/Badge';
 import { Table, TBody, TD, TH, THead, TR } from '../../../components/ui/Table';
-import { ErrorState, EmptyPanel, MiniTable, SERIES_COLORS, useDashboardData } from './DashboardBits';
+import { ErrorState, EmptyPanel, SERIES_COLORS, useDashboardData } from './DashboardBits';
 import { cn } from '../../../lib/cn';
 
 function fmt(date) {

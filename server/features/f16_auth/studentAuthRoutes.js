@@ -7,7 +7,6 @@ const rateLimit = require('express-rate-limit');
 const User = require('./models/User');
 const SessionFamily = require('./models/SessionFamily');
 const Invite = require('./models/Invite');
-const AuditLog = require('./models/AuditLog');
 const PersistentConversation = require('../f00_history/conversationModel');
 const Conversation = require('../../models/Conversation');
 
@@ -18,9 +17,8 @@ const {
   validatePasswordPolicy,
   isEmailDomainAllowed
 } = require('./authUtils');
-const { requireAuth, requireRole, optionalAuth } = require('./authMiddleware');
+const { requireAuth } = require('./authMiddleware');
 const { recordAuditLog } = require('./auditService');
-const { sendInviteEmail } = require('./emailService');
 const { recordInBackground } = require('../f17_activity/activityService');
 
 const router = express.Router();
@@ -75,7 +73,7 @@ const loginSchema = z.object({
 });
 
 // Helper for generic login failure
-async function handleFailedLogin(user, req) {
+async function handleFailedLogin(user) {
   if (!user) return;
   user.failedLogins = (user.failedLogins || 0) + 1;
   if (user.failedLogins >= 5) {

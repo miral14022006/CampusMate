@@ -1,11 +1,9 @@
-import os
-import io
 import shutil
 import logging
 import numpy as np
 import cv2
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any
 from PIL import Image
 
 from features.f09_ocr.preprocessor import image_preprocessor

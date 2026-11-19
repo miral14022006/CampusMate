@@ -1,5 +1,5 @@
 import logging
-from typing import List, Dict, Any, Tuple
+from typing import Tuple
 import pandas as pd
 from rapidfuzz import fuzz
 from app.modules.language_detect import language_detector
@@ -11,14 +11,12 @@ class SyntheticDataPostprocessor:
         self.fuzzy_sim_threshold = fuzzy_sim_threshold
 
     def exact_deduplicate(self, df: pd.DataFrame) -> pd.DataFrame:
-        initial = len(df)
         df_clean = df.drop_duplicates(subset=["text"]).copy()
         logger.info(f"Exact deduplication removed {initial - len(df_clean)} duplicates.")
         return df_clean
 
     def fuzzy_deduplicate(self, df: pd.DataFrame) -> pd.DataFrame:
         """Deduplicates texts having fuzzy ratio > threshold within the same intent."""
-        initial = len(df)
         kept_rows = []
 
         # Process per intent group for performance
@@ -42,7 +40,6 @@ class SyntheticDataPostprocessor:
 
     def validate_languages(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, int]:
         """Validates predicted language against annotated language and drops mismatches."""
-        initial = len(df)
         valid_rows = []
         dropped_count = 0
 

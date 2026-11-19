@@ -29,7 +29,7 @@ function latencyTrackerMiddleware(req, res, next) {
           stageLatencies: metricsData.stageLatencies || {}
         });
       }
-    } catch (err) {
+    } catch {
       // Gracefully silent if DB is down
     }
   });

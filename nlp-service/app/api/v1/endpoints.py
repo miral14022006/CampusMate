@@ -1,8 +1,7 @@
 import json
 import asyncio
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
-from typing import Dict, Any
 
 from app.schemas import (
     QueryRequest,

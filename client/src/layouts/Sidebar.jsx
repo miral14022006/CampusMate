@@ -3,7 +3,6 @@ import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ChevronLeft,
-  ExternalLink,
   History,
   LogOut,
   PanelLeftClose,

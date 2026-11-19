@@ -1,6 +1,5 @@
 import re
 import logging
-from datetime import datetime, date
 from typing import List, Dict, Any, Optional, Tuple
 
 from features.f15_calendar_events.classifier import classify_event_category, generate_event_titles
@@ -23,7 +22,7 @@ MONTH_LEXICON = {
     "november": 11, "nov": 11,
     "december": 12, "dec": 12,
 
-    # Hindi (Devanagari)
+    # Hindi month names (Devanagari)
     "जनवरी": 1, "फ़रवरी": 2, "फरवरी": 2, "मार्च": 3, "अप्रैल": 4, "मई": 5, "जून": 6,
     "जुलाई": 7, "अगस्त": 8, "सितंबर": 9, "सितम्बर": 9, "अक्टूबर": 10, "अक्तूबर": 10,
     "नवंबर": 11, "नवम्बर": 11, "दिसंबर": 12, "दिसम्बर": 12,

@@ -38,7 +38,7 @@ function requireAdminAuth(req, res, next) {
     req.admin = decoded;
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch {
     return res.status(401).json({ error: 'Invalid or expired administrative token.' });
   }
 }

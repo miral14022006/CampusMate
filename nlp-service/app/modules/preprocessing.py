@@ -1,7 +1,6 @@
 import unicodedata
 import re
 import json
-from pathlib import Path
 from typing import List, Dict, Set, Any
 from app.config import STOPWORDS_DIR, LEXICONS_DIR
 

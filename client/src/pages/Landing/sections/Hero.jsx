@@ -1,4 +1,4 @@
-import { useId, useRef, useEffect, useState } from 'react';
+import { useId, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { m, useScroll, useTransform } from 'framer-motion';
 import {
@@ -14,7 +14,7 @@ import {
 import { Button } from '../../../components/ui/Button';
 import { SplitHeadline } from '../../../components/motion/MotionKit';
 import { usePrefersReducedMotion } from '../../../lib/hooks';
-import { DURATION, EASE, staggerContainer } from '../../../lib/motion';
+import { EASE, staggerContainer } from '../../../lib/motion';
 
 const TRUST = [
   { icon: Zap, label: 'Instant Answers' },
@@ -33,16 +33,6 @@ export function Hero({ introFinished = true }) {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const y = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : 36]);
   const scale = useTransform(scrollYProgress, [0, 1], [1, reduced ? 1 : 1.02]);
-
-  const [windowsLit, setWindowsLit] = useState(false);
-  useEffect(() => {
-    if (introFinished) {
-      const timer = setTimeout(() => {
-        setWindowsLit(true);
-      }, 700);
-      return () => clearTimeout(timer);
-    }
-  }, [introFinished]);
 
   return (
     <section

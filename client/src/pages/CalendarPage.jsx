@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import {
   Calendar as CalendarIcon,
   Search,
-  Filter,
   Rss,
   Download,
   ArrowLeft,

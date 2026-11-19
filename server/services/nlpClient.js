@@ -1,5 +1,4 @@
 const axios = require('axios');
-const featureFlags = require('../config/features');
 
 const NLP_SERVICE_URL = process.env.NLP_SERVICE_URL || 'http://localhost:8000';
 const NLP_API_KEY = process.env.NLP_API_KEY || 'campus_mate_secret_token_123';

@@ -1,8 +1,6 @@
 import time
-import functools
 from collections import OrderedDict
-from typing import Dict, Any, List, Optional
-import numpy as np
+from typing import Dict, Any, Optional
 
 class LRUCache:
     """Fast thread-safe LRU cache with hit/miss telemetry."""

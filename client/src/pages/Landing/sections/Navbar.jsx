@@ -1,17 +1,16 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  ChevronDown,
   ArrowRight,
   Menu,
   X
 } from 'lucide-react';
 import Logo from '../../../components/brand/Logo';
 import { Button } from '../../../components/ui/Button';
-import { landingLinks, featureDropdownItems } from '../../../config/navigation';
+import { landingLinks } from '../../../config/navigation';
 import { prefetchRoute } from '../../../lib/prefetch';
-import { DURATION, EASE, popover } from '../../../lib/motion';
+import { DURATION, EASE } from '../../../lib/motion';
 import { cn } from '../../../lib/cn';
 
 /**

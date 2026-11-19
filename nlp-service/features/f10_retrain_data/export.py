@@ -1,9 +1,7 @@
-import os
-import sys
 import json
 import logging
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import pandas as pd
 
 from features.f10_retrain_data.leakage_checker import check_dataset_leakage

@@ -8,7 +8,6 @@ const ENCRYPTION_KEY = process.env.GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
-const TAG_LENGTH = 16;
 
 /**
  * Encrypts an arbitrary text payload (such as an OAuth refresh or access token) with AES-256-GCM.

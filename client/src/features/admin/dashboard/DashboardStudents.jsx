@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip as RTooltip, XAxis, YAxis } from 'recharts';
 import { ChevronLeft, ChevronRight, Lock, Search, ShieldCheck, UserCog, UserX } from 'lucide-react';
@@ -12,8 +12,8 @@ import { Drawer } from '../../../components/ui/Drawer';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { Table, TBody, TD, TH, THead, TR } from '../../../components/ui/Table';
 import { Tooltip } from '../../../components/ui/Tooltip';
-import { ErrorState, MiniTable, SERIES_COLORS, useDashboardData } from './DashboardBits';
-import { cn } from '../../../lib/cn';
+import { ErrorState, SERIES_COLORS, useDashboardData } from './DashboardBits';
+
 
 function fmt(date) {
   if (!date) return '—';

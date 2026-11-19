@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
 
 const THEME_KEY = 'campusmate_theme';
 const ThemeContext = createContext(null);
@@ -12,9 +12,6 @@ function applyTheme() {
 }
 
 export function ThemeProvider({ children }) {
-  // Always locked to dark mode
-  const theme = 'dark';
-
   useEffect(() => {
     applyTheme();
     try {

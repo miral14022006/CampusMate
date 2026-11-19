@@ -2,7 +2,7 @@ import re
 import json
 import unicodedata
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 
 class PostOCRCleaner:
     """

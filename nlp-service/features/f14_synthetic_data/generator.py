@@ -1,5 +1,5 @@
 import random
-from typing import List, Dict, Any
+from typing import List, Dict
 from features.f14_synthetic_data.slots import (
     COURSES, BRANCHES, SEMESTERS, EXAM_TYPES, PREFIXES, SUFFIXES, inject_noise
 )

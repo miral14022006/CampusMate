@@ -90,7 +90,7 @@ router.get('/', optionalAuth, async (req, res) => {
       pages: Math.ceil(total / parsedLimit) || 0,
       filters: { departments: departments.filter(Boolean).sort(), types: types.filter(Boolean).sort() }
     });
-  } catch (err) {
+  } catch {
     return res.status(500).json({ error: 'Could not load the document library.' });
   }
 });
@@ -140,7 +140,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
         superseded_by: replacement
       }
     });
-  } catch (err) {
+  } catch {
     return res.status(500).json({ error: 'Could not load this document.' });
   }
 });
@@ -183,7 +183,7 @@ router.get('/:id/file', optionalAuth, async (req, res) => {
       `${isDownload ? 'attachment' : 'inline'}; filename="${encodeURIComponent(doc.original_name || doc.file_name || 'document')}"`
     );
     return fs.createReadStream(resolved).pipe(res);
-  } catch (err) {
+  } catch {
     return res.status(500).json({ error: 'Could not stream this document.' });
   }
 });

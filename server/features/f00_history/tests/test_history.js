@@ -1,7 +1,6 @@
 const assert = require('assert');
 const mongoose = require('mongoose');
 const PersistentConversation = require('../conversationModel');
-const Message = require('../../../models/Message');
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/college_assistant';
 

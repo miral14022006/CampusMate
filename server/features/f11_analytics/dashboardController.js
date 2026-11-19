@@ -15,13 +15,10 @@ const {
   parseRange,
   previousRange,
   normalizeGranularity,
-  demoMatch,
   buildActivityMatch,
   percentageChange,
   rate,
   calculateP95,
-  maskEmail,
-  maskName,
   identityFor,
   buildUniqueViewBuckets,
   buildActivitySummaryPipeline,
@@ -423,7 +420,7 @@ router.get('/overview', async (req, res) => {
   try {
     const result = await withCache(req, 'overview', () => buildOverview(req));
     return res.json(result);
-  } catch (err) {
+  } catch {
     console.error(`[Dashboard overview] ${err.message}`);
     return res.status(500).json({ error: 'Could not build the dashboard overview.' });
   }
@@ -543,7 +540,7 @@ async function listStudents(req) {
 router.get('/students', async (req, res) => {
   try {
     return res.json(await withCache(req, 'students', () => listStudents(req)));
-  } catch (err) {
+  } catch {
     console.error(`[Dashboard students] ${err.message}`);
     return res.status(500).json({ error: 'Could not load students.' });
   }
@@ -617,7 +614,7 @@ router.get('/students/:id/usage', async (req, res) => {
       timeline: timeline.map(sanitizeEvent),
       timelinePage: { page, pages: Math.ceil(timelineCount / limit), total: timelineCount }
     });
-  } catch (err) {
+  } catch {
     console.error(`[Dashboard student usage] ${err.message}`);
     return res.status(500).json({ error: 'Could not load student usage.' });
   }
@@ -643,7 +640,7 @@ router.patch('/students/:id/status', async (req, res) => {
     });
     await serverCacheManager.setRaw('dashboard-bust', { at: Date.now() }, 1);
     return res.json({ success: true, status: user.status });
-  } catch (err) {
+  } catch {
     return res.status(500).json({ error: 'Could not update student status.' });
   }
 });
@@ -770,7 +767,7 @@ function granularityFormatSafe(granularity) {
 router.get('/documents', async (req, res) => {
   try {
     return res.json(await withCache(req, 'documents', () => buildDocuments(req)));
-  } catch (err) {
+  } catch {
     console.error(`[Dashboard documents] ${err.message}`);
     return res.status(500).json({ error: 'Could not load document usage.' });
   }
@@ -862,7 +859,7 @@ async function buildChats(req) {
 router.get('/chats', async (req, res) => {
   try {
     return res.json(await withCache(req, 'chats', () => buildChats(req)));
-  } catch (err) {
+  } catch {
     console.error(`[Dashboard chats] ${err.message}`);
     return res.status(500).json({ error: 'Could not load conversations.' });
   }
@@ -883,7 +880,7 @@ async function sendChatsCsv(req, res) {
         : [chat.title, chat.language, chat.intent, chat.fallback, chat.feedback, chat.messageCount, chat.updatedAt]
     );
     return sendCsv(res, 'chats.csv', toCsv(headers, rows));
-  } catch (err) {
+  } catch {
     return res.status(500).json({ error: 'Could not export chats.' });
   }
 }
@@ -935,7 +932,7 @@ router.get('/chats/:id', async (req, res) => {
       },
       auditLogged: true
     });
-  } catch (err) {
+  } catch {
     console.error(`[Dashboard transcript] ${err.message}`);
     return res.status(500).json({ error: 'Could not open this transcript.' });
   }
@@ -978,7 +975,7 @@ async function listActivity(req) {
 router.get('/activity', async (req, res) => {
   try {
     return res.json(await withCache(req, 'activity', () => listActivity(req)));
-  } catch (err) {
+  } catch {
     console.error(`[Dashboard activity] ${err.message}`);
     return res.status(500).json({ error: 'Could not load the activity stream.' });
   }
@@ -1016,7 +1013,7 @@ router.get('/students/export', async (req, res) => {
         : [student.id, student.semester, student.branch, student.status, student.createdAt, student.lastActive, student.queries, student.docViews, student.conversations]
     );
     return sendCsv(res, 'students.csv', toCsv(headers, rows));
-  } catch (err) {
+  } catch {
     return res.status(500).json({ error: 'Could not export students.' });
   }
 });
@@ -1027,7 +1024,7 @@ router.get('/documents/export', async (req, res) => {
     const headers = ['Document ID', 'Title', 'Version', 'Status', 'Type', 'Department', 'Views', 'Unique viewers', 'Downloads', 'Citations', 'Last viewed'];
     const rows = result.documents.map((doc) => [doc.id, doc.title, doc.version, doc.status, doc.type, doc.department, doc.views, doc.uniqueViewers, doc.downloads, doc.citations, doc.lastViewed]);
     return sendCsv(res, 'documents-usage.csv', toCsv(headers, rows));
-  } catch (err) {
+  } catch {
     return res.status(500).json({ error: 'Could not export documents.' });
   }
 });
@@ -1054,7 +1051,7 @@ router.get('/activity/export', async (req, res) => {
       event.meta?.language || ''
     ]);
     return sendCsv(res, 'activity.csv', toCsv(headers, rows));
-  } catch (err) {
+  } catch {
     return res.status(500).json({ error: 'Could not export activity.' });
   }
 });

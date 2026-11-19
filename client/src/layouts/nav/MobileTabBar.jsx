@@ -8,11 +8,9 @@ import {
   Menu as MenuIcon,
   X,
   Shield,
-  LogOut,
-  ExternalLink,
-  Settings
+  LogOut
 } from 'lucide-react';
-import { appLinks } from '../../config/navigation';
+
 import { useAdminAuth } from '../../context/AuthContext';
 import { EASE } from '../../lib/motion';
 import { cn } from '../../lib/cn';

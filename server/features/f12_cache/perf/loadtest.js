@@ -1,8 +1,5 @@
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
-
-const SERVER_URL = process.env.SERVER_URL || 'http://localhost:5000/api/chat';
 
 // Realistic pool of test queries: 40% popular repeated queries, 60% unique queries
 const REPEATED_QUERIES = [

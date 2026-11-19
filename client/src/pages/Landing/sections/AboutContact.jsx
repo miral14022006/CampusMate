@@ -1,4 +1,4 @@
-import { m } from 'framer-motion';
+
 import { ArrowUpRight, Clock, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
 import Scene from '../components/Scene';
 import { Card } from '../../../components/ui/Card';

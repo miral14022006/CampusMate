@@ -10,7 +10,7 @@ import sys
 import json
 import logging
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Tuple
 import pandas as pd
 from sklearn.model_selection import StratifiedShuffleSplit
 

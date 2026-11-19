@@ -1,6 +1,5 @@
 import json
 import joblib
-from pathlib import Path
 from typing import List, Dict, Any
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -13,7 +12,6 @@ from app.core.config import (
     RETRIEVAL_TOP_K
 )
 from app.modules.preprocessing import preprocessor
-from features.f02_transliteration.engine import transliteration_engine
 
 class TfidfRetriever(BaseRetriever):
     def __init__(self):

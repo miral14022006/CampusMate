@@ -36,12 +36,11 @@ export default function Landing() {
     if (reducedMotion) return true;
     try {
       return sessionStorage.getItem('cm_intro_seen') === 'true';
-    } catch (e) {
+    } catch {
       return true;
     }
   });
 
-  const [activeSceneId, setActiveSceneId] = useState('home');
   const [activeLinkId, setActiveLinkId] = useState('home');
   const [showMobileBackToTop, setShowMobileBackToTop] = useState(false);
 
@@ -93,8 +92,6 @@ export default function Landing() {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const id = entry.target.id;
-            setActiveSceneId(id);
-
             const match = SCENES.find((s) => s.id === id);
             if (match && match.linkId !== undefined) {
               if (match.linkId !== null) {
@@ -135,13 +132,6 @@ export default function Landing() {
     };
   }, []);
 
-  const scrollToScene = (id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-      window.history.pushState(null, '', `#${id}`);
-    }
-  };
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });

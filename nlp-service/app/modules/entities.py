@@ -1,13 +1,11 @@
 import re
 import json
-from pathlib import Path
 from typing import List, Dict, Any
 from app.config import PATTERNS_DIR
 
 # Try spacy import; if unavailable or missing model, fallback smoothly to pattern matcher
 try:
     import spacy
-    from spacy.pipeline import EntityRuler
     SPACY_AVAILABLE = True
 except Exception:
     SPACY_AVAILABLE = False
@@ -36,7 +34,7 @@ class EntityExtractor:
                 self.nlp = spacy.blank("en")
                 ruler = self.nlp.add_pipe("entity_ruler")
                 ruler.add_patterns(self.patterns)
-            except Exception as e:
+            except Exception:
                 self.nlp = None
         else:
             self.nlp = None

@@ -48,10 +48,6 @@ function Splash() {
   );
 }
 
-function AdminDatesRedirect() {
-  return <Navigate to="/admin/documents?tab=dates" replace />;
-}
-
 export default function App() {
   return (
     <Suspense fallback={<Splash />}>

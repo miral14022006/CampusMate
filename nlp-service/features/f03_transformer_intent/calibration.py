@@ -1,5 +1,4 @@
 import numpy as np
-from typing import Tuple
 
 def calculate_ece(y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10) -> float:
     """

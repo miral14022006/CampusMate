@@ -1,8 +1,6 @@
 import time
 import json
-import logging
 from typing import List, Optional
-from pathlib import Path
 
 from app.core.config import FEATURES_CONFIG_PATH
 from app.core.logging_config import structured_logger

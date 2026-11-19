@@ -6,7 +6,7 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Dialog } from '../components/ui/Dialog';
 import { Select } from '../components/ui/Select';
-import { Switch } from '../components/ui/Switch';
+
 import { useToast } from '../components/ui/Toast';
 import { useAdminAuth } from '../context/AuthContext';
 import { useDocumentTitle } from '../lib/hooks';

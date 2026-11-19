@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Search,
   MessageSquare,
@@ -9,7 +9,6 @@ import {
   FileText,
   BarChart3,
   Clock,
-  Sparkles,
   ArrowRight,
   Plus
 } from 'lucide-react';

@@ -88,7 +88,7 @@ router.get('/', optionalAuth, requireClientScope, async (req, res) => {
     }
     list.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || new Date(b.updatedAt) - new Date(a.updatedAt));
     return res.json({ conversations: list.slice(0, parsedLimit), nextCursor: null });
-  } catch (err) {
+  } catch {
     console.error('[History GET /api/conversations Error]:', err.message);
     return res.status(500).json({ error: 'Failed to fetch conversations' });
   }
@@ -128,7 +128,7 @@ router.post('/', optionalAuth, requireClientScope, async (req, res) => {
     };
     memoryConversationStore.push(item);
     return res.status(201).json(item);
-  } catch (err) {
+  } catch {
     return res.status(500).json({ error: 'Failed to create conversation' });
   }
 });
@@ -158,7 +158,7 @@ router.get('/:id/messages', optionalAuth, requireClientScope, async (req, res) =
       return res.status(404).json({ error: 'Conversation not found in memory' });
     }
     return res.json({ sessionId: id, messages: [], nextCursor: null });
-  } catch (err) {
+  } catch {
     return res.status(500).json({ error: 'Failed to fetch messages' });
   }
 });
@@ -196,7 +196,7 @@ router.patch('/:id', optionalAuth, requireClientScope, async (req, res) => {
     }
     memoryConversationStore[idx] = { ...memoryConversationStore[idx], ...updates };
     return res.json(memoryConversationStore[idx]);
-  } catch (err) {
+  } catch {
     return res.status(500).json({ error: 'Failed to update conversation' });
   }
 });
@@ -224,7 +224,7 @@ router.delete('/:id', optionalAuth, requireClientScope, async (req, res) => {
       memoryConversationStore.splice(idx, 1);
     }
     return res.json({ success: true });
-  } catch (err) {
+  } catch {
     return res.status(500).json({ error: 'Failed to delete conversation' });
   }
 });
@@ -253,7 +253,7 @@ router.delete('/', optionalAuth, requireClientScope, async (req, res) => {
       }
     }
     return res.json({ success: true, deletedCount: initialLen - memoryConversationStore.length });
-  } catch (err) {
+  } catch {
     return res.status(500).json({ error: 'Failed to delete conversations' });
   }
 });

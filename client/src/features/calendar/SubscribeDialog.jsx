@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, Check, Calendar as CalendarIcon, ExternalLink, Rss } from 'lucide-react';
+import { Copy, Check, Calendar as CalendarIcon, Rss } from 'lucide-react';
 import { Dialog } from '../../components/ui/Dialog';
 import { Button } from '../../components/ui/Button';
 

@@ -1,10 +1,7 @@
-import os
 import json
 import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, Any
 
 from app.core.config import LOG_DIR
 

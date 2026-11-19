@@ -4,7 +4,6 @@ CLI tool for running student queries through the baseline NLP pipeline.
 Usage: python nlp-service/cli.py "Exam form bharne ki last date kya hai?"
 """
 import sys
-import json
 from pathlib import Path
 
 # Add nlp-service to path

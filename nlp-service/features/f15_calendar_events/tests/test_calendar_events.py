@@ -1,6 +1,5 @@
 import unittest
 from features.f15_calendar_events.extractor import calendar_extractor
-from features.f15_calendar_events.classifier import classify_event_category, generate_event_titles
 
 class TestCalendarEvents(unittest.TestCase):
     def test_extract_numeric_date(self):

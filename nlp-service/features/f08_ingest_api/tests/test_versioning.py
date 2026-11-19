@@ -3,7 +3,7 @@ import tempfile
 import shutil
 from pathlib import Path
 
-from features.f08_ingest_api.parser import parse_document, chunk_text
+from features.f08_ingest_api.parser import chunk_text
 from features.f08_ingest_api.ingest_manager import DocumentIngestionManager
 
 class TestDocumentVersioning(unittest.TestCase):

@@ -1,13 +1,9 @@
 import {
   MessageSquare,
   Calendar,
-  History,
   Shield,
-  Settings,
   FileText,
   CheckCircle,
-  Clock,
-  BarChart3,
   Search,
   Languages,
   ScanLine,

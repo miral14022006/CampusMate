@@ -239,7 +239,7 @@ router.get('/history/:sessionId', async (req, res) => {
   try {
     const messages = await Message.find({ sessionId }).sort({ createdAt: 1 }).lean();
     return res.json({ sessionId, messages });
-  } catch (err) {
+  } catch {
     return res.status(200).json({ sessionId, messages: [] });
   }
 });
