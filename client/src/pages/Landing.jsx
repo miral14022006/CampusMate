@@ -1,5 +1,5 @@
 import { useEffect, useState, Suspense, lazy } from 'react';
-import { motion, useScroll, useSpring } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 import { useDocumentTitle, usePrefersReducedMotion } from '../lib/hooks';
 import { features } from '../config/features';
@@ -43,14 +43,6 @@ export default function Landing() {
 
   const [activeLinkId, setActiveLinkId] = useState('home');
   const [showMobileBackToTop, setShowMobileBackToTop] = useState(false);
-
-  // Smooth scroll progress indicator along top of viewport
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
 
   // Prefetch lazy scene chunks when the preceding scene reaches 50% in view
   useEffect(() => {
@@ -151,14 +143,6 @@ export default function Landing() {
         features.sceneSnap ? 'lg:[@media(pointer:fine)]:snap-y lg:[@media(pointer:fine)]:snap-proximity' : ''
       }`}
     >
-      {/* Scroll Progress Bar */}
-      {!reducedMotion && (
-        <motion.div
-          className="fixed top-0 left-0 right-0 h-[2.5px] z-[60] bg-gradient-to-r from-accent via-[#ff8855] to-accent origin-left shadow-[0_0_12px_rgba(212,103,63,0.6)]"
-          style={{ scaleX }}
-        />
-      )}
-
       {/* 0. Session Intro Overlay */}
       {!reducedMotion && (
         <IntroOverlay onComplete={() => setIntroFinished(true)} />
