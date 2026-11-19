@@ -3,7 +3,8 @@
  * Contract: see src/services/API_CONTRACT.md
  */
 
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
+const rawBase = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
+const BASE_URL = rawBase.startsWith('http') && !rawBase.endsWith('/api') ? `${rawBase}/api` : rawBase;
 const DEFAULT_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT_MS || 20000);
 
 const CLIENT_ID_KEY = 'campusmate_client_id';
