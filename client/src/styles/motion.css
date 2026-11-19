@@ -119,42 +119,25 @@ a:hover .cm-btn-arrow {
   transform: scale(0.98);
 }
 
-/* ------------------------------------------------------------------
-   Ambient Floating Particles & Atmospheric Glow Animations
------------------------------------------------------------------- */
-@keyframes floatParticleSlow {
-  0%, 100% {
-    transform: translateY(0px) translateX(0px);
-  }
-  33% {
-    transform: translateY(-24px) translateX(12px);
-  }
-  66% {
-    transform: translateY(16px) translateX(-14px);
-  }
-}
-
-@keyframes floatParticleMedium {
-  0%, 100% {
-    transform: translateY(0px) translateX(0px);
-  }
-  50% {
-    transform: translateY(-30px) translateX(-18px);
-  }
-}
-
-@keyframes pulseGlowSoft {
+/* Ambient gradient pulse */
+@keyframes ambientGlowPulse {
   0%, 100% {
     opacity: 0.16;
-    transform: scale(1);
+    transform: scale(1) translate3d(0, 0, 0);
   }
   50% {
     opacity: 0.28;
-    transform: scale(1.08);
+    transform: scale(1.08) translate3d(0, 0, 0);
   }
 }
 
-@keyframes subtleShimmer {
+.cm-ambient-pulse {
+  animation: ambientGlowPulse 10s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Shimmer highlight for hero badge */
+@keyframes badgeShimmer {
   0% {
     background-position: -200% 0;
   }
@@ -163,39 +146,15 @@ a:hover .cm-btn-arrow {
   }
 }
 
-.cm-particle-1 {
-  animation: floatParticleSlow 14s ease-in-out infinite;
-}
-
-.cm-particle-2 {
-  animation: floatParticleMedium 11s ease-in-out infinite 2s;
-}
-
-.cm-particle-3 {
-  animation: floatParticleSlow 17s ease-in-out infinite 4s;
-}
-
-.cm-glow-pulse {
-  animation: pulseGlowSoft 8s ease-in-out infinite;
-}
-
-/* Smooth Scrollbar Styling for Webkit & Firefox */
-html.lenis, html.lenis body {
-  height: auto;
-}
-
-.lenis:not(.lenis-autoToggle).lenis-stopped {
-  overflow: clip;
-}
-
-.lenis [data-lenis-prevent],
-.lenis [data-lenis-prevent-wheel],
-.lenis [data-lenis-prevent-touch] {
-  overscroll-behavior: contain;
-}
-
-.lenis.lenis-smooth iframe {
-  pointer-events: none;
+.cm-badge-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(212, 103, 63, 0.22) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: badgeShimmer 5s linear infinite;
 }
 
 /* Pause animations when off-screen or when reduced-motion is requested */

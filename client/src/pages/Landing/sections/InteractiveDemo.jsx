@@ -69,7 +69,13 @@ export function InteractiveDemo() {
         className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center w-full"
       >
         {/* Left Column (5/12): Checklist and Language Tabs */}
-        <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
+        <m.div
+          initial={{ opacity: 0, x: -28 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.6, ease: EASE }}
+          className="lg:col-span-5 flex flex-col justify-between space-y-6"
+        >
           <div>
             <p className="text-[13px] font-semibold uppercase tracking-wider text-accent mb-3">
               Select Language format
@@ -108,21 +114,34 @@ export function InteractiveDemo() {
 
           {/* 4-Item Grounding Checklist */}
           <ul className="space-y-3.5 pt-2">
-            {CHECKLIST_ITEMS.map((item) => (
-              <li key={item} className="flex items-start gap-3 text-[14.5px] leading-relaxed text-ink-secondary">
+            {CHECKLIST_ITEMS.map((item, idx) => (
+              <m.li
+                key={item}
+                initial={{ opacity: 0, x: -16 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.4, ease: EASE, delay: 0.2 + idx * 0.08 }}
+                className="flex items-start gap-3 text-[14.5px] leading-relaxed text-ink-secondary"
+              >
                 <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-accent" strokeWidth={1.5} aria-hidden="true" />
                 <span>{item}</span>
-              </li>
+              </m.li>
             ))}
           </ul>
 
           <div className="pt-2 text-[12.5px] text-ink-muted">
             <span className="font-semibold text-accent">Sample notice</span> · Not real PDEU data
           </div>
-        </div>
+        </m.div>
 
         {/* Right Column (7/12): Interactive Chat Card */}
-        <div className="lg:col-span-7 w-full">
+        <m.div
+          initial={{ opacity: 0, x: 28, scale: 0.98 }}
+          whileInView={{ opacity: 1, x: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.6, ease: EASE, delay: 0.15 }}
+          className="lg:col-span-7 w-full"
+        >
           <Card padding="none" className="bg-surface-1/95 border-hairline shadow-lift overflow-hidden">
             {/* Header */}
             <div className="flex items-center gap-3 border-b border-hairline px-5 py-3.5 bg-surface-2/60">
@@ -216,7 +235,7 @@ export function InteractiveDemo() {
               </AnimatePresence>
             </div>
           </Card>
-        </div>
+        </m.div>
       </div>
     </Scene>
   );

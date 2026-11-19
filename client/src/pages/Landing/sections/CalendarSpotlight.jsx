@@ -45,8 +45,14 @@ export function CalendarSpotlight() {
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center w-full">
         {/* Left Column (5/12): Deadline Card & Actions */}
-        <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
-          <Card padding="lg" className="bg-surface-1/90 border-hairline shadow-lift p-6 sm:p-7">
+        <m.div
+          initial={{ opacity: 0, x: -28 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.55, ease: 'easeOut' }}
+          className="lg:col-span-5 flex flex-col justify-between space-y-6"
+        >
+          <Card padding="lg" className="bg-surface-1/90 border-hairline shadow-lift p-6 sm:p-7 hover:border-accent/40 transition-colors">
             <div className="flex items-center justify-between border-b border-hairline pb-3.5">
               <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-accent">
                 <Clock className="h-4 w-4" />
@@ -119,10 +125,16 @@ export function CalendarSpotlight() {
               </Button>
             </Link>
           </div>
-        </div>
+        </m.div>
 
         {/* Right Column (7/12): Month Grid */}
-        <div className="lg:col-span-7 w-full">
+        <m.div
+          initial={{ opacity: 0, x: 28, scale: 0.98 }}
+          whileInView={{ opacity: 1, x: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.55, ease: 'easeOut', delay: 0.15 }}
+          className="lg:col-span-7 w-full"
+        >
           <Card padding="lg" className="bg-surface-1/90 border-hairline p-5 sm:p-7">
             <div className="flex items-center justify-between px-2 pb-3 border-b border-hairline/60">
               <p className="text-[15px] font-semibold text-ink">
@@ -198,7 +210,7 @@ export function CalendarSpotlight() {
               ))}
             </div>
           </Card>
-        </div>
+        </m.div>
       </div>
     </Scene>
   );

@@ -23,7 +23,13 @@ export function FAQSection() {
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start w-full">
         {/* Left Column (4/12): Heading & Helpdesk Link */}
-        <div className="lg:col-span-4 space-y-5">
+        <m.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.5, ease: EASE }}
+          className="lg:col-span-4 space-y-5"
+        >
           <div className="rounded-2xl border border-hairline bg-surface-1/90 p-6 shadow-lift">
             <div className="flex items-center gap-2.5 text-accent">
               <HelpCircle className="h-5 w-5" />
@@ -48,53 +54,60 @@ export function FAQSection() {
               )}
             </div>
           </div>
-        </div>
+        </m.div>
 
         {/* Right Column (8/12): Compact Accordion */}
         <div className="lg:col-span-8 space-y-3">
           {FAQ_ITEMS.map((item, idx) => {
             const isOpen = openIndex === idx;
             return (
-              <Card
+              <m.div
                 key={item.q}
-                padding="none"
-                className="bg-surface-1/90 border-hairline overflow-hidden transition-colors hover:border-[color:var(--border-strong)] shadow-soft"
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: 0.4, ease: EASE, delay: idx * 0.05 }}
               >
-                <button
-                  type="button"
-                  onClick={() => toggle(idx)}
-                  className="flex w-full min-h-[52px] items-center justify-between px-5 py-3.5 text-left text-[15px] font-medium text-ink outline-none focus-visible:outline-2 focus-visible:outline-accent"
-                  aria-expanded={isOpen}
+                <Card
+                  padding="none"
+                  className="bg-surface-1/90 border-hairline overflow-hidden transition-colors hover:border-[color:var(--border-strong)] shadow-soft"
                 >
-                  <span className="pr-4">{item.q}</span>
-                  <m.span
-                    animate={{ rotate: isOpen ? 180 : 0 }}
-                    transition={{ duration: DURATION.base, ease: EASE }}
-                    className="shrink-0"
+                  <button
+                    type="button"
+                    onClick={() => toggle(idx)}
+                    className="flex w-full min-h-[52px] items-center justify-between px-5 py-3.5 text-left text-[15px] font-medium text-ink outline-none focus-visible:outline-2 focus-visible:outline-accent"
+                    aria-expanded={isOpen}
                   >
-                    <ChevronDown
-                      className={`h-4.5 w-4.5 ${isOpen ? 'text-accent' : 'text-ink-muted'}`}
-                      aria-hidden="true"
-                    />
-                  </m.span>
-                </button>
-
-                <AnimatePresence initial={false}>
-                  {isOpen && (
-                    <m.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
+                    <span className="pr-4">{item.q}</span>
+                    <m.span
+                      animate={{ rotate: isOpen ? 180 : 0 }}
                       transition={{ duration: DURATION.base, ease: EASE }}
-                      style={{ overflow: 'hidden' }}
+                      className="shrink-0"
                     >
-                      <div className="px-5 pb-4 pt-1 text-[14px] leading-relaxed text-ink-secondary border-t border-hairline/60">
-                        {item.a}
-                      </div>
-                    </m.div>
-                  )}
-                </AnimatePresence>
-              </Card>
+                      <ChevronDown
+                        className={`h-4.5 w-4.5 ${isOpen ? 'text-accent' : 'text-ink-muted'}`}
+                        aria-hidden="true"
+                      />
+                    </m.span>
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <m.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: DURATION.base, ease: EASE }}
+                        style={{ overflow: 'hidden' }}
+                      >
+                        <div className="px-5 pb-4 pt-1 text-[14px] leading-relaxed text-ink-secondary border-t border-hairline/60">
+                          {item.a}
+                        </div>
+                      </m.div>
+                    )}
+                  </AnimatePresence>
+                </Card>
+              </m.div>
             );
           })}
         </div>

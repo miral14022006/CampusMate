@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
+import { m } from 'framer-motion';
 import { ArrowRight, ArrowUpRight, Sparkles } from 'lucide-react';
 import Logo from '../../../components/brand/Logo';
 import { Button } from '../../../components/ui/Button';
 import { PROJECT_DISCLAIMER, TEAM_INFO } from '../../../config/landing';
 import { footerGroups } from '../../../config/navigation';
 import { useAdminAuth } from '../../../context/AuthContext';
+import { EASE } from '../../../lib/motion';
 
 export function Footer() {
   const { isAuthenticated } = useAdminAuth();
@@ -12,7 +14,13 @@ export function Footer() {
   return (
     <footer className="border-t border-hairline bg-[#141414] relative z-10 text-ink">
       {/* Closing CTA Strip at the top of the footer */}
-      <div className="border-b border-hairline bg-[linear-gradient(180deg,rgba(212,103,63,0.06),transparent)] py-8 px-5 sm:px-8">
+      <m.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.5, ease: EASE }}
+        className="border-b border-hairline bg-[linear-gradient(180deg,rgba(212,103,63,0.06),transparent)] py-8 px-5 sm:px-8"
+      >
         <div className="mx-auto flex w-full max-w-[1120px] 2xl:max-w-[1280px] flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div>
             <h3 className="text-[17px] font-bold text-ink">Ready to ask your campus question?</h3>
@@ -29,10 +37,16 @@ export function Footer() {
             </Button>
           </Link>
         </div>
-      </div>
+      </m.div>
 
       <div className="mx-auto w-full max-w-[1120px] 2xl:max-w-[1280px] px-5 py-12 sm:px-8">
-        <div className="flex flex-col gap-10 lg:flex-row lg:justify-between">
+        <m.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.55, ease: EASE, delay: 0.1 }}
+          className="flex flex-col gap-10 lg:flex-row lg:justify-between"
+        >
           {/* Brand & Project Attribution */}
           <div className="max-w-md">
             <Link
@@ -107,7 +121,7 @@ export function Footer() {
               );
             })}
           </div>
-        </div>
+        </m.div>
 
         {/* Bottom copyright line */}
         <div className="mt-10 border-t border-hairline pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-ink-muted">

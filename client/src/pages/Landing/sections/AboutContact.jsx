@@ -1,8 +1,10 @@
 
+import { m } from 'framer-motion';
 import { ArrowUpRight, Clock, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
 import Scene from '../components/Scene';
 import { Card } from '../../../components/ui/Card';
 import { CAMPUS_CONTACT, PROJECT_DISCLAIMER, TEAM_INFO } from '../../../config/landing';
+import { EASE } from '../../../lib/motion';
 
 export function AboutContact() {
   return (
@@ -15,7 +17,14 @@ export function AboutContact() {
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 w-full items-stretch">
         {/* Left Card: About (#about) */}
-        <Card padding="lg" className="flex h-full flex-col justify-between bg-surface-1/90 border-hairline p-6 sm:p-8 shadow-lift">
+        <m.div
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.55, ease: EASE }}
+          className="h-full"
+        >
+          <Card padding="lg" className="flex h-full flex-col justify-between bg-surface-1/90 border-hairline p-6 sm:p-8 shadow-lift hover:border-accent/40 transition-colors">
           <div>
             <div className="flex items-center justify-between border-b border-hairline/60 pb-3">
               <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-accent">
@@ -39,24 +48,32 @@ export function AboutContact() {
             </p>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-3 border-t border-hairline/60 pt-4 text-center">
-            <div>
-              <p className="text-[18px] font-bold text-accent">5</p>
-              <p className="text-[11px] uppercase text-ink-muted mt-0.5">Languages</p>
+            <div className="mt-6 grid grid-cols-3 gap-3 border-t border-hairline/60 pt-4 text-center">
+              <div>
+                <p className="text-[18px] font-bold text-accent">5</p>
+                <p className="text-[11px] uppercase text-ink-muted mt-0.5">Languages</p>
+              </div>
+              <div>
+                <p className="text-[18px] font-bold text-accent">BM25+Dense</p>
+                <p className="text-[11px] uppercase text-ink-muted mt-0.5">Hybrid Search</p>
+              </div>
+              <div>
+                <p className="text-[18px] font-bold text-accent">Page-Level</p>
+                <p className="text-[11px] uppercase text-ink-muted mt-0.5">Citations</p>
+              </div>
             </div>
-            <div>
-              <p className="text-[18px] font-bold text-accent">BM25+Dense</p>
-              <p className="text-[11px] uppercase text-ink-muted mt-0.5">Hybrid Search</p>
-            </div>
-            <div>
-              <p className="text-[18px] font-bold text-accent">Page-Level</p>
-              <p className="text-[11px] uppercase text-ink-muted mt-0.5">Citations</p>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </m.div>
 
         {/* Right Card: Contact (#contact anchor inside) */}
-        <Card id="contact" padding="lg" className="flex h-full flex-col justify-between bg-surface-1/90 border-hairline p-6 sm:p-8 shadow-lift scroll-mt-24">
+        <m.div
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.55, ease: EASE, delay: 0.12 }}
+          className="h-full"
+        >
+          <Card id="contact" padding="lg" className="flex h-full flex-col justify-between bg-surface-1/90 border-hairline p-6 sm:p-8 shadow-lift scroll-mt-24 hover:border-accent/40 transition-colors">
           <div>
             <div className="flex items-center justify-between border-b border-hairline/60 pb-3">
               <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-accent">
@@ -130,6 +147,7 @@ export function AboutContact() {
             </div>
           )}
         </Card>
+        </m.div>
       </div>
     </Scene>
   );

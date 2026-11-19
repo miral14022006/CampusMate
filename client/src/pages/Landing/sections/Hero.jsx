@@ -12,7 +12,7 @@ import {
   Zap
 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
-import { SplitHeadline } from '../../../components/motion/MotionKit';
+import { SplitHeadline, CountUp } from '../../../components/motion/MotionKit';
 import { usePrefersReducedMotion } from '../../../lib/hooks';
 import { EASE, staggerContainer } from '../../../lib/motion';
 
@@ -68,7 +68,7 @@ export function Hero({ introFinished = true }) {
                 hidden: { opacity: 0, y: 12 },
                 show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE, delay: 0.1 } }
               }}
-              className="mb-4 inline-flex items-center gap-2.5 rounded-pill border border-hairline bg-surface-1 px-4 py-1.5 text-[12.5px] font-semibold text-ink-secondary"
+              className="cm-badge-shimmer mb-4 inline-flex items-center gap-2.5 rounded-pill border border-hairline px-4 py-1.5 text-[12.5px] font-semibold text-ink shadow-sm"
             >
               <Sparkles className="h-4 w-4 text-accent" aria-hidden="true" />
               Your AI campus assistant
@@ -248,19 +248,27 @@ export function Hero({ introFinished = true }) {
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center items-center divide-y md:divide-y-0 md:divide-x divide-hairline">
             <div className="px-3">
-              <span className="text-[22px] font-bold text-accent">5</span>
+              <span className="text-[22px] font-bold text-accent">
+                <CountUp target={5} />
+              </span>
               <p className="text-[12.5px] font-medium text-ink-muted mt-0.5">Languages Supported</p>
             </div>
             <div className="px-3 pt-3 md:pt-0">
-              <span className="text-[22px] font-bold text-accent">20</span>
+              <span className="text-[22px] font-bold text-accent">
+                <CountUp target={20} />
+              </span>
               <p className="text-[12.5px] font-medium text-ink-muted mt-0.5">Campus Intents</p>
             </div>
             <div className="px-3 pt-3 md:pt-0">
-              <span className="text-[22px] font-bold text-accent">3</span>
+              <span className="text-[22px] font-bold text-accent">
+                <CountUp target={3} />
+              </span>
               <p className="text-[12.5px] font-medium text-ink-muted mt-0.5">Formats (PDF/DOCX/OCR)</p>
             </div>
             <div className="px-3 pt-3 md:pt-0">
-              <span className="text-[22px] font-bold text-accent">95.3%</span>
+              <span className="text-[22px] font-bold text-accent">
+                <CountUp target={95} suffix=".3%" />
+              </span>
               <p className="text-[12.5px] font-medium text-ink-muted mt-0.5">Intent Accuracy (MuRIL)</p>
             </div>
           </div>

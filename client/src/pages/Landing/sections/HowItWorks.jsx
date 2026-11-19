@@ -132,12 +132,17 @@ export function HowItWorks() {
                   </svg>
                 </div>
 
-                {SIMPLE_STEPS.map((step) => {
+                {SIMPLE_STEPS.map((step, idx) => {
                   const Icon = step.icon;
                   return (
-                    <div
+                    <m.div
                       key={step.num}
-                      className="h-full transition-transform duration-200 hover:-translate-y-1"
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, amount: 0.2 }}
+                      transition={{ duration: 0.5, ease: EASE, delay: idx * 0.12 }}
+                      whileHover={{ y: -6, transition: { duration: 0.2, ease: EASE } }}
+                      className="h-full"
                     >
                       <Card
                         padding="lg"
@@ -162,7 +167,7 @@ export function HowItWorks() {
                           <CheckCircle2 className="h-4 w-4 text-accent" /> Grounded execution
                         </div>
                       </Card>
-                    </div>
+                    </m.div>
                   );
                 })}
               </div>
@@ -176,12 +181,17 @@ export function HowItWorks() {
               transition={{ duration: 0.2, ease: EASE }}
               className="w-full"
             >
-              {/* 6-Stage Connected Pipeline - Instant appearance, zero delay */}
+              {/* 6-Stage Connected Pipeline - Staggered scroll animation */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6 pt-2">
-                {ARCHITECTURE_STAGES.map((stg) => (
-                  <div
+                {ARCHITECTURE_STAGES.map((stg, idx) => (
+                  <m.div
                     key={stg.step}
-                    className="h-full transition-transform duration-200 hover:-translate-y-1"
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.45, ease: EASE, delay: idx * 0.08 }}
+                    whileHover={{ y: -5, transition: { duration: 0.2, ease: EASE } }}
+                    className="h-full"
                   >
                     <Card
                       padding="md"
@@ -209,7 +219,7 @@ export function HowItWorks() {
                         <Sparkles className="h-3.5 w-3.5 text-accent" /> Multilingual RAG Pipeline
                       </div>
                     </Card>
-                  </div>
+                  </m.div>
                 ))}
               </div>
             </m.div>
