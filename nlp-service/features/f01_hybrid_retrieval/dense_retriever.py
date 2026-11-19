@@ -98,7 +98,7 @@ class DenseRetriever(BaseRetriever):
         else:
             self.build_index()
 
-    def retrieve(self, query: str, top_k: int = 5, **kwargs) -> List[Dict[str, Any]]:
+    def retrieve(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         if self.index is None or not self.chunks:
             return []
 

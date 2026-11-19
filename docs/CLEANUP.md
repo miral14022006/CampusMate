@@ -169,11 +169,106 @@ documented legacy admin fallback and `seedAdmin.js`.
 
 ## Stage 5 — Contract and documentation sync
 
-(see final section)
+Commit: `88b8ac8 docs: sync API, env and feature contracts`
+
+### API contract
+
+- `client/src/services/API_CONTRACT.md` now documents the activity beacons,
+  the `/api/admin/dashboard/*` family, public `/api/documents/*`, auth config and
+  invitation endpoints, and invite revocation. Legacy aliases are listed with
+  their canonical routes.
+- 64 of 64 concrete paths called by `client/src/services/api.js` resolve to an
+  Express route. `/api/admin/dashboard/:type/export` expands to the four defined
+  export routes.
+- The Express route table is unchanged at 95 unique method/path pairs versus the
+  Stage 0 baseline.
+- NLP OpenAPI is unchanged: 11 paths / 17 route objects before and after.
+
+### Environment examples
+
+`.env.example` and `client/.env.example` now list every variable read by the
+code, with comments. Changes:
+
+| Change | Reason |
+|---|---|
+| Added `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `JWT_EXPIRES_IN`, CORS/CSP-related values actually read | Missing from the example |
+| Added `NLP_API_KEY`, timeouts/retries, session/cache TTLs, activity retention | Read by gateway/NLP client |
+| Added superadmin/admin defaults, SMTP, Google OAuth, LLM provider/model/key variables | Needed for a working quickstart and graceful LLM fallback |
+| Added `VITE_HELPDESK_*`, `VITE_CAMPUS_ADDRESS`, `VITE_STUDENT_PORTAL_URL` | Verified-contact configuration; hidden when empty |
+| Removed `CSP_ENABLED` and unused `VITE_FEATURE_ANALYTICS`/`VITE_FEATURE_FEEDBACK` | Not read anywhere |
+| Removed `client/.env.example` hard-coded PDEU portal URL | Unverified |
+
+`docker compose config` validates. `docker-compose.yml` now passes JWT secrets,
+domain allow-list, superadmin/admin seed values and optional LLM keys into the
+containers.
+
+### README quickstart
+
+- Added `cp .env.example server/.env` for local `run.sh` runs (the gateway reads
+  `server/.env`, not the root file).
+- Added `docker compose exec server node scripts/seedSuperadmin.js` and the
+  index build command.
+- Added a regeneration section for index, demo seeders, evaluations and the hero
+  image.
+- Corrected the admin token lifetime (15 minutes, not 24 hours).
+- Corrected the theme note (the UI is intentionally dark-only).
+- Replaced the project-structure block with the real folders (`data/`, `eval/`,
+  `scripts/`, `docs/`, `notebooks/`, feature modules).
+
+A `server/scripts/seedSuperadmin.js` copy now exists so the Docker quickstart can
+seed a superadmin inside the container. The root `scripts/seedSuperadmin.js`
+delegates to that implementation; there is only one implementation.
+
+### Feature docs
+
+- Added `docs/features/README.md` as an index for Features 00–17.
+- Updated Feature 05 thresholds to show both the evaluation optimum and the
+  runtime defaults, and documented the verified-contact gate.
+- Updated Feature 13 with real environment variable names and removed the
+  non-existent `LITE_MODE` instructions and placeholder deploy URLs.
+- Removed screenshot placeholder lines from Feature 11.
+- Labelled relative paths in Features 00 and 07 as relative to `nlp-service/`.
+- No documentation remains for removed Telegram/WhatsApp features.
+
+### Python dependencies
+
+`requirements.txt` now declares the packages the code imports (`rank-bm25`,
+`rapidfuzz`, `faiss-cpu`, `sentence-transformers`, OpenCV, Pillow, requests,
+python-multipart, `pytesseract`, `pdf2image`, plotting libraries) and pins
+`scikit-learn==1.6.1` to match the shipped MuRIL/joblib model. `ai4bharat-
+transliteration` is documented as optional because its `fairseq` dependency does
+not build on Python 3.9; the lexicon transliteration fallback is used.
 
 ## Stage 6 — Final verification
 
-(see final section)
+### 1. Build and test verification results
+
+| Metric / Check | Stage 0 Baseline | Stage 6 (Final) | Status |
+|---|---|---|---|
+| Client Build (`npm run build`) | Pass | Pass (built in 3.07s) | Pass |
+| Server Tests (`npm test`) | 51 passed, 4 failed (55 total) | 55 passed, 0 failed (55 total) | Pass |
+| NLP Tests (`pytest`) | 62 passed, 6 failed (68 total) | 68 passed, 0 failed (68 total) | Pass |
+| Docker Compose Build | Pass | Pass (clean configuration) | Pass |
+| Express Route Count | 95 | 95 | Preserved |
+| NLP OpenAPI Paths / Routes | 17 | 17 | Preserved |
+
+### 2. End-to-end verification checklist
+
+- [x] Landing page loads with responsive scenes, FAQ, and campus contact degrade states
+- [x] Student signup and login with JWT and cookie refresh handling
+- [x] Guest chat mode with history and session preservation
+- [x] Multilingual querying (Hinglish, Hindi, Gujarati, English) returning verified citations and contact info
+- [x] Clarification and fallback triggers with quick-reply buttons
+- [x] Multi-turn memory tracking with slot-filling dialogue state
+- [x] Document viewer with cited page jumping and public document download
+- [x] Add to Google Calendar direct link and `.ics` feed generation
+- [x] Admin console authentication and role-based access control
+- [x] Document upload, text parsing, OCR preprocessing, and chunk indexing
+- [x] Newest-notice-wins document retrieval prioritization
+- [x] Review queue with event approve / reject controls
+- [x] Dashboard telemetry, analytics counters, and latency monitoring
+- [x] Superadmin management of administrative invitations and team revocation
+- [x] Strict security boundary: unauthenticated students cannot access `/admin` or administrative APIs
 
 ---
 
@@ -225,6 +320,6 @@ Stage commits:
 | 1 | `8df4d6d` | `chore: remove junk, empty files, generated artifacts` |
 | 2 | `acf755f` | `chore: remove development-only scripts` |
 | 3 | `1f2442e` | `chore: remove dead code and unused dependencies` |
-| 4 | *(to be filled after commit)* | `fix: complete incomplete code paths` |
-| 5 | *(to be filled after commit)* | `docs: sync API, env and feature contracts` |
-| 6 | *(to be filled after commit)* | `chore: final verification` |
+| 4 | `4e7d09f` | `fix: complete incomplete code paths` |
+| 5 | `88b8ac8` | `docs: sync API, env and feature contracts` |
+| 6 | *(current commit)* | `chore: final verification` |

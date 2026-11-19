@@ -25,7 +25,7 @@ class HybridRetriever(BaseRetriever):
     def name(self) -> str:
         return "hybrid_rrf_rerank" if self.use_reranker else "hybrid_rrf"
 
-    def retrieve(self, query: str, top_k: int = 5, **kwargs) -> List[Dict[str, Any]]:
+    def retrieve(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         # Step 1: Retrieve top-20 candidates from BM25 and Dense
         bm25_hits = bm25_retriever.retrieve(query, top_k=20)
         dense_hits = dense_retriever.retrieve(query, top_k=20)

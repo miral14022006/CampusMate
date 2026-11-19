@@ -9,7 +9,7 @@ class BaseRetriever(ABC):
         pass
 
     @abstractmethod
-    def retrieve(self, query: str, top_k: int = 5, **kwargs) -> List[Dict[str, Any]]:
+    def retrieve(self, query: str, top_k: int = 5, **_kwargs) -> List[Dict[str, Any]]:
         """
         Retrieves top_k chunks for the given query.
         Returns list of dicts:

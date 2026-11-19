@@ -15,10 +15,16 @@ rapidfuzz==3.6.1
 faiss-cpu==1.8.0
 sentence-transformers==2.7.0
 opencv-python-headless==4.9.0.80
+pytesseract==0.3.10
+pdf2image==1.17.0
 Pillow==10.2.0
 requests==2.31.0
 python-multipart==0.0.9
 pytest==8.1.1
 httpx==0.27.0
+# Optional: ai4bharat-transliteration accelerates Feature 02. It currently pins
+# fairseq, which does not build on Python 3.9; the lexicon fallback is used when
+# the package is unavailable.
+# ai4bharat-transliteration==1.1.2
 matplotlib==3.8.4
 seaborn==0.13.2

@@ -31,6 +31,12 @@ def trigger_generation(req: GenerateRequest, background_tasks: BackgroundTasks):
             if not flags.get("synthetic_data_generation", True):
                 raise HTTPException(status_code=403, detail="Feature flag 'synthetic_data_generation' is disabled.")
 
+    # Run generation off the request thread. The CLI writes the dataset splits
+    # and statistics under data/datasets and eval/results.
+    from features.f14_synthetic_data.run_generation import run_generation
+
+    background_tasks.add_task(run_generation, req.use_llm, req.samples_per_intent)
+
     return {
         "status": "initiated",
         "samples_per_intent": req.samples_per_intent,
