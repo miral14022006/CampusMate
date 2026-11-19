@@ -52,3 +52,8 @@ Thumbs.db
 *.faiss
 *.pkl
 data/index/
+
+# Local env files (never commit secrets)
+.env
+server/.env
+data/uploads/
