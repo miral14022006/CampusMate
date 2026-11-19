@@ -1,0 +1,23 @@
+{
+    email patelmiral1402@gmail.com
+}
+
+# Frontend & Static Assets
+campus_mate.miralpatel.tech {
+    reverse_proxy client:80
+}
+
+# Redirect www to apex
+www.campus_mate.miralpatel.tech {
+    redir https://campus_mate.miralpatel.tech{uri} permanent
+}
+
+# Backend API
+api.miralpatel.tech {
+    reverse_proxy server:5000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}

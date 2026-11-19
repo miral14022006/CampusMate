@@ -1,109 +1,81 @@
-version: '3.8'
-
 services:
-  # 1. Python FastAPI NLP Service
-  nlp-service:
-    build:
-      context: ./nlp-service
-      dockerfile: Dockerfile
-    container_name: college-assistant-nlp-prod
-    restart: always
-    environment:
-      - PORT=8000
-      - NLP_SERVICE_API_KEY=${NLP_SERVICE_API_KEY}
-      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-intfloat/multilingual-e5-small}
-      - RERANKER_ENABLED=${RERANKER_ENABLED:-false}
-      - LITE_MODE=${LITE_MODE:-false}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    networks:
-      - assistant-net
-    deploy:
-      resources:
-        limits:
-          memory: 1536M
-
-  # 2. Redis Cache & Hot Session State
-  redis:
-    image: redis:7-alpine
-    container_name: college-assistant-redis-prod
-    restart: always
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
-    volumes:
-      - redis_prod_data:/data
-    networks:
-      - assistant-net
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-
-  # 3. Node.js API Gateway
-  server:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    container_name: college-assistant-server-prod
-    restart: always
-    environment:
-      - NODE_ENV=production
-      - PORT=5000
-      - MONGODB_URI=${MONGODB_URI}
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
-      - NLP_SERVICE_URL=http://nlp-service:8000
-      - NLP_SERVICE_API_KEY=${NLP_SERVICE_API_KEY}
-      - JWT_SECRET=${JWT_SECRET}
-      - CORS_ORIGIN=${CORS_ORIGIN}
-    depends_on:
-      - nlp-service
-      - redis
-    networks:
-      - assistant-net
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-
-  # 4. React SPA (built with Vite, served by nginx)
-  client:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-    container_name: college-assistant-client-prod
-    restart: always
-    depends_on:
-      - server
-    networks:
-      - assistant-net
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-
-  # 5. Nginx Reverse Proxy with SSL termination & security
-  nginx:
-    image: nginx:alpine
-    container_name: college-assistant-nginx-prod
+  caddy:
+    image: caddy:2-alpine
+    container_name: campusmate_caddy
     restart: always
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./deploy/nginx/ssl:/etc/nginx/ssl:ro
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - /opt/campusmate/caddy/data:/data
+      - /opt/campusmate/caddy/config:/config
     depends_on:
-      - server
       - client
-    networks:
-      - assistant-net
+      - server
 
-networks:
-  assistant-net:
-    driver: bridge
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://api.miralpatel.tech
+    container_name: campusmate_client
+    restart: always
+    expose:
+      - "80"
 
-volumes:
-  redis_prod_data:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: campusmate_server
+    restart: always
+    expose:
+      - "5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - NLP_SERVICE_URL=http://nlp-service:8000
+      - NLP_API_KEY=${NLP_API_KEY}
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - ALLOWED_EMAIL_DOMAINS=${ALLOWED_EMAIL_DOMAINS:-pdeu.ac.in,campus.edu,gmail.com}
+      - GUEST_MODE=true
+      - APP_BASE_URL=https://campus_mate.miralpatel.tech
+      - CORS_ORIGIN=https://campus_mate.miralpatel.tech,https://www.campus_mate.miralpatel.tech
+      - SUPERADMIN_EMAIL=${SUPERADMIN_EMAIL:-admin18@pdpu.ac.in}
+      - SUPERADMIN_PASSWORD=${SUPERADMIN_PASSWORD:-Admin@18}
+    volumes:
+      - /opt/campusmate/data/uploads:/app/data/uploads
+    depends_on:
+      nlp-service:
+        condition: service_healthy
 
+  nlp-service:
+    build:
+      context: ./nlp-service
+      dockerfile: Dockerfile
+    container_name: campusmate_nlp
+    restart: always
+    expose:
+      - "8000"
+    environment:
+      - PORT=8000
+      - APP_ENV=production
+      - NLP_API_KEY=${NLP_API_KEY}
+      - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=gemini-1.5-flash
+      - ENABLE_RERANKER=true
+      - HF_HOME=/home/appuser/.cache/huggingface
+    volumes:
+      - /opt/campusmate/data/index:/app/data/index
+      - /opt/campusmate/models/huggingface:/home/appuser/.cache/huggingface
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 5

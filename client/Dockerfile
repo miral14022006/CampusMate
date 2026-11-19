@@ -4,6 +4,9 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
+ARG VITE_API_BASE_URL=https://api.miralpatel.tech
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
