@@ -43,6 +43,18 @@ app.include_router(language_detector_router)
 app.include_router(synthetic_data_router)
 app.include_router(documents_router)
 
+@app.get("/health", include_in_schema=False)
+def root_health():
+    """Liveness check for container orchestrators."""
+    from app.core.config import API_VERSION
+    return {"status": "ok", "service": "nlp-service", "version": API_VERSION}
+
+@app.get("/ready", include_in_schema=False)
+def root_ready():
+    """Readiness check forwarding to /v1/ready."""
+    from app.api.v1.endpoints import get_readiness
+    return get_readiness()
+
 # Backward-compatibility endpoint for baseline
 @app.post("/baseline/query", include_in_schema=False)
 def legacy_baseline_query(request_body: dict):

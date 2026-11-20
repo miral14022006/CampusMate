@@ -46,6 +46,7 @@ class ClarificationStage(PipelineStage):
         )
 
         context.decision = eval_result["decision"]
+        context.decision_reason = eval_result.get("decision_reason", "ANSWERED" if eval_result["decision"] == "ANSWER" else "LOW_EVIDENCE")
         context.clarification_question = eval_result.get("clarification_question")
         context.quick_replies = eval_result.get("quick_replies", [])
         context.contact_info = eval_result.get("contact_info")

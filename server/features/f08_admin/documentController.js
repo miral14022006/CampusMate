@@ -138,6 +138,7 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
 
     // Call NLP microservice ingestion endpoint
     let ingestResult = { chunks_created: 0, new_index_version: 'v1' };
+    let ingestError = null;
     try {
       const nlpRes = await nlpClient.client.post('/v1/documents/ingest', {
         file_path: req.file.path,
@@ -150,11 +151,18 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
       });
       ingestResult = nlpRes.data;
     } catch (ingestErr) {
+      ingestError = ingestErr.message;
       console.warn(`[Admin] NLP ingestion warning: ${ingestErr.message}`);
     }
 
     // Invalidate server Redis cache
     await serverCacheManager.invalidateAll();
+
+    // Determine processing status and error
+    const isFailed = !ingestResult || ingestResult.chunks_created === 0 || ingestError !== null;
+    const processingStatus = isFailed ? 'failed' : 'completed';
+    const docStatus = isFailed ? 'failed' : 'active';
+    const failureReason = isFailed ? (ingestError || 'No text found, enable OCR') : null;
 
     // Create Document record
     let newDoc = null;
@@ -167,12 +175,13 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
         effective_date: new Date(effective_date),
         version: nextVersion,
         supersedes: priorDoc ? priorDoc._id : null,
-        status: 'active',
+        status: docStatus,
         file_path: req.file.path,
         file_name: req.file.filename,
         original_name: req.file.originalname,
         checksum,
-        processing_status: 'completed',
+        processing_status: processingStatus,
+        error_message: failureReason,
         chunk_count: ingestResult.chunks_created,
         index_version: ingestResult.new_index_version
       });
@@ -181,7 +190,9 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
         title,
         topic_key,
         version: nextVersion,
-        status: 'active',
+        status: docStatus,
+        processing_status: processingStatus,
+        error_message: failureReason,
         chunk_count: ingestResult.chunks_created
       };
     }

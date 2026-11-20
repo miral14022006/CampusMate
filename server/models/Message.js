@@ -43,6 +43,14 @@ const MessageSchema = new mongoose.Schema({
     type: Array,
     default: []
   },
+  decision: {
+    type: String,
+    default: 'ANSWER'
+  },
+  decisionReason: {
+    type: String,
+    default: 'ANSWERED'
+  },
   createdAt: {
     type: Date,
     default: Date.now

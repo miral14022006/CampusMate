@@ -79,94 +79,101 @@ class DecisionPolicy:
         self,
         top_intents: List[Dict[str, Any]],
         entities: List[Dict[str, Any]],
-        retrieved_chunks: List[Dict[str, Any]],
+        retrieved_chunks: Optional[List[Dict[str, Any]]] = None,
         language: str = "en"
     ) -> Dict[str, Any]:
         """
         Evaluate context against thresholds and slots.
-        
-        Parameters:
-        - top_intents: List of dicts with keys 'intent' and 'confidence' sorted descending.
-        - entities: List of extracted entities with 'label' and 'text'.
-        - retrieved_chunks: List of retrieved chunks with 'score'.
-        - language: Detected language ('en', 'hi', 'gu', 'hi-Latn').
-        
-        Returns:
-        - dict with 'decision', 'reason', 'clarification_question', 'quick_replies', 'contact_info'.
+        Retrieval evidence is PRIMARY: if relevant chunks exist with sufficient score,
+        the policy decides ANSWER (or CLARIFY if a crucial required slot like semester is missing),
+        regardless of whether intent classification returned out_of_scope.
         """
         lang = language if language in ["hi", "gu", "hi-Latn"] else "en"
 
-        if not top_intents:
-            return self._build_fallback(
-                reason="No intent predictions available",
-                intent="out_of_scope",
-                lang=lang
-            )
+        # Check retrieval evidence strength first
+        best_retrieval_score = 0.0
+        has_retrieval_evidence = False
+        if retrieved_chunks:
+            best_retrieval_score = max([c.get("score", 0.0) for c in retrieved_chunks], default=0.0)
+            # RRF score >= 0.028 or normalized reranker score >= 0.50
+            if best_retrieval_score >= 0.028:
+                has_retrieval_evidence = True
 
-        top1 = top_intents[0]
+        top1 = top_intents[0] if top_intents else {"intent": "out_of_scope", "confidence": 0.0}
         top1_intent = top1.get("intent", "out_of_scope")
         top1_conf = float(top1.get("confidence", 0.0))
 
-        top2_intent = top_intents[1].get("intent") if len(top_intents) > 1 else None
-        top2_conf = float(top_intents[1].get("confidence", 0.0)) if len(top_intents) > 1 else 0.0
+        # Check missing required entity slot if an intent was identified
+        if top1_intent != "out_of_scope":
+            missing_slot = self._check_missing_slot(top1_intent, entities)
+            if missing_slot:
+                return self._build_slot_clarification(
+                    intent=top1_intent,
+                    missing_slot=missing_slot,
+                    reason=f"Intent '{top1_intent}' requires missing entity slot '{missing_slot}'",
+                    lang=lang,
+                    decision_reason="CLARIFY_SLOT"
+                )
 
-        margin = top1_conf - top2_conf
+        # If retrieval found strong evidence in the uploaded documents, proceed to ANSWER!
+        if has_retrieval_evidence:
+            return {
+                "decision": DecisionOutcome.ANSWER.value,
+                "reason": f"Sufficient retrieval evidence found (score {best_retrieval_score:.4f})",
+                "decision_reason": "ANSWERED",
+                "clarification_question": None,
+                "quick_replies": [],
+                "contact_info": None
+            }
 
-        # 1. Check out_of_scope or below lower bound
-        if top1_intent == "out_of_scope" or top1_conf < self.t_low:
+        # If retrieval evidence is insufficient or empty:
+        if not retrieved_chunks:
+            decision_reason = "NO_CHUNKS"
+        elif best_retrieval_score < 0.028:
+            decision_reason = "LOW_EVIDENCE"
+        else:
+            decision_reason = "FALLBACK"
+
+        # Check if intent is high confidence despite lack of document chunks
+        if top1_intent != "out_of_scope" and top1_conf >= self.t_high:
             return self._build_fallback(
-                reason=f"Confidence {top1_conf:.3f} is below lower threshold {self.t_low} or out of scope",
+                reason=f"High intent '{top1_intent}' ({top1_conf:.3f}) but insufficient document evidence ({best_retrieval_score:.4f})",
                 intent=top1_intent,
-                lang=lang
+                lang=lang,
+                decision_reason=decision_reason
             )
 
-        # 2. Check ambiguity: close margin between top-1 and top-2
+        # Check ambiguity between intents
+        top2_intent = top_intents[1].get("intent") if len(top_intents) > 1 else None
+        top2_conf = float(top_intents[1].get("confidence", 0.0)) if len(top_intents) > 1 else 0.0
+        margin = top1_conf - top2_conf
+
         if top2_intent and top2_intent != "out_of_scope" and (margin < self.margin_threshold) and (top1_conf < 0.85):
             return self._build_intent_clarification(
                 candidates=[top1, top_intents[1]],
                 reason=f"Ambiguous intent: top-1 '{top1_intent}' ({top1_conf:.2f}) and top-2 '{top2_intent}' ({top2_conf:.2f}) margin is {margin:.2f} < {self.margin_threshold}",
-                lang=lang
+                lang=lang,
+                decision_reason="LOW_INTENT"
             )
 
-        # 3. Check intermediate confidence (between T_low and T_high)
-        if top1_conf < self.t_high:
+        if self.t_low <= top1_conf < self.t_high:
             candidates = [top1]
             if top2_intent and top2_intent != "out_of_scope":
                 candidates.append(top_intents[1])
             return self._build_intent_clarification(
                 candidates=candidates,
                 reason=f"Confidence {top1_conf:.3f} is between {self.t_low} and {self.t_high}",
-                lang=lang
+                lang=lang,
+                decision_reason="LOW_INTENT"
             )
 
-        # 4. Check missing required entity slot
-        missing_slot = self._check_missing_slot(top1_intent, entities)
-        if missing_slot:
-            return self._build_slot_clarification(
-                intent=top1_intent,
-                missing_slot=missing_slot,
-                reason=f"Intent '{top1_intent}' requires missing entity slot '{missing_slot}'",
-                lang=lang
-            )
-
-        # 5. Check retrieval confidence if retrieval was performed
-        if retrieved_chunks:
-            best_retrieval_score = max([c.get("score", 0.0) for c in retrieved_chunks], default=0.0)
-            if best_retrieval_score < self.min_retrieval_score and top1_conf < 0.80:
-                return self._build_fallback(
-                    reason=f"Retrieval score {best_retrieval_score:.3f} is below minimum {self.min_retrieval_score}",
-                    intent=top1_intent,
-                    lang=lang
-                )
-
-        # Passed all checks -> Proceed to ANSWER
-        return {
-            "decision": DecisionOutcome.ANSWER.value,
-            "reason": f"High confidence ({top1_conf:.3f} >= {self.t_high}) and entity requirements met",
-            "clarification_question": None,
-            "quick_replies": [],
-            "contact_info": None
-        }
+        out_reason = "OUT_OF_SCOPE" if top1_intent == "out_of_scope" else decision_reason
+        return self._build_fallback(
+            reason=f"Confidence {top1_conf:.3f} is below lower threshold {self.t_low} or out of scope",
+            intent=top1_intent,
+            lang=lang,
+            decision_reason=out_reason
+        )
 
     def _check_missing_slot(self, intent: str, entities: List[Dict[str, Any]]) -> Optional[str]:
         required = INTENT_REQUIRED_SLOTS.get(intent, [])
@@ -180,7 +187,8 @@ class DecisionPolicy:
         self,
         candidates: List[Dict[str, Any]],
         reason: str,
-        lang: str
+        lang: str,
+        decision_reason: str = "LOW_INTENT"
     ) -> Dict[str, Any]:
         prompt = self.templates.get("intent_clarification_prompts", {}).get(
             lang, "Did you mean:"
@@ -203,6 +211,7 @@ class DecisionPolicy:
         return {
             "decision": DecisionOutcome.CLARIFY.value,
             "reason": reason,
+            "decision_reason": decision_reason,
             "clarification_question": question,
             "quick_replies": quick_replies,
             "contact_info": None
@@ -213,7 +222,8 @@ class DecisionPolicy:
         intent: str,
         missing_slot: str,
         reason: str,
-        lang: str
+        lang: str,
+        decision_reason: str = "CLARIFY_SLOT"
     ) -> Dict[str, Any]:
         slot_questions = self.templates.get("missing_slot_questions", {}).get(missing_slot, {})
         question = slot_questions.get(lang, slot_questions.get("en", f"Could you please specify the {missing_slot}?"))
@@ -233,6 +243,7 @@ class DecisionPolicy:
         return {
             "decision": DecisionOutcome.CLARIFY.value,
             "reason": reason,
+            "decision_reason": decision_reason,
             "clarification_question": question,
             "quick_replies": quick_replies,
             "contact_info": None
@@ -242,34 +253,37 @@ class DecisionPolicy:
         self,
         reason: str,
         intent: str,
-        lang: str
+        lang: str,
+        decision_reason: str = "LOW_EVIDENCE"
     ) -> Dict[str, Any]:
         msg = self.templates.get("fallback_messages", {}).get(
             lang, "I'm not sure how to answer that. Please contact our college office:"
         )
         contact = self.get_contact_info(intent, lang=lang)
-        lines = [msg, "", f"🏛️ **{contact['name']}**"]
-        # Contact details are only spoken when the deployment owner has marked
-        # them verified; otherwise the reply names the responsible office and
-        # asks the student to use the official channels.
+        
+        # When campus contacts are not verified, do not output raw markdown asterisks or placeholder text
         if os.getenv("CAMPUS_CONTACTS_VERIFIED", "false").lower() == "true":
+            lines = [msg, "", f"🏛️ **{contact['name']}**"]
             for icon, key in (("📍", "room"), ("📞", "phone"), ("✉️", "email"), ("⏰", "hours")):
                 if contact.get(key):
                     label = "Hours" if key == "hours" else ""
                     lines.append(f"{icon} {label + ': ' if label else ''}{contact[key]}")
+            fallback_text = "\n".join(lines)
+            contact_payload = contact
         else:
-            lines.append("Verified contact details have not been configured for this deployment yet.")
-        fallback_text = "\n".join(lines)
+            fallback_text = "I could not find relevant information in the uploaded campus documents. Please check with your college office or academic coordinator."
+            contact_payload = None
 
         return {
             "decision": DecisionOutcome.FALLBACK.value,
             "reason": reason,
+            "decision_reason": decision_reason,
             "clarification_question": fallback_text,
             "quick_replies": [
                 {"label": "General Helpdesk", "payload": "general_queries", "confidence": 1.0},
                 {"label": "Contact Admin", "payload": "faculty_contacts", "confidence": 1.0}
             ],
-            "contact_info": contact
+            "contact_info": contact_payload
         }
 
 # Singleton default instance

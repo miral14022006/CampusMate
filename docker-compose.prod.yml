@@ -68,16 +68,17 @@ services:
       - NLP_API_KEY=${NLP_API_KEY}
       - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - GEMINI_MODEL=gemini-1.5-flash
+      - GEMINI_MODEL=gemini-2.5-flash
       - ENABLE_RERANKER=true
       - HF_HOME=/home/appuser/.cache/huggingface
       - DATA_DIR=/data
     volumes:
       - ./data:/data
+      - /opt/campusmate/data/uploads:/data/uploads
       - /opt/campusmate/data/index:/data/index
       - /opt/campusmate/models/huggingface:/home/appuser/.cache/huggingface
     healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/v1/health')"]
       interval: 15s
       timeout: 5s
       start_period: 30s

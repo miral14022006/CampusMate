@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Menu, ChevronRight, LogOut } from 'lucide-react';
 import AdminSidebar from './AdminSidebar';
 import AnimatedOutlet from '../components/AnimatedOutlet';
 import DashboardFilters from '../features/admin/dashboard/DashboardFilters';
 import { useAdminAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 
 const CRUMBS = {
   '/admin': 'Dashboard',
@@ -22,8 +23,31 @@ const CRUMBS = {
 export function AdminLayout() {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('cm_admin_sidebar_collapsed') === 'true');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [nlpStatus, setNlpStatus] = useState('checking');
   const location = useLocation();
   const { user, logout } = useAdminAuth();
+
+  useEffect(() => {
+    let mounted = true;
+    const checkHealth = () => {
+      fetch('/health')
+        .then((res) => res.json())
+        .then((data) => {
+          if (mounted) {
+            setNlpStatus(data.status === 'ok' ? 'operational' : (data.nlp === 'ok' ? 'operational' : 'degraded'));
+          }
+        })
+        .catch(() => {
+          if (mounted) setNlpStatus('degraded');
+        });
+    };
+    checkHealth();
+    const timer = setInterval(checkHealth, 30000);
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, []);
 
   const handleToggleCollapse = () => {
     setCollapsed((prev) => {
@@ -72,10 +96,17 @@ export function AdminLayout() {
 
           <div className="flex items-center gap-3">
             {/* Live Operational Status Pill */}
-            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-pill bg-positive-soft px-2.5 py-0.5 text-[11px] font-semibold text-[color:var(--positive)]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--positive)] animate-pulse" />
-              Operational
-            </span>
+            {nlpStatus === 'operational' ? (
+              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-pill bg-positive-soft px-2.5 py-0.5 text-[11px] font-semibold text-[color:var(--positive)]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--positive)] animate-pulse" />
+                Operational
+              </span>
+            ) : (
+              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-pill bg-warning-soft px-2.5 py-0.5 text-[11px] font-semibold text-[color:var(--warning)]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--warning)]" />
+                Degraded
+              </span>
+            )}
 
             {/* User Profile info and logout */}
             <div className="flex items-center gap-2 border-l border-hairline pl-3 text-xs">

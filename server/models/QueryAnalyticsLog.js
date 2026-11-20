@@ -11,6 +11,7 @@ const QueryAnalyticsLogSchema = new mongoose.Schema({
   confidence: { type: Number, default: 0.0 },
   sourceDoc: { type: String, index: true, default: null },
   decision: { type: String, index: true, default: 'ANSWER' }, // ANSWER, CLARIFY, FALLBACK
+  decisionReason: { type: String, index: true, default: 'ANSWERED' },
   isUnanswered: { type: Boolean, index: true, default: false }, // true if fallback, idk, out_of_scope
   isClarification: { type: Boolean, index: true, default: false },
   cached: { type: Boolean, index: true, default: false },

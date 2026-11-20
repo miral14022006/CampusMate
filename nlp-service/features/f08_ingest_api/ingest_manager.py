@@ -52,6 +52,17 @@ class DocumentIngestionManager:
         language: str = "en"
     ) -> Dict[str, Any]:
         path = Path(file_path)
+        # Check alternative locations if running across container volume boundaries
+        if not path.exists():
+            candidate_paths = [
+                Path("/data/uploads") / path.name,
+                Path("/app/data/uploads") / path.name,
+                Path("data/uploads") / path.name
+            ]
+            for cp in candidate_paths:
+                if cp.exists():
+                    path = cp
+                    break
         if not path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
 
@@ -122,16 +133,18 @@ class DocumentIngestionManager:
         }
 
     def rebuild_indexes(self):
-        """Re-indexes BM25 and dense FAISS from active chunks."""
+        """Re-indexes BM25 and dense FAISS from active chunks and hot-reloads them."""
         # Build BM25
         try:
             bm25_retriever.build_index()
+            bm25_retriever.load_index()
         except Exception as e:
             logger.warning(f"BM25 rebuild warning: {e}")
 
         # Build Dense
         try:
             dense_retriever.build_index()
+            dense_retriever.load_index()
         except Exception as e:
             logger.warning(f"Dense rebuild warning: {e}")
 

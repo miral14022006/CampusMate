@@ -86,23 +86,17 @@ const handleChat = async (req, res) => {
         // Use production nlpClient with retry, timeout, session ID & dialogue state
         nlpData = await nlpClient.query(queryToProcess, null, sessionId, dialogueState);
 
-        // Feature 12: Cache valid answerable query result
-        if (featureFlags.cache_enabled && nlpData) {
+        // Feature 12: Only cache successful ANSWER results (never FALLBACK, CLARIFY, or errors)
+        if (featureFlags.cache_enabled && nlpData && nlpData.decision === 'ANSWER' && nlpData.grounded !== false) {
           await serverCacheManager.set(queryToProcess, nlpData.language, dialogueState?.slots, nlpData);
         }
       } catch (nlpErr) {
-        console.warn(`[Server] NLP service unavailable (${nlpErr.message}), returning graceful baseline fallback.`);
-        nlpData = {
-          answer: 'Thank you for reaching out. The campus information service is currently operating in offline mode. Please consult the admin desk for immediate assistance.',
-          language: 'en',
-          intent: 'out_of_scope',
-          confidence: 0.5,
-          source_doc: 'offline_notice.txt',
-          entities: [],
-          standalone_query: query.trim(),
-          is_follow_up: false,
-          is_reset: false
-        };
+        console.error(`[Server] NLP service unavailable (${nlpErr.message}).`);
+        return res.status(503).json({
+          mode: 'error',
+          error: nlpErr.code || 'NLP_SERVICE_UNAVAILABLE',
+          message: 'The assistant is temporarily unavailable. Please try again in a moment.'
+        });
       }
     }
 
@@ -146,7 +140,9 @@ const handleChat = async (req, res) => {
         confidence: nlpData.confidence,
         sourceDoc: nlpData.source_doc,
         entities: nlpData.entities || [],
-        calendarEvents: nlpData.calendar_events || []
+        calendarEvents: nlpData.calendar_events || [],
+        decision: nlpData.decision || 'ANSWER',
+        decisionReason: nlpData.decision_reason || 'ANSWERED'
       });
       createdMessageId = String(assistantMsg._id);
 
@@ -172,6 +168,7 @@ const handleChat = async (req, res) => {
         confidence: nlpData.confidence || 0.0,
         sourceDoc: nlpData.source_doc || null,
         decision: nlpData.decision || 'ANSWER',
+        decisionReason: nlpData.decision_reason || 'ANSWERED',
         isUnanswered: isUnans,
         isClarification: isClarif,
         cached: isFromCache,
@@ -250,6 +247,7 @@ const handleChat = async (req, res) => {
       generation_mode: nlpData.generation_mode || "rag",
       hallucination_score: nlpData.hallucination_score || 0.0,
       decision: nlpData.decision || "ANSWER",
+      decision_reason: nlpData.decision_reason || "ANSWERED",
       clarification_question: nlpData.clarification_question || null,
       quick_replies: nlpData.quick_replies || [],
       contact_info: nlpData.contact_info || null,

@@ -16,7 +16,7 @@ const DocumentSchema = new mongoose.Schema({
   supersedes: { type: mongoose.Schema.Types.ObjectId, ref: 'Document', default: null },
   status: {
     type: String,
-    enum: ['active', 'superseded', 'archived'],
+    enum: ['active', 'superseded', 'archived', 'failed'],
     default: 'active',
     index: true
   },
@@ -30,6 +30,7 @@ const DocumentSchema = new mongoose.Schema({
     enum: ['pending', 'processing', 'completed', 'failed'],
     default: 'pending'
   },
+  error_message: { type: String, default: null },
   chunk_count: { type: Number, default: 0 },
   index_version: { type: String, default: 'v1' },
   metadata: { type: Map, of: String, default: {} }

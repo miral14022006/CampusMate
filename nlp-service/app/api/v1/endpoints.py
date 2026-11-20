@@ -29,6 +29,54 @@ def get_health():
         models_loaded=True
     )
 
+@router.get("/ready")
+def get_readiness():
+    """Returns 200 when search indexes and pipeline models are loaded; 503 during warmup."""
+    from features.f01_hybrid_retrieval.bm25_retriever import bm25_retriever
+    from features.f01_hybrid_retrieval.dense_retriever import dense_retriever
+    from fastapi.responses import JSONResponse
+
+    is_ready = bool(bm25_retriever.chunks and len(bm25_retriever.chunks) > 0)
+    if is_ready:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "ready",
+                "service": "nlp-service",
+                "version": API_VERSION,
+                "models_loaded": True,
+                "chunks_count": len(bm25_retriever.chunks)
+            }
+        )
+    return JSONResponse(
+        status_code=503,
+        content={
+            "status": "warming_up",
+            "service": "nlp-service",
+            "version": API_VERSION,
+            "models_loaded": False,
+            "error": "Indexes warming up or chunks not loaded"
+        }
+    )
+
+@router.get("/index/status")
+def get_index_status():
+    """Returns index status, chunk counts, document counts, and loaded models."""
+    from features.f01_hybrid_retrieval.bm25_retriever import bm25_retriever
+    from features.f01_hybrid_retrieval.dense_retriever import dense_retriever
+
+    chunks = bm25_retriever.chunks or []
+    doc_names = set(c.get("doc_name") for c in chunks if c.get("doc_name"))
+    
+    return {
+        "index_version": getattr(bm25_retriever, "index_version", "v1"),
+        "document_count": len(doc_names),
+        "chunk_count": len(chunks),
+        "bm25_loaded": bm25_retriever.bm25 is not None,
+        "dense_loaded": dense_retriever.index is not None or dense_retriever.model is not None,
+        "models_loaded": True
+    }
+
 @router.get("/version", response_model=VersionResponse)
 def get_version():
     """Returns active service version and dynamically loaded feature flags."""
@@ -98,6 +146,7 @@ def process_query(request_body: QueryRequest, request: Request):
             for c in ctx.retrieved_chunks
         ],
         decision=ctx.decision,
+        decision_reason=getattr(ctx, "decision_reason", "ANSWERED"),
         clarification_question=ctx.clarification_question,
         quick_replies=ctx.quick_replies,
         contact_info=ctx.contact_info,
@@ -122,6 +171,7 @@ def process_query(request_body: QueryRequest, request: Request):
         hallucination_score=ctx.hallucination_score,
         entities=entities,
         decision=ctx.decision,
+        decision_reason=getattr(ctx, "decision_reason", "ANSWERED"),
         clarification_question=ctx.clarification_question,
         quick_replies=ctx.quick_replies,
         contact_info=ctx.contact_info,
@@ -215,6 +265,7 @@ def analyze_query(request_body: QueryRequest, request: Request):
             for c in ctx.retrieved_chunks
         ],
         decision=ctx.decision,
+        decision_reason=getattr(ctx, "decision_reason", "ANSWERED"),
         clarification_question=ctx.clarification_question,
         quick_replies=ctx.quick_replies,
         contact_info=ctx.contact_info,

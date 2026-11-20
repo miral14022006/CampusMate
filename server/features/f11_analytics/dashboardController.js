@@ -72,8 +72,7 @@ function dateFilters(req) {
 }
 
 function queryLogDemoMatch(includeDemo) {
-  if (includeDemo === 'only') return { isSeeded: true };
-  if (includeDemo === 'true' || includeDemo === true) return {};
+  // Real data only: exclude any seeded or synthetic test logs
   return { isSeeded: { $ne: true } };
 }
 

@@ -33,8 +33,7 @@ function granularityFormat(granularity) {
 }
 
 function demoMatch(includeDemo) {
-  if (includeDemo === 'only') return { isDemo: true };
-  if (includeDemo === 'true' || includeDemo === true) return {};
+  // Real data only: exclude any seeded or synthetic test demo events
   return { isDemo: { $ne: true } };
 }
 

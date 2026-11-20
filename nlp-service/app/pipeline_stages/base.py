@@ -25,6 +25,7 @@ class PipelineContext(BaseModel):
     generation_mode: str = "rag"
     hallucination_score: float = 0.0
     decision: str = "ANSWER"
+    decision_reason: str = "ANSWERED"
     clarification_question: Optional[str] = None
     quick_replies: List[Dict[str, Any]] = Field(default_factory=list)
     contact_info: Optional[Dict[str, Any]] = None

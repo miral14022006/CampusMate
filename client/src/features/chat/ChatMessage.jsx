@@ -357,7 +357,7 @@ export function MessageBubble({ message, onFeedback, onToast, reducedMotion }) {
             </div>
           ) : null}
 
-          {message.decision === 'FALLBACK' || message.grounded === false ? (
+          {((message.generationMode === 'rag' || message.generationMode === 'extractive') && message.grounded === false) ? (
             <p className="mt-2 text-[10.5px] font-medium text-[color:var(--warning)]">
               This answer may not be grounded in a document. Please verify with the office.
             </p>

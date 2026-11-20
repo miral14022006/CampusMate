@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { CalendarDays, RefreshCw, SlidersHorizontal, Sparkles } from 'lucide-react';
+import { CalendarDays, RefreshCw, SlidersHorizontal } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { cn } from '../../../lib/cn';
 
@@ -198,17 +198,6 @@ export function DashboardFilters() {
             </option>
           ))}
         </select>
-
-        <label className="ml-auto flex cursor-pointer items-center gap-1.5 rounded-pill border border-hairline px-2.5 py-1.5 text-[11px] font-medium text-ink-secondary">
-          <input
-            type="checkbox"
-            checked={includeDemo}
-            onChange={(event) => update({ includeDemo: event.target.checked ? 'true' : undefined })}
-            className="h-3 w-3 accent-[color:var(--accent)]"
-          />
-          <Sparkles className="h-3 w-3 text-accent" aria-hidden="true" />
-          Demo data
-        </label>
 
         <Button size="sm" variant="secondary" onClick={refresh} leftIcon={<RefreshCw className="h-3.5 w-3.5" />}>
           Refresh

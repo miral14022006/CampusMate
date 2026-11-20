@@ -34,6 +34,7 @@ class AnalyzeResponse(BaseModel):
     entities: List[EntityItem]
     retrieved_chunks: List[ChunkItem]
     decision: Optional[str] = "ANSWER"
+    decision_reason: Optional[str] = "ANSWERED"
     clarification_question: Optional[str] = None
     quick_replies: Optional[List[Dict[str, Any]]] = None
     contact_info: Optional[Dict[str, Any]] = None
@@ -65,6 +66,7 @@ class QueryResponse(BaseModel):
     hallucination_score: Optional[float] = 0.0
     entities: List[EntityItem]
     decision: Optional[str] = "ANSWER"
+    decision_reason: Optional[str] = "ANSWERED"
     clarification_question: Optional[str] = None
     quick_replies: Optional[List[Dict[str, Any]]] = None
     contact_info: Optional[Dict[str, Any]] = None

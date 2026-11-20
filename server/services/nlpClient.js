@@ -117,6 +117,19 @@ class NlpClient {
       return { status: 'down', error: err.message };
     }
   }
+
+  async getHealth() {
+    return this.health();
+  }
+
+  async getReady() {
+    try {
+      const res = await this.client.get('/v1/ready');
+      return res.data;
+    } catch (err) {
+      return { status: 'down', error: err.message };
+    }
+  }
 }
 
 const nlpClient = new NlpClient();

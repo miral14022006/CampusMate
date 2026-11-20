@@ -42,8 +42,8 @@ describe('Feature 11 dashboard aggregation helpers', () => {
 
   test('demo data filters include, exclude and only modes', () => {
     expect(demoMatch(undefined)).toEqual({ isDemo: { $ne: true } });
-    expect(demoMatch('true')).toEqual({});
-    expect(demoMatch('only')).toEqual({ isDemo: true });
+    expect(demoMatch('true')).toEqual({ isDemo: { $ne: true } });
+    expect(demoMatch('only')).toEqual({ isDemo: { $ne: true } });
     const match = buildActivityMatch({
       from: new Date('2026-01-01'),
       to: new Date('2026-01-31'),
