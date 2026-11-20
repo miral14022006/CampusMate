@@ -84,8 +84,33 @@ def get_index_status():
         "document_count": len(doc_names),
         "chunk_count": len(chunks),
         "bm25_loaded": bm25_retriever.bm25 is not None,
+        "bm25_chunks": len(bm25_retriever.chunks) if bm25_retriever.chunks else 0,
         "dense_loaded": dense_retriever.index is not None or dense_retriever.model is not None,
+        "dense_chunks": len(dense_retriever.chunks) if dense_retriever.chunks else 0,
         "models_loaded": True
+    }
+
+@router.post("/debug/retrieve")
+def debug_retrieve(body: dict):
+    """Admin debug endpoint to test retrieval directly."""
+    from features.f01_hybrid_retrieval.hybrid_retriever import get_retriever
+    from app.core.config import FEATURES_CONFIG_PATH
+    import json
+    method = "hybrid_rerank"
+    if FEATURES_CONFIG_PATH.exists():
+        try:
+            with open(FEATURES_CONFIG_PATH, "r", encoding="utf-8") as f:
+                method = json.load(f).get("retrieval_method", "hybrid_rerank")
+        except Exception:
+            pass
+    retriever = get_retriever(method)
+    query = body.get("query", "")
+    top_k = body.get("top_k", 5)
+    hits = retriever.retrieve(query, top_k=top_k)
+    return {
+        "query": query,
+        "method": getattr(retriever, "name", method),
+        "chunks": hits
     }
 
 @router.get("/version", response_model=VersionResponse)

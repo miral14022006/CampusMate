@@ -14,6 +14,14 @@ class ChunkItem(BaseModel):
     score: float
     text: str
 
+class RetrieveDebugRequest(BaseModel):
+    query: str
+    top_k: Optional[int] = 5
+
+class RetrieveDebugResponse(BaseModel):
+    query: str
+    chunks: List[Dict[str, Any]]
+
 class QueryRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=1000, example="Exam form bharne ki last date kab hai?")
     language_override: Optional[str] = Field(None, example="hi-Latn")

@@ -83,6 +83,32 @@ router.get('/documents', requireAdminAuth, async (req, res) => {
 });
 
 /**
+ * GET /api/admin/index/status
+ * Proxies index status from the NLP microservice
+ */
+router.get('/index/status', requireAdminAuth, async (req, res) => {
+  try {
+    const nlpRes = await nlpClient.client.get('/v1/index/status');
+    return res.json(nlpRes.data);
+  } catch (err) {
+    return res.status(502).json({ error: `NLP service error: ${err.message}` });
+  }
+});
+
+/**
+ * POST /api/admin/debug/retrieve
+ * Proxies debug retrieval query to the NLP microservice
+ */
+router.post('/debug/retrieve', requireAdminAuth, async (req, res) => {
+  try {
+    const nlpRes = await nlpClient.client.post('/v1/debug/retrieve', req.body);
+    return res.json(nlpRes.data);
+  } catch (err) {
+    return res.status(502).json({ error: `NLP debug retrieve error: ${err.message}` });
+  }
+});
+
+/**
  * POST /api/admin/documents/upload
  * Multi-part file upload with checksum duplicate check & automatic versioning
  */

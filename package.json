@@ -8,7 +8,8 @@
     "docker": "docker compose up --build",
     "test:server": "cd server && npm test",
     "test:nlp": "cd nlp-service && pytest",
-    "smoke": "./deploy/smoke_test.sh http://localhost:5005"
+    "smoke": "./deploy/smoke_test.sh http://localhost:5005",
+    "golden": "python3 eval/golden_check.py"
   },
   "author": "Miral Patel",
   "license": "ISC"
