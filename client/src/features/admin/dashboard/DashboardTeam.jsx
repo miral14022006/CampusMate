@@ -7,6 +7,7 @@ import { Button } from '../../../components/ui/Button';
 import { Dialog } from '../../../components/ui/Dialog';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { Table, TBody, TD, TH, THead, TR } from '../../../components/ui/Table';
+import { Pagination } from '../../../components/ui/Pagination';
 import { ErrorState } from './DashboardBits';
 
 function fmt(date) {
@@ -74,6 +75,8 @@ export default function DashboardTeam() {
   const [oneTime, setOneTime] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [message, setMessage] = useState('');
+  const [teamPage, setTeamPage] = useState(1);
+  const [teamPageSize, setTeamPageSize] = useState(10);
 
   const load = async () => {
     setLoading(true);
@@ -96,6 +99,8 @@ export default function DashboardTeam() {
 
   const team = data?.team || data?.admins || [];
   const superadmins = team.filter((member) => member.role === 'superadmin' && member.status === 'active');
+  const paginatedTeam = team.slice((teamPage - 1) * teamPageSize, teamPage * teamPageSize);
+  const totalTeamPages = Math.ceil(team.length / teamPageSize) || 1;
 
   const sendInvite = async (event) => {
     event.preventDefault();
@@ -170,7 +175,7 @@ export default function DashboardTeam() {
             </TR>
           </THead>
           <TBody>
-            {team.map((member) => {
+            {paginatedTeam.map((member) => {
               const isSelf = String(member.id) === String(user?.id || user?._id);
               const lastSuper = member.role === 'superadmin' && superadmins.length <= 1;
               return (
@@ -208,6 +213,22 @@ export default function DashboardTeam() {
           </TBody>
         </Table>
       )}
+
+      {team.length > 0 ? (
+        <Pagination
+          page={teamPage}
+          totalPages={totalTeamPages}
+          totalItems={team.length}
+          pageSize={teamPageSize}
+          onPageChange={(p) => setTeamPage(p)}
+          onPageSizeChange={(sz) => {
+            setTeamPageSize(sz);
+            setTeamPage(1);
+          }}
+          pageSizeOptions={[5, 10, 20]}
+          itemName="team members"
+        />
+      ) : null}
 
       <section className="rounded-lg border border-hairline bg-surface-1 p-4">
         <h2 className="flex items-center gap-2 text-[13px] font-semibold text-ink">

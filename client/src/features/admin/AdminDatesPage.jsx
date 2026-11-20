@@ -7,6 +7,7 @@ import { Table, TBody, TD, TH, THead, TR } from '../../components/ui/Table';
 import { StatusPill } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { Pagination } from '../../components/ui/Pagination';
 import { useToast } from '../../components/ui/Toast';
 import { api } from '../../services/api';
 import { formatDate } from '../../lib/format';
@@ -18,6 +19,8 @@ export default function AdminDatesPage() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actingId, setActingId] = useState(null);
+  const [datePage, setDatePage] = useState(1);
+  const [datePageSize, setDatePageSize] = useState(10);
 
   const loadEvents = async () => {
     setLoading(true);
@@ -106,7 +109,9 @@ export default function AdminDatesPage() {
                 </TR>
               </THead>
               <TBody>
-                {events.map((evt) => (
+                {events
+                  .slice((datePage - 1) * datePageSize, datePage * datePageSize)
+                  .map((evt) => (
                   <TR key={evt._id}>
                     <TD className="font-semibold text-white">
                       {evt.title}
@@ -157,6 +162,24 @@ export default function AdminDatesPage() {
             </Table>
           </div>
         )}
+
+        {events.length > 0 ? (
+          <div className="px-6 py-2">
+            <Pagination
+              page={datePage}
+              totalPages={Math.ceil(events.length / datePageSize) || 1}
+              totalItems={events.length}
+              pageSize={datePageSize}
+              onPageChange={(p) => setDatePage(p)}
+              onPageSizeChange={(sz) => {
+                setDatePageSize(sz);
+                setDatePage(1);
+              }}
+              pageSizeOptions={[5, 10, 20]}
+              itemName="dates & events"
+            />
+          </div>
+        ) : null}
       </Card>
     </div>
   );

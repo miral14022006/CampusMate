@@ -13,6 +13,7 @@ const RANGES = [
 ];
 
 const SEMESTERS = ['all', '1', '2', '3', '4', '5', '6', '7', '8'];
+const ACADEMIC_YEARS = ['all', 'First Year', 'Second Year', 'Third Year', 'Fourth Year'];
 const BRANCHES = [
   'all',
   'Computer Engineering',
@@ -37,6 +38,7 @@ export function useDashboardFilters() {
   const range = params.get('range') || '30d';
   const granularity = params.get('granularity') || RANGES.find((item) => item.id === range)?.granularity || 'day';
   const semester = params.get('semester') || 'all';
+  const academicYear = params.get('academicYear') || 'all';
   const branch = params.get('branch') || 'all';
   const includeDemo = params.get('includeDemo') === 'true';
   const bust = params.get('bust') || '';
@@ -77,16 +79,17 @@ export function useDashboardFilters() {
     to: queryTo,
     granularity,
     semester: semester === 'all' ? undefined : semester,
+    academicYear: academicYear === 'all' ? undefined : academicYear,
     branch: branch === 'all' ? undefined : branch,
     includeDemo: includeDemo ? 'true' : undefined,
     bust: bust || undefined
   };
 
-  return { range, from, to, granularity, semester, branch, includeDemo, bust, query, update, params };
+  return { range, from, to, granularity, semester, academicYear, branch, includeDemo, bust, query, update, params };
 }
 
 export function DashboardFilters() {
-  const { range, from, to, semester, branch, includeDemo, update } = useDashboardFilters();
+  const { range, from, to, semester, academicYear, branch, includeDemo, update } = useDashboardFilters();
   const [updatedAt, setUpdatedAt] = useState(() => Date.now());
   const [, setTick] = useState(0);
 
@@ -160,6 +163,22 @@ export function DashboardFilters() {
           {SEMESTERS.map((value) => (
             <option key={value} value={value}>
               {value === 'all' ? 'All semesters' : `Semester ${value}`}
+            </option>
+          ))}
+        </select>
+
+        <label className="sr-only" htmlFor="dashboard-year">
+          Academic Year
+        </label>
+        <select
+          id="dashboard-year"
+          value={academicYear}
+          onChange={(event) => update({ academicYear: event.target.value })}
+          className="h-8 rounded-pill border border-hairline bg-surface-1 px-2.5 text-[11.5px] font-medium text-ink-secondary outline-none focus:border-accent"
+        >
+          {ACADEMIC_YEARS.map((value) => (
+            <option key={value} value={value}>
+              {value === 'all' ? 'All years' : value}
             </option>
           ))}
         </select>

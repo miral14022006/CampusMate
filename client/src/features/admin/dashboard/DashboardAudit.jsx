@@ -4,6 +4,7 @@ import { api } from '../../../services/api';
 import { Button } from '../../../components/ui/Button';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { Table, TBody, TD, TH, THead, TR } from '../../../components/ui/Table';
+import { Pagination } from '../../../components/ui/Pagination';
 import { ErrorState } from './DashboardBits';
 
 function fmt(date) {
@@ -16,6 +17,7 @@ export default function DashboardAudit() {
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [action, setAction] = useState('');
   const [actor, setActor] = useState('');
   const [from, setFrom] = useState('');
@@ -23,7 +25,7 @@ export default function DashboardAudit() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const load = async (nextPage = page) => {
+  const load = async (nextPage = page, nextLimit = pageSize) => {
     setLoading(true);
     setError(null);
     try {
@@ -33,7 +35,7 @@ export default function DashboardAudit() {
         from: from || undefined,
         to: to || undefined,
         page: nextPage,
-        limit: 50
+        limit: nextLimit
       });
       setLogs(result.logs || []);
       setTotal(result.total || 0);
@@ -130,12 +132,20 @@ export default function DashboardAudit() {
         </Table>
       )}
 
-      {pages > 1 ? (
-        <div className="flex items-center justify-between">
-          <Button size="sm" variant="secondary" disabled={page <= 1} onClick={() => load(page - 1)} leftIcon={<ChevronLeft className="h-3.5 w-3.5" />}>Previous</Button>
-          <span className="text-[11px] text-ink-muted">Page {page} of {pages}</span>
-          <Button size="sm" variant="secondary" disabled={page >= pages} onClick={() => load(page + 1)} rightIcon={<ChevronRight className="h-3.5 w-3.5" />}>Next</Button>
-        </div>
+      {total > 0 ? (
+        <Pagination
+          page={page}
+          totalPages={pages}
+          totalItems={total}
+          pageSize={pageSize}
+          onPageChange={(p) => load(p, pageSize)}
+          onPageSizeChange={(sz) => {
+            setPageSize(sz);
+            load(1, sz);
+          }}
+          pageSizeOptions={[10, 25, 50, 100]}
+          itemName="audit entries"
+        />
       ) : null}
     </div>
   );

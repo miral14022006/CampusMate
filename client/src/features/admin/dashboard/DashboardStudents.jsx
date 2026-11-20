@@ -12,6 +12,7 @@ import { Drawer } from '../../../components/ui/Drawer';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { Table, TBody, TD, TH, THead, TR } from '../../../components/ui/Table';
 import { Tooltip } from '../../../components/ui/Tooltip';
+import { Pagination } from '../../../components/ui/Pagination';
 import { ErrorState, SERIES_COLORS, useDashboardData } from './DashboardBits';
 
 
@@ -239,6 +240,7 @@ export default function DashboardStudents() {
   const [search, setSearch] = useState(params.get('search') || '');
   const [status, setStatus] = useState(params.get('status') || 'all');
   const [page, setPage] = useState(Number(params.get('page')) || 1);
+  const [pageSize, setPageSize] = useState(10);
   const [sort, setSort] = useState(params.get('sort') || 'lastActive');
   const [dir, setDir] = useState(params.get('dir') || 'desc');
   const [selected, setSelected] = useState(null);
@@ -246,9 +248,13 @@ export default function DashboardStudents() {
   const isSuper = role === 'superadmin';
 
   const { data, loading, error, retry, reload } = useDashboardData(
-    () => api.dashboard.students({ ...query, search, status, page, limit: 25, sort, dir }),
-    [query.from, query.to, query.semester, query.branch, query.includeDemo, query.bust, search, status, page, sort, dir]
+    () => api.dashboard.students({ ...query, search, status, page, limit: pageSize, sort, dir }),
+    [query.from, query.to, query.semester, query.academicYear, query.branch, query.includeDemo, query.bust, search, status, page, pageSize, sort, dir]
   );
+
+  useEffect(() => {
+    setPage(1);
+  }, [query.academicYear, query.branch, query.semester]);
 
   useEffect(() => {
     const next = new URLSearchParams(params);
@@ -375,8 +381,9 @@ export default function DashboardStudents() {
                 <TR>
                   {[
                     ['name', 'Student'],
+                    ['academicYear', 'Batch / Year'],
+                    ['branch', 'Branch'],
                     ['lastActive', 'Last active'],
-                    ['joined', 'Joined'],
                     ['queries', 'Queries'],
                     ['views', 'Doc views'],
                     ['conversations', 'Chats']
@@ -395,7 +402,7 @@ export default function DashboardStudents() {
               <TBody>
                 {students.length === 0 ? (
                   <TR>
-                    <TD colSpan={8} className="py-8 text-center text-ink-muted">
+                    <TD colSpan={9} className="py-8 text-center text-ink-muted">
                       No students match these filters.
                     </TD>
                   </TR>
@@ -406,8 +413,15 @@ export default function DashboardStudents() {
                         <span className="font-medium text-ink">{student.name}</span>
                         <span className="block text-[10.5px] text-ink-muted">{student.email}</span>
                       </TD>
+                      <TD className="whitespace-nowrap">
+                        <span className="rounded-pill bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-ink">
+                          {student.academicYear || (student.email.startsWith('23') ? 'First Year' : student.email.startsWith('24') ? 'Second Year' : student.email.startsWith('25') ? 'Third Year' : student.email.startsWith('26') ? 'Fourth Year' : '—')}
+                        </span>
+                      </TD>
+                      <TD className="max-w-[200px] truncate text-[11.5px] text-ink-secondary" title={student.branch}>
+                        {student.branch || '—'}
+                      </TD>
                       <TD className="whitespace-nowrap">{fmt(student.lastActive)}</TD>
-                      <TD className="whitespace-nowrap">{fmt(student.createdAt)}</TD>
                       <TD align="right" className="tabular-nums">{student.queries}</TD>
                       <TD align="right" className="tabular-nums">{student.docViews}</TD>
                       <TD align="right" className="tabular-nums">{student.conversations}</TD>
@@ -452,19 +466,19 @@ export default function DashboardStudents() {
             ) : null}
           </div>
 
-          {data?.pages > 1 ? (
-            <div className="flex items-center justify-between">
-              <Button size="sm" variant="secondary" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} leftIcon={<ChevronLeft className="h-3.5 w-3.5" />}>
-                Previous
-              </Button>
-              <span className="text-[11px] text-ink-muted">
-                Page {data.page} of {data.pages}
-              </span>
-              <Button size="sm" variant="secondary" disabled={page >= data.pages} onClick={() => setPage((p) => p + 1)} rightIcon={<ChevronRight className="h-3.5 w-3.5" />}>
-                Next
-              </Button>
-            </div>
-          ) : null}
+          <Pagination
+            page={data?.page || page}
+            totalPages={data?.pages || 1}
+            totalItems={data?.total || 0}
+            pageSize={pageSize}
+            onPageChange={(p) => setPage(p)}
+            onPageSizeChange={(sz) => {
+              setPageSize(sz);
+              setPage(1);
+            }}
+            pageSizeOptions={[10, 20, 50]}
+            itemName="students"
+          />
         </>
       )}
 
