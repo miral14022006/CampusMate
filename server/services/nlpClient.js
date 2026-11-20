@@ -2,7 +2,7 @@ const axios = require('axios');
 
 const NLP_SERVICE_URL = process.env.NLP_SERVICE_URL || 'http://localhost:8000';
 const NLP_API_KEY = process.env.NLP_API_KEY || 'campus_mate_secret_token_123';
-const TIMEOUT_MS = parseInt(process.env.NLP_TIMEOUT_MS || '4000', 10);
+const TIMEOUT_MS = parseInt(process.env.NLP_TIMEOUT_MS || '25000', 10);
 const MAX_RETRIES = parseInt(process.env.NLP_MAX_RETRIES || '2', 10);
 
 /**
