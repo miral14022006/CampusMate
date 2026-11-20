@@ -88,7 +88,7 @@ export default function AdminDatesPage() {
         ) : events.length === 0 ? (
           <div className="p-8">
             <EmptyState
-              icon={CalendarDays}
+              icon={<CalendarDays className="h-6 w-6" aria-hidden="true" />}
               title="No candidate dates found"
               description="Upload new circulars or notices to automatically extract upcoming academic deadlines and events."
             />

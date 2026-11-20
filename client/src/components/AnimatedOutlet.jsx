@@ -4,6 +4,7 @@ import { AnimatePresence, m } from 'framer-motion';
 import { routeTransition } from '../lib/motion';
 import Logo from './brand/Logo';
 import { Skeleton } from './ui/Skeleton';
+import { ErrorBoundary } from './ui/ErrorBoundary';
 
 function Splash() {
   return (
@@ -24,20 +25,22 @@ function Splash() {
 export function AnimatedOutlet() {
   const location = useLocation();
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <m.div
-        key={location.pathname}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        variants={routeTransition}
-        className="min-h-full"
-      >
-        <Suspense fallback={<Splash />}>
-          <Outlet />
-        </Suspense>
-      </m.div>
-    </AnimatePresence>
+    <ErrorBoundary key={location.pathname}>
+      <AnimatePresence mode="wait" initial={false}>
+        <m.div
+          key={location.pathname}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          variants={routeTransition}
+          className="min-h-full"
+        >
+          <Suspense fallback={<Splash />}>
+            <Outlet />
+          </Suspense>
+        </m.div>
+      </AnimatePresence>
+    </ErrorBoundary>
   );
 }
 
