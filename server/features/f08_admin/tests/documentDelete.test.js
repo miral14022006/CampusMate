@@ -1,13 +1,5 @@
 const request = require('supertest');
 
-jest.mock('../../../services/nlpClient', () => ({
-  nlpClient: {
-    client: {
-      post: jest.fn().mockResolvedValue({ data: { status: 'ok' } })
-    }
-  }
-}));
-
 jest.mock('../../../models/Document', () => ({
   db: { readyState: 1 },
   findByIdAndDelete: jest.fn()

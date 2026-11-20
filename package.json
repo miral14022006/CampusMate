@@ -1,15 +1,13 @@
 {
   "name": "campus-mate-multilingual-backend",
   "version": "1.0.0",
-  "description": "Multilingual College Assistant - Backend Services & NLP Engine",
+  "description": "Multilingual College Assistant - Backend Services",
   "scripts": {
     "start": "./run.sh",
     "dev": "./run.sh",
     "docker": "docker compose up --build",
     "test:server": "cd server && npm test",
-    "test:nlp": "cd nlp-service && pytest",
-    "smoke": "./deploy/smoke_test.sh http://localhost:5005",
-    "golden": "python3 eval/golden_check.py"
+    "smoke": "./deploy/smoke_test.sh http://localhost:5005"
   },
   "author": "Miral Patel",
   "license": "ISC"

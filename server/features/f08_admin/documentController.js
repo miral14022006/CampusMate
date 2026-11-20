@@ -4,9 +4,7 @@ const AdminUser = require('../../models/AdminUser');
 const Document = require('../../models/Document');
 const { generateToken, requireAdminAuth } = require('./auth');
 const { upload, calculateChecksum } = require('./uploadMiddleware');
-const { nlpClient } = require('../../services/nlpClient');
 const { serverCacheManager } = require('../f12_cache');
-const { processCandidateEvents, markEventsSupersededByDocId } = require('../f15_calendar/calendarController');
 const { recordAuditLog } = require('../f16_auth/auditService');
 
 const router = express.Router();
@@ -84,28 +82,26 @@ router.get('/documents', requireAdminAuth, async (req, res) => {
 
 /**
  * GET /api/admin/index/status
- * Proxies index status from the NLP microservice
+ * Index status placeholder while RAG/NLP pipeline is disconnected
  */
 router.get('/index/status', requireAdminAuth, async (req, res) => {
-  try {
-    const nlpRes = await nlpClient.client.get('/v1/index/status');
-    return res.json(nlpRes.data);
-  } catch (err) {
-    return res.status(502).json({ error: `NLP service error: ${err.message}` });
-  }
+  return res.json({
+    status: 'disconnected',
+    message: 'NLP/RAG indexing service is disconnected.',
+    chunks_count: 0
+  });
 });
 
 /**
  * POST /api/admin/debug/retrieve
- * Proxies debug retrieval query to the NLP microservice
+ * Debug retrieval placeholder while RAG/NLP pipeline is disconnected
  */
 router.post('/debug/retrieve', requireAdminAuth, async (req, res) => {
-  try {
-    const nlpRes = await nlpClient.client.post('/v1/debug/retrieve', req.body);
-    return res.json(nlpRes.data);
-  } catch (err) {
-    return res.status(502).json({ error: `NLP debug retrieve error: ${err.message}` });
-  }
+  return res.json({
+    status: 'disconnected',
+    message: 'NLP/RAG retrieval service is disconnected.',
+    results: []
+  });
 });
 
 /**
@@ -143,73 +139,41 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
       }
     }
 
-    // Versioning Check: Check existing documents for this topic_key
-    let priorDoc = null;
+    // Determine Version Number for the given topic_key
     let nextVersion = 1;
+    let priorDoc = null;
 
     if (Document.db && Document.db.readyState === 1) {
       priorDoc = await Document.findOne({ topic_key, status: 'active' }).sort({ version: -1 });
       if (priorDoc) {
         nextVersion = priorDoc.version + 1;
-        // Mark previous document as superseded
-        priorDoc.status = 'superseded';
-        await priorDoc.save();
-        try {
-          await markEventsSupersededByDocId(priorDoc._id);
-        } catch (calSupErr) {
-          console.warn(`[Admin] Failed marking prior events superseded: ${calSupErr.message}`);
-        }
       }
     }
 
-    // Call NLP microservice ingestion endpoint
-    let ingestResult = { chunks_created: 0, new_index_version: 'v1' };
-    let ingestError = null;
-    try {
-      const nlpRes = await nlpClient.client.post('/v1/documents/ingest', {
-        file_path: req.file.path,
-        title,
-        topic_key,
-        doc_type,
-        version: nextVersion,
-        effective_date,
-        department
-      });
-      ingestResult = nlpRes.data;
-    } catch (ingestErr) {
-      ingestError = ingestErr.message;
-      console.warn(`[Admin] NLP ingestion warning: ${ingestErr.message}`);
-    }
-
-    // Invalidate server Redis cache
-    await serverCacheManager.invalidateAll();
-
-    // Determine processing status and error
-    const isFailed = !ingestResult || ingestResult.chunks_created === 0 || ingestError !== null;
-    const processingStatus = isFailed ? 'failed' : 'completed';
-    const docStatus = isFailed ? 'failed' : 'active';
-    const failureReason = isFailed ? (ingestError || 'No text found, enable OCR') : null;
-
-    // Create Document record
+    // Persist Document metadata in MongoDB
     let newDoc = null;
+    const docStatus = 'active';
+    const processingStatus = 'uploaded';
+
     if (Document.db && Document.db.readyState === 1) {
+      if (priorDoc) {
+        await Document.findByIdAndUpdate(priorDoc._id, { status: 'superseded' });
+      }
+
       newDoc = await Document.create({
         title,
         topic_key,
         doc_type,
         department,
-        effective_date: new Date(effective_date),
         version: nextVersion,
-        supersedes: priorDoc ? priorDoc._id : null,
         status: docStatus,
-        file_path: req.file.path,
-        file_name: req.file.filename,
-        original_name: req.file.originalname,
         checksum,
+        file_path: req.file.path,
+        effective_date: new Date(effective_date),
+        supersedes: priorDoc ? priorDoc._id : null,
+        chunk_count: 0,
         processing_status: processingStatus,
-        error_message: failureReason,
-        chunk_count: ingestResult.chunks_created,
-        index_version: ingestResult.new_index_version
+        error_message: null
       });
     } else {
       newDoc = {
@@ -218,19 +182,8 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
         version: nextVersion,
         status: docStatus,
         processing_status: processingStatus,
-        error_message: failureReason,
-        chunk_count: ingestResult.chunks_created
+        chunk_count: 0
       };
-    }
-
-    // Process candidate calendar events if returned by ingest API
-    let calendarEventsCreated = [];
-    if (ingestResult.calendar_candidates && Array.isArray(ingestResult.calendar_candidates)) {
-      try {
-        calendarEventsCreated = await processCandidateEvents(ingestResult.calendar_candidates, newDoc);
-      } catch (calErr) {
-        console.warn(`[Admin] Failed processing candidate calendar events: ${calErr.message}`);
-      }
     }
 
     await recordAuditLog({
@@ -243,11 +196,11 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
     });
 
     return res.status(201).json({
-      message: 'Document uploaded, versioned, and indexed successfully.',
+      message: 'Document uploaded and versioned successfully.',
       document: newDoc,
       superseded_prior_version: Boolean(priorDoc),
-      new_index_version: ingestResult.new_index_version,
-      calendar_candidates_count: calendarEventsCreated.length
+      new_index_version: nextVersion,
+      calendar_candidates_count: 0
     });
   } catch (err) {
     return res.status(500).json({ error: `Upload processing failed: ${err.message}` });
@@ -256,19 +209,13 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
 
 /**
  * POST /api/admin/documents/reindex
- * Rebuilds all search indexes from active chunks
+ * Rebuilds all search indexes (placeholder while disconnected)
  */
 router.post('/documents/reindex', requireAdminAuth, async (req, res) => {
-  try {
-    const nlpRes = await nlpClient.client.post('/v1/documents/reindex');
-    await serverCacheManager.invalidateAll();
-    return res.json({
-      message: 'Re-indexing initiated across BM25 and FAISS indexes.',
-      nlp: nlpRes.data
-    });
-  } catch (err) {
-    return res.status(500).json({ error: `Re-index failed: ${err.message}` });
-  }
+  await serverCacheManager.invalidateAll();
+  return res.json({
+    message: 'Cache invalidated. Document re-indexing will resume when the new RAG service is connected.'
+  });
 });
 
 /**
@@ -286,8 +233,6 @@ router.patch('/documents/:id/status', requireAdminAuth, async (req, res) => {
       const doc = await Document.findByIdAndUpdate(req.params.id, { status }, { new: true });
       if (!doc) return res.status(404).json({ error: 'Document not found.' });
 
-      // Invalidate cache and trigger reindex
-      await nlpClient.client.post('/v1/documents/reindex');
       await serverCacheManager.invalidateAll();
 
       await recordAuditLog({
@@ -309,7 +254,7 @@ router.patch('/documents/:id/status', requireAdminAuth, async (req, res) => {
 
 /**
  * DELETE /api/admin/documents/:id
- * Permanently removes a document record, its uploaded file, and re-indexes.
+ * Permanently removes a document record and its uploaded file.
  */
 router.delete('/documents/:id', requireAdminAuth, async (req, res) => {
   try {
@@ -332,11 +277,6 @@ router.delete('/documents/:id', requireAdminAuth, async (req, res) => {
       console.warn(`[Admin] Could not remove file for document ${req.params.id}: ${fileErr.message}`);
     }
 
-    try {
-      await nlpClient.client.post('/v1/documents/reindex');
-    } catch (reindexErr) {
-      console.warn(`[Admin] Re-index after delete skipped: ${reindexErr.message}`);
-    }
     await serverCacheManager.invalidateAll();
 
     await recordAuditLog({
@@ -355,4 +295,3 @@ router.delete('/documents/:id', requireAdminAuth, async (req, res) => {
 });
 
 module.exports = router;
-

@@ -1,21 +1,18 @@
 const express = require('express');
-const { nlpClient } = require('../services/nlpClient');
 const Message = require('../models/Message');
 const Conversation = require('../models/Conversation');
-const featureFlags = require('../config/features');
-const { sessionManager } = require('../features/f06_sessions');
-const { serverCacheManager } = require('../features/f12_cache');
-const { logImplicitFailureIfNeeded } = require('../features/f10_feedback');
-const { logQueryAnalytics } = require('../features/f11_analytics');
 const { PersistentConversation } = require('../features/f00_history');
 const { requireAuth, optionalAuth } = require('../features/f16_auth');
 const { recordInBackground } = require('../features/f17_activity/activityService');
 
 const router = express.Router();
 
+const MAINTENANCE_MESSAGE =
+  'CampusMate AI Assistant is undergoing scheduled maintenance. The conversational service will be restored shortly.';
+
 /**
  * POST /api/chat & POST /api/chat/message
- * Primary chat endpoint: queries production NLP service client, caches/saves conversation, and returns full state.
+ * Chat endpoint: safely disconnected from old RAG/NLP pipeline, returning a maintenance response while preserving message history.
  */
 const handleChat = async (req, res) => {
   const { query, sessionId = `session_${Date.now()}` } = req.body;
@@ -25,174 +22,45 @@ const handleChat = async (req, res) => {
   }
 
   try {
-    let nlpData = null;
+    const createdMessageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+    const studentId = req.user?.id || 'anonymous_user';
 
-    // Feature 06: Retrieve hot dialogue state from Redis / in-memory session manager
-    let dialogueState = null;
-    if (featureFlags.dialogue_state) {
-      dialogueState = await sessionManager.getState(sessionId);
-    }
+    try {
+      if (Message.db && Message.db.readyState === 1) {
+        // Save user question
+        await Message.create({
+          sessionId,
+          sender: 'user',
+          text: query.trim(),
+          studentId: req.user?.id || null,
+          metadata: {
+            channel: 'web',
+            studentBranch: req.user?.branch || null,
+            studentSemester: req.user?.semester || null
+          }
+        });
 
-    // Branch-awareness & Student context personalization:
-    // If the student has a registered branch or semester, seed them into the dialogue slots
-    // so intent templates, clarifications, and document retrieval automatically filter/ground on their branch.
-    if (req.user?.branch || req.user?.semester) {
-      dialogueState = dialogueState || { session_id: sessionId, slots: {} };
-      if (!dialogueState.slots) dialogueState.slots = {};
-      if (req.user.branch && !dialogueState.slots.branch) {
-        dialogueState.slots.branch = req.user.branch;
-        if (!dialogueState.slots.course) {
-          dialogueState.slots.course = req.user.branch;
-        }
-      }
-      if (req.user.semester && !dialogueState.slots.semester) {
-        dialogueState.slots.semester = String(req.user.semester);
-      }
-    }
-
-    // For timetable, schedule, or exam queries, if query does not explicitly specify any branch,
-    // inject the branch context into the query sent to the NLP retriever to ensure proper document grounding.
-    let queryToProcess = query.trim();
-    if (req.user?.branch) {
-      const qLower = queryToProcess.toLowerCase();
-      const isScheduleOrTimetable = /timetable|time\s*table|schedule|exam|datesheet|date\s*sheet|class/i.test(qLower);
-      const branches = [
-        'computer', 'cse', 'cs', 'ce',
-        'information', 'ict', 'it',
-        'chemical', 'che',
-        'petroleum', 'pe',
-        'mechanical', 'me',
-        'electrical', 'ee',
-        'civil',
-        'biotechnology', 'biotech',
-        'physics', 'chemistry', 'mathematics', 'science',
-        'environmental', 'ctm', 'artificial intelligence', 'ai',
-        'data science', 'cyber security', 'vlsi'
-      ];
-      const anyBranchMentioned = branches.some((b) => new RegExp('\\b' + b + '\\b').test(qLower));
-
-      if (isScheduleOrTimetable && !anyBranchMentioned) {
-        queryToProcess = `${queryToProcess} for ${req.user.branch}`;
-      }
-    }
-
-    // Feature 12: Check Redis server-side cache for stateless answerable queries
-    let isFromCache = false;
-    if (featureFlags.cache_enabled && (!dialogueState || !dialogueState.last_intent)) {
-      const cachedEntry = await serverCacheManager.get(queryToProcess, 'en', dialogueState?.slots);
-      if (cachedEntry.cached && cachedEntry.data) {
-        nlpData = cachedEntry.data;
-        isFromCache = true;
-      }
-    }
-
-    if (!nlpData) {
-      try {
-        // Use production nlpClient with retry, timeout, session ID & dialogue state
-        nlpData = await nlpClient.query(queryToProcess, null, sessionId, dialogueState);
-
-        // Feature 12: Only cache successful ANSWER results (never FALLBACK, CLARIFY, or errors)
-        if (featureFlags.cache_enabled && nlpData && nlpData.decision === 'ANSWER' && nlpData.grounded !== false) {
-          await serverCacheManager.set(queryToProcess, nlpData.language, dialogueState?.slots, nlpData);
-        }
-      } catch (nlpErr) {
-        console.error(`[Server] NLP service unavailable (${nlpErr.message}).`);
-        return res.status(503).json({
-          mode: 'error',
-          error: nlpErr.code || 'NLP_SERVICE_UNAVAILABLE',
-          message: 'The assistant is temporarily unavailable. Please try again in a moment.'
+        // Save assistant maintenance message
+        await Message.create({
+          sessionId,
+          sender: 'bot',
+          text: MAINTENANCE_MESSAGE,
+          metadata: {
+            mode: 'maintenance',
+            grounded: false
+          }
         });
       }
-    }
-
-    // Store latency metadata for middleware
-    res.locals.latencyData = {
-      requestId: nlpData.request_id || `req_${Date.now()}`,
-      language: nlpData.language,
-      intent: nlpData.intent,
-      cached: isFromCache,
-      nlpExecutionTimeMs: nlpData.execution_time_ms || 0,
-      stageLatencies: nlpData.analysis?.stage_latencies_ms || {}
-    };
-
-    // Feature 06: Save updated dialogue state or reset if requested
-    if (featureFlags.dialogue_state) {
-      if (nlpData.is_reset) {
-        await sessionManager.resetState(sessionId);
-      } else if (nlpData.dialogue_state) {
-        await sessionManager.saveState(sessionId, nlpData.dialogue_state);
-      }
-    }
-
-    let createdMessageId = `msg_${Date.now()}`;
-    // Persist messages if MongoDB is available
-    try {
-      await Message.create({
-        sessionId,
-        sender: 'user',
-        text: query,
-        language: nlpData.language,
-        channel: 'web'
-      });
-
-      const assistantMsg = await Message.create({
-        sessionId,
-        sender: 'assistant',
-        text: nlpData.answer,
-        language: nlpData.language,
-        channel: 'web',
-        intent: nlpData.intent,
-        confidence: nlpData.confidence,
-        sourceDoc: nlpData.source_doc,
-        entities: nlpData.entities || [],
-        calendarEvents: nlpData.calendar_events || [],
-        decision: nlpData.decision || 'ANSWER',
-        decisionReason: nlpData.decision_reason || 'ANSWERED'
-      });
-      createdMessageId = String(assistantMsg._id);
-
-      // Feature 10: Automatic implicit failure logging
-      await logImplicitFailureIfNeeded({
-        messageId: createdMessageId,
-        sessionId,
-        query: query.trim(),
-        nlpData
-      });
-
-      // Feature 11: Real-time query analytics tracking
-      const isUnans = nlpData.decision === 'FALLBACK' || nlpData.intent === 'out_of_scope' || nlpData.grounded === false;
-      const isClarif = nlpData.decision === 'CLARIFY';
-      await logQueryAnalytics({
-        requestId: nlpData.request_id || `req_${Date.now()}`,
-        sessionId,
-        query: query.trim(),
-        normalizedQuery: query.trim().toLowerCase().replace(/[^\w\s]/g, ''),
-        language: nlpData.language || 'en',
-        channel: 'web',
-        intent: nlpData.intent || 'unknown',
-        confidence: nlpData.confidence || 0.0,
-        sourceDoc: nlpData.source_doc || null,
-        decision: nlpData.decision || 'ANSWER',
-        decisionReason: nlpData.decision_reason || 'ANSWERED',
-        isUnanswered: isUnans,
-        isClarification: isClarif,
-        cached: isFromCache,
-        totalLatencyMs: nlpData.execution_time_ms || 0,
-        nlpExecutionTimeMs: nlpData.execution_time_ms || 0,
-        stageLatencies: nlpData.analysis?.stage_latencies_ms || {},
-        isSeeded: false
-      });
 
       await Conversation.findOneAndUpdate(
         { sessionId },
         {
           $inc: { messageCount: 2 },
-          $set: { dominantLanguage: nlpData.language, channel: 'web', lastActivity: new Date() }
+          $set: { dominantLanguage: 'en', channel: 'web', lastActivity: new Date() }
         },
         { upsert: true, new: true }
       );
 
-      // Feature 00: Persistent conversation history record update & auto-title
       const clientId = req.headers['x-client-id'] || 'anonymous_client';
       const cleanTitle = query.trim().replace(/[\r\n]+/g, ' ').slice(0, 40);
       await PersistentConversation.findOneAndUpdate(
@@ -205,7 +73,7 @@ const handleChat = async (req, res) => {
             createdAt: new Date()
           },
           $set: {
-            lastMessagePreview: (nlpData.answer || '').slice(0, 80),
+            lastMessagePreview: MAINTENANCE_MESSAGE.slice(0, 80),
             updatedAt: new Date()
           },
           $inc: { messageCount: 2 }
@@ -214,13 +82,6 @@ const handleChat = async (req, res) => {
       );
     } catch (dbErr) {
       console.warn(`[Server] Mongo persistence skipped: ${dbErr.message}`);
-      // In offline/transient mode, also check implicit failure logging to memory store
-      await logImplicitFailureIfNeeded({
-        messageId: createdMessageId,
-        sessionId,
-        query: query.trim(),
-        nlpData
-      });
     }
 
     recordInBackground({
@@ -228,9 +89,9 @@ const handleChat = async (req, res) => {
       type: 'chat_query',
       meta: {
         conversationId: sessionId,
-        intent: nlpData.intent || 'unknown',
-        language: nlpData.language || 'en',
-        category: nlpData.decision || 'ANSWER',
+        intent: 'maintenance',
+        language: 'en',
+        category: 'MAINTENANCE',
         messageId: createdMessageId
       }
     });
@@ -238,29 +99,29 @@ const handleChat = async (req, res) => {
     return res.json({
       messageId: createdMessageId,
       sessionId,
-      answer: nlpData.answer,
-      reply: nlpData.answer,
-      language: nlpData.language,
-      detected_language: nlpData.language,
-      intent: nlpData.intent,
-      confidence: nlpData.confidence,
-      source_doc: nlpData.source_doc,
-      entities: nlpData.entities || [],
-      citations: nlpData.citations || [],
-      calendar_events: nlpData.calendar_events || [],
-      grounded: nlpData.grounded !== undefined ? nlpData.grounded : true,
-      generation_mode: nlpData.generation_mode || "rag",
-      hallucination_score: nlpData.hallucination_score || 0.0,
-      decision: nlpData.decision || "ANSWER",
-      decision_reason: nlpData.decision_reason || "ANSWERED",
-      clarification_question: nlpData.clarification_question || null,
-      quick_replies: nlpData.quick_replies || [],
-      contact_info: nlpData.contact_info || null,
-      standalone_query: nlpData.standalone_query || query,
-      is_follow_up: Boolean(nlpData.is_follow_up),
-      is_reset: Boolean(nlpData.is_reset),
-      dialogue_state: nlpData.dialogue_state || null,
-      execution_time_ms: nlpData.execution_time_ms
+      answer: MAINTENANCE_MESSAGE,
+      reply: MAINTENANCE_MESSAGE,
+      language: 'en',
+      detected_language: 'en',
+      intent: 'maintenance',
+      confidence: 1.0,
+      source_doc: null,
+      entities: [],
+      citations: [],
+      calendar_events: [],
+      grounded: false,
+      generation_mode: 'maintenance',
+      hallucination_score: 0.0,
+      decision: 'MAINTENANCE',
+      decision_reason: 'SERVICE_UNDER_MAINTENANCE',
+      clarification_question: null,
+      quick_replies: [],
+      contact_info: null,
+      standalone_query: query,
+      is_follow_up: false,
+      is_reset: false,
+      dialogue_state: null,
+      execution_time_ms: 10
     });
   } catch (error) {
     console.error(`[Server Error] /api/chat: ${error.message}`);

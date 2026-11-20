@@ -8,7 +8,6 @@ const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 
 const chatRouter = require('./routes/chat');
-const legacyChatRouter = require('./features/chat/chatController');
 const { latencyTrackerMiddleware, adminCacheRouter, serverCacheManager } = require('./features/f12_cache');
 const { documentAdminRouter } = require('./features/f08_admin');
 const { calendarRoutes } = require('./features/f15_calendar');
@@ -78,7 +77,6 @@ app.use('/api/admin/auth', adminAuthRoutes);
 app.use('/api/admin', adminAuthRoutes);
 app.use('/api/chat', chatRouter);
 app.use('/api/conversations', historyRouter);
-app.use('/api/legacy/chat', legacyChatRouter);
 app.use('/api/admin', adminCacheRouter);
 app.use('/api/admin', documentAdminRouter);
 app.use('/api/feedback', feedbackRouter);
@@ -91,23 +89,12 @@ app.use('/api/calendar', calendarRoutes);
 
 // Health check
 app.get('/health', async (req, res) => {
-  const { nlpClient } = require('./services/nlpClient');
-  let nlpStatus = 'disconnected';
-  try {
-    const nlpHealth = await nlpClient.getHealth();
-    nlpStatus = nlpHealth && nlpHealth.status === 'ok' ? 'ok' : 'degraded';
-  } catch (err) {
-    nlpStatus = 'unavailable';
-  }
-
   const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
-  const overallStatus = mongoStatus === 'connected' && nlpStatus === 'ok' ? 'ok' : (nlpStatus === 'unavailable' ? 'degraded' : 'ok');
 
-  res.status(overallStatus === 'ok' ? 200 : 503).json({
-    status: overallStatus,
+  res.status(mongoStatus === 'connected' ? 200 : 503).json({
+    status: mongoStatus === 'connected' ? 'ok' : 'degraded',
     service: 'server-gateway',
     server: 'ok',
-    nlp: nlpStatus,
     mongo: mongoStatus
   });
 });

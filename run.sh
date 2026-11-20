@@ -2,7 +2,7 @@
 
 # ==============================================================================
 # CampusMate — Backend Services Startup Orchestrator (Backend-Only)
-# Runs MongoDB, Redis, FastAPI NLP Microservice & Node.js API Gateway
+# Runs MongoDB, Redis & Node.js API Gateway
 # ==============================================================================
 
 set -e
@@ -19,7 +19,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
 echo -e "${CYAN}=================================================================${NC}"
-echo -e "${CYAN}    CampusMate — Multilingual Assistant Backend Services          ${NC}"
+echo -e "${CYAN}    CampusMate — Assistant Backend Services                      ${NC}"
 echo -e "${CYAN}=================================================================${NC}"
 
 # PID tracking for cleanup
@@ -41,7 +41,7 @@ trap cleanup SIGINT SIGTERM EXIT
 # ------------------------------------------------------------------------------
 # 1. Check & Ensure Redis is Running (Port 6379)
 # ------------------------------------------------------------------------------
-echo -e "${TEAL}[1/4] Checking Redis cache service...${NC}"
+echo -e "${TEAL}[1/3] Checking Redis cache service...${NC}"
 if ! nc -z localhost 6379 2>/dev/null; then
     echo -e "${AMBER}      Redis is not running on 6379. Attempting to start via brew...${NC}"
     brew services start redis 2>/dev/null || redis-server --daemonize yes 2>/dev/null || true
@@ -57,7 +57,7 @@ fi
 # ------------------------------------------------------------------------------
 # 2. Check & Ensure MongoDB is Running (Port 27017)
 # ------------------------------------------------------------------------------
-echo -e "${TEAL}[2/4] Checking MongoDB database...${NC}"
+echo -e "${TEAL}[2/3] Checking MongoDB database...${NC}"
 if ! nc -z localhost 27017 2>/dev/null; then
     echo -e "${AMBER}      MongoDB is not listening on 27017. Attempting to start...${NC}"
     brew services start mongodb-community 2>/dev/null || mongod --fork --logpath /tmp/mongod.log --dbpath /tmp/ 2>/dev/null || true
@@ -71,39 +71,16 @@ else
 fi
 
 # ------------------------------------------------------------------------------
-# 3. Start Python NLP Microservice (Port 8080)
+# 3. Start Node.js Express Gateway (Port 5005)
 # ------------------------------------------------------------------------------
-echo -e "${TEAL}[3/4] Starting FastAPI NLP Microservice on http://localhost:8080...${NC}"
-if lsof -Pi :8080 -sTCP:LISTEN -t >/dev/null 2>&1; then
-    echo -e "${AMBER}      Port 8080 already occupied. Terminating existing process...${NC}"
-    kill -9 $(lsof -ti:8080) 2>/dev/null || true
-    sleep 1
-fi
-
-(cd "$ROOT_DIR/nlp-service" && python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8080) &
-NLP_PID=$!
-PIDS+=($NLP_PID)
-
-# Wait for NLP healthcheck
-for i in {1..30}; do
-    if curl -s http://localhost:8080/v1/health >/dev/null 2>&1; then
-        echo -e "${LIME}      ✓ FastAPI NLP Microservice healthy on port 8080${NC}"
-        break
-    fi
-    sleep 0.5
-done
-
-# ------------------------------------------------------------------------------
-# 4. Start Node.js Express Gateway (Port 5005)
-# ------------------------------------------------------------------------------
-echo -e "${TEAL}[4/4] Starting Node.js API Gateway on http://localhost:5005...${NC}"
+echo -e "${TEAL}[3/3] Starting Node.js API Gateway on http://localhost:5005...${NC}"
 if lsof -Pi :5005 -sTCP:LISTEN -t >/dev/null 2>&1; then
     echo -e "${AMBER}      Port 5005 already occupied. Terminating existing process...${NC}"
     kill -9 $(lsof -ti:5005) 2>/dev/null || true
     sleep 1
 fi
 
-(PORT=5005 NLP_SERVICE_URL=http://localhost:8080 node "$ROOT_DIR/server/server.js") &
+(PORT=5005 node "$ROOT_DIR/server/server.js") &
 SERVER_PID=$!
 PIDS+=($SERVER_PID)
 
@@ -124,9 +101,7 @@ echo -e "${CYAN}================================================================
 echo -e "  • ${TEAL}Node Gateway API:${NC}   http://localhost:5005"
 echo -e "  • ${TEAL}Chat Endpoint:${NC}      POST http://localhost:5005/api/chat"
 echo -e "  • ${TEAL}Admin Endpoints:${NC}    http://localhost:5005/api/admin"
-echo -e "  • ${TEAL}FastAPI NLP Engine:${NC} http://localhost:8080"
 echo -e "  • ${TEAL}API Health Endpoint:${NC}http://localhost:5005/health"
-echo -e "  • ${TEAL}NLP Health Endpoint:${NC}http://localhost:8080/v1/health"
 echo -e "${CYAN}=================================================================${NC}"
 echo -e "${AMBER}Press [Ctrl + C] anytime to stop all backend services cleanly.${NC}\n"
 

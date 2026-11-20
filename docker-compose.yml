@@ -27,33 +27,6 @@ services:
       timeout: 5s
       retries: 5
 
-  nlp-service:
-    build:
-      context: ./nlp-service
-      dockerfile: Dockerfile
-    container_name: mca_nlp_service
-    ports:
-      - "8000:8000"
-    environment:
-      - PORT=8000
-      - APP_ENV=production
-      - NLP_API_KEY=campus_mate_secret_token_123
-      - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - ENABLE_RERANKER=${ENABLE_RERANKER:-true}
-    volumes:
-      - ./data:/app/data
-    healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/v1/health')"]
-      interval: 15s
-      timeout: 5s
-      start_period: 10s
-      retries: 3
-    depends_on:
-      - redis
-
   server:
     build:
       context: ./server
@@ -63,8 +36,6 @@ services:
       - "5000:5000"
     environment:
       - PORT=5000
-      - NLP_SERVICE_URL=http://nlp-service:8000
-      - NLP_API_KEY=campus_mate_secret_token_123
       - MONGODB_URI=mongodb://mongo:27017/college_assistant
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=supersecret_jwt_key_change_in_production
@@ -87,8 +58,6 @@ services:
       mongo:
         condition: service_healthy
       redis:
-        condition: service_healthy
-      nlp-service:
         condition: service_healthy
 
   client:
