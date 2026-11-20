@@ -99,8 +99,11 @@ router.post('/signup', authLimiter, async (req, res) => {
   const { name, email, password, semester, branch } = parseResult.data;
   const normalizedEmail = email.toLowerCase().trim();
 
-  // Validate allowed email domains
-  if (!isEmailDomainAllowed(normalizedEmail, process.env.ALLOWED_EMAIL_DOMAINS)) {
+  // Validate allowed email domains (allow pdpu.ac.in, pdeu.ac.in, campus.edu by default)
+  const allowedConfig = process.env.ALLOWED_EMAIL_DOMAINS 
+    ? `${process.env.ALLOWED_EMAIL_DOMAINS},pdpu.ac.in,pdeu.ac.in` 
+    : 'pdpu.ac.in,pdeu.ac.in,campus.edu';
+  if (!isEmailDomainAllowed(normalizedEmail, allowedConfig)) {
     return res.status(400).json({ error: 'Email domain is not authorized for student registration.' });
   }
 
@@ -159,6 +162,15 @@ router.post('/signup', authLimiter, async (req, res) => {
       actorType: 'student',
       type: 'login',
       meta: { semester: user.semester, branch: user.branch }
+    });
+
+    await recordAuditLog({
+      actorId: String(user._id),
+      action: 'student_signup',
+      targetType: 'User',
+      targetId: String(user._id),
+      meta: { email: user.email, name: user.name, branch: user.branch, semester: user.semester },
+      req
     });
 
     return res.status(201).json({
@@ -246,6 +258,17 @@ router.post('/login', authLimiter, async (req, res) => {
       type: 'login',
       meta: { semester: user.semester, branch: user.branch }
     });
+
+    if (user.role === 'student') {
+      await recordAuditLog({
+        actorId: String(user._id),
+        action: 'student_login',
+        targetType: 'User',
+        targetId: String(user._id),
+        meta: { email: user.email, name: user.name, branch: user.branch },
+        req
+      });
+    }
 
     return res.json({
       accessToken,
