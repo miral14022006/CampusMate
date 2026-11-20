@@ -112,6 +112,16 @@ app.get('/health', async (req, res) => {
   });
 });
 
+// Version check with Git SHA and build time
+app.get('/api/version', (req, res) => {
+  res.json({
+    service: 'server-gateway',
+    git_sha: process.env.GIT_SHA || '204df12',
+    build_time: process.env.BUILD_TIME || '2026-11-20T10:45:00Z',
+    node_env: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Optional MongoDB connect
 if (process.env.NODE_ENV !== 'test') {
   mongoose.connect(MONGODB_URI, {

@@ -46,6 +46,8 @@ class AnswerStage(PipelineStage):
             context.grounded = rag_res.grounded
             context.generation_mode = rag_res.mode
             context.hallucination_score = rag_res.hallucination_score
+            if rag_res.mode == "extractive" and rag_res.verification_details and "fallback_reason" in rag_res.verification_details:
+                context.decision_reason = "LLM_ERROR"
             if rag_res.citations:
                 context.source_doc = rag_res.citations[0].doc_name
             elif context.retrieved_chunks:

@@ -1,3 +1,4 @@
+import io
 import shutil
 import logging
 import numpy as np
@@ -132,34 +133,50 @@ class OCREngine:
                     "needs_human_review": False
                 })
             else:
-                # Scanned page: Attempt rasterization & OCR
+                # Scanned page: Attempt extraction from embedded images, rasterization & OCR
                 logger.info(f"Page {page_idx} lacks digital text layer. Rasterizing for OCR...")
-                ocr_text = digital_text
+                ocr_text = ""
                 ocr_conf = 80.0
                 needs_review = False
 
-                # If pdf2image is installed and available
-                try:
-                    from pdf2image import convert_from_path
-                    images = convert_from_path(str(pdf_path), first_page=page_idx, last_page=page_idx, dpi=300)
-                    if images:
-                        ocr_res = self.extract_image_ocr(images[0], apply_preprocessing=apply_preprocessing)
-                        ocr_text = ocr_res["text"]
-                        ocr_conf = ocr_res["confidence"]
-                        needs_review = ocr_res["needs_human_review"]
-                except Exception as e:
-                    logger.warn(f"pdf2image rasterization unavailable: {e}")
+                # 1. First check if the page contains embedded images directly in the PDF
+                if hasattr(page, "images") and len(page.images) > 0:
+                    for img_obj in page.images:
+                        try:
+                            pil_img = Image.open(io.BytesIO(img_obj.data))
+                            ocr_res = self.extract_image_ocr(pil_img, apply_preprocessing=apply_preprocessing)
+                            if ocr_res["text"]:
+                                ocr_text += ocr_res["text"] + "\n"
+                                ocr_conf = ocr_res["confidence"]
+                        except Exception as img_err:
+                            logger.warn(f"Embedded image extraction error: {img_err}")
+
+                # 2. If embedded image extraction produced nothing, attempt pdf2image rasterization
+                if not ocr_text.strip():
+                    try:
+                        from pdf2image import convert_from_path
+                        images = convert_from_path(str(pdf_path), first_page=page_idx, last_page=page_idx, dpi=300)
+                        if images:
+                            ocr_res = self.extract_image_ocr(images[0], apply_preprocessing=apply_preprocessing)
+                            ocr_text = ocr_res["text"]
+                            ocr_conf = ocr_res["confidence"]
+                            needs_review = ocr_res["needs_human_review"]
+                    except Exception as e:
+                        logger.warn(f"pdf2image rasterization unavailable: {e}")
+                        needs_review = True
+
+                if not ocr_text.strip():
                     ocr_text = f"[Scanned page {page_idx} content pending verification]"
                     needs_review = True
 
                 if needs_review:
                     any_low_confidence = True
 
-                full_text_parts.append(ocr_text)
+                full_text_parts.append(ocr_text.strip())
                 pages_result.append({
                     "page": page_idx,
                     "method": "ocr_rasterized",
-                    "text": ocr_text,
+                    "text": ocr_text.strip(),
                     "confidence": ocr_conf,
                     "needs_human_review": needs_review
                 })

@@ -136,6 +136,11 @@ export function AdminLayout() {
         <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-8" id="main-content">
           <AnimatedOutlet />
         </main>
+
+        {/* Footer with Version & Commit Stamp */}
+        <footer className="border-t border-hairline py-3 px-6 text-center text-[10.5px] text-ink-muted">
+          <span>CampusMate v2.0 • Commit <code className="font-mono font-medium text-ink">204df12</code> • Built 2026-11-20</span>
+        </footer>
       </div>
     </div>
   );

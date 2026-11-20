@@ -68,7 +68,7 @@ services:
       - NLP_API_KEY=${NLP_API_KEY}
       - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - GEMINI_MODEL=gemini-2.5-flash
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.5-flash}
       - ENABLE_RERANKER=true
       - HF_HOME=/home/appuser/.cache/huggingface
       - DATA_DIR=/data

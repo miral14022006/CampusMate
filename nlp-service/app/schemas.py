@@ -88,4 +88,6 @@ class VersionResponse(BaseModel):
     service: str
     version: str
     api_prefix: str
+    git_sha: Optional[str] = "204df12"
+    build_time: Optional[str] = "2026-11-20T10:45:00Z"
     active_features: Dict[str, Any]
