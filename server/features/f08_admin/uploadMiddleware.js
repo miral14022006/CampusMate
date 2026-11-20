@@ -3,7 +3,9 @@ const fs = require('fs');
 const multer = require('multer');
 const crypto = require('crypto');
 
-const UPLOAD_DIR = path.resolve(__dirname, '../../../../data/uploads');
+const UPLOAD_DIR = process.env.UPLOAD_DIR
+  ? path.resolve(process.env.UPLOAD_DIR)
+  : path.resolve(__dirname, '../../../../data/uploads');
 if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }

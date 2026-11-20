@@ -47,6 +47,7 @@ services:
       - CORS_ORIGIN=https://campus-mate.miralpatel.tech,https://www.campus-mate.miralpatel.tech
       - SUPERADMIN_EMAIL=${SUPERADMIN_EMAIL:-admin18@pdpu.ac.in}
       - SUPERADMIN_PASSWORD=${SUPERADMIN_PASSWORD:-Admin@18}
+      - UPLOAD_DIR=/app/data/uploads
     volumes:
       - /opt/campusmate/data/uploads:/app/data/uploads
     depends_on:

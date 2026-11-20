@@ -158,9 +158,15 @@ router.get('/:id/file', optionalAuth, async (req, res) => {
     const doc = await findDocument(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Document not found.' });
 
-    const resolved = path.resolve(doc.file_path || path.join(UPLOAD_DIR, doc.file_name || ''));
+    let resolved = path.resolve(doc.file_path || path.join(UPLOAD_DIR, doc.file_name || ''));
     if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) {
-      return res.status(404).json({ error: 'The document file is missing from storage.' });
+      // Fallback check against UPLOAD_DIR with file_name or base filename
+      const fallback = path.resolve(UPLOAD_DIR, doc.file_name || path.basename(doc.file_path || ''));
+      if (fs.existsSync(fallback) && fs.statSync(fallback).isFile()) {
+        resolved = fallback;
+      } else {
+        return res.status(404).json({ error: 'The document file is missing from storage.' });
+      }
     }
 
     const ext = path.extname(resolved).toLowerCase();

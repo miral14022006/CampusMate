@@ -85,7 +85,7 @@ export default function App() {
         <Route
           path="/documents"
           element={
-            <ProtectedRoute allowGuest={false}>
+            <ProtectedRoute allowGuest={true}>
               <DocumentLibrary />
             </ProtectedRoute>
           }
@@ -93,7 +93,7 @@ export default function App() {
         <Route
           path="/documents/:id"
           element={
-            <ProtectedRoute allowGuest={false}>
+            <ProtectedRoute allowGuest={true}>
               <DocumentViewer />
             </ProtectedRoute>
           }

@@ -71,6 +71,7 @@ export const landingLinks = [
   { id: 'home', label: 'Home', to: '/#home' },
   { id: 'features', label: 'Features', to: '/#features' },
   { id: 'how-it-works', label: 'How it works', to: '/#how' },
+  { id: 'documents', label: 'Documents', to: '/documents' },
   {
     id: 'calendar',
     label: 'Dates',
