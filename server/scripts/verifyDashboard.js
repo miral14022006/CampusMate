@@ -6,13 +6,13 @@
 const mongoose = require('mongoose');
 const axios = require('axios');
 const QueryAnalyticsLog = require('../models/QueryAnalyticsLog');
-const Student = require('../models/Student');
+const User = require('../features/f16_auth/models/User');
 const Document = require('../models/Document');
 const Conversation = require('../models/Conversation');
-const ActivityEvent = require('../models/ActivityEvent');
+const ActivityEvent = require('../features/f17_activity/models/ActivityEvent');
 
 const API_BASE = process.env.API_BASE_URL || 'http://localhost:5000';
-const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/college_assistant';
+const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/campusmate';
 
 async function verify() {
   console.log('Connecting to MongoDB:', MONGO_URI);
@@ -20,7 +20,7 @@ async function verify() {
   console.log('Connected to MongoDB.');
 
   // 1. Direct MongoDB Counts
-  const totalStudents = await Student.countDocuments();
+  const totalStudents = await User.countDocuments({ role: 'student' });
   const totalDocs = await Document.countDocuments({ status: { $ne: 'archived' } });
   const realQueryLogs = await QueryAnalyticsLog.countDocuments({ isSeeded: { $ne: true } });
   const seededQueryLogs = await QueryAnalyticsLog.countDocuments({ isSeeded: true });
