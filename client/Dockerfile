@@ -6,6 +6,10 @@ WORKDIR /app
 
 ARG VITE_API_BASE_URL=https://api.miralpatel.tech
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ARG VITE_GIT_SHA=unknown
+ENV VITE_GIT_SHA=$VITE_GIT_SHA
+ARG VITE_BUILD_TIME=unknown
+ENV VITE_BUILD_TIME=$VITE_BUILD_TIME
 
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund

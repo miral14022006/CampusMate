@@ -21,7 +21,8 @@ def ingest_document(req: IngestRequest):
             version=req.version,
             effective_date=req.effective_date,
             department=req.department,
-            language=req.language
+            language=req.language,
+            replace_topic=req.replace_topic
         )
         return IngestResponse(**res)
     except Exception as e:

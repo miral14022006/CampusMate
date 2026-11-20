@@ -6,7 +6,7 @@ import numpy as np
 import faiss
 
 from features.f01_hybrid_retrieval.base import BaseRetriever
-from app.core.config import DATA_DIR, INDEX_DIR
+from app.core.config import CHUNKS_FILE, INDEX_DIR
 
 logger = logging.getLogger("nlp_service.dense_retriever")
 
@@ -60,15 +60,23 @@ class DenseRetriever(BaseRetriever):
         return matrix / norms
 
     def build_index(self):
-        chunks_file = DATA_DIR / "processed" / "chunks.json"
+        chunks_file = CHUNKS_FILE
         if not chunks_file.exists():
+            if os.getenv("APP_ENV", "development").lower() == "production":
+                # Never auto-index bundled sample fixtures in production.
+                self.chunks = []
+                self.index = None
+                return
             from app.modules.ingest import ingester
             self.chunks = ingester.process_all_raw_docs()
         else:
             with open(chunks_file, "r", encoding="utf-8") as f:
                 self.chunks = json.load(f)
 
+        self.chunks = [c for c in self.chunks if c.get("status", "active") == "active"]
+
         if not self.chunks:
+            self.index = None
             return
 
         texts = [c["text"] for c in self.chunks]
@@ -91,7 +99,7 @@ class DenseRetriever(BaseRetriever):
             try:
                 self.index = faiss.read_index(str(FAISS_INDEX_FILE))
                 with open(CHUNKS_META_FILE, "r", encoding="utf-8") as f:
-                    self.chunks = json.load(f)
+                    self.chunks = [c for c in json.load(f) if c.get("status", "active") == "active"]
             except Exception as e:
                 logger.error(f"Error loading FAISS index: {e}")
                 self.build_index()

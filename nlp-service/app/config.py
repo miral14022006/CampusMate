@@ -4,7 +4,8 @@ from pathlib import Path
 # Paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 PROJECT_ROOT = BASE_DIR.parent
-DATA_DIR = PROJECT_ROOT / "data"
+_data_dir_env = os.getenv("DATA_DIR")
+DATA_DIR = Path(_data_dir_env).expanduser().resolve() if _data_dir_env else (PROJECT_ROOT / "data")
 
 LEXICONS_DIR = DATA_DIR / "lexicons"
 STOPWORDS_DIR = DATA_DIR / "stopwords"
@@ -13,6 +14,8 @@ DATASETS_DIR = DATA_DIR / "datasets"
 INDEX_DIR = DATA_DIR / "index"
 TEMPLATES_DIR = DATA_DIR / "templates"
 RAW_DOCS_DIR = DATA_DIR / "raw"
+_chunks_file_env = os.getenv("CHUNKS_FILE")
+CHUNKS_FILE = Path(_chunks_file_env).expanduser().resolve() if _chunks_file_env else (DATA_DIR / "processed" / "chunks.json")
 
 # Intent Classification Config
 INTENT_MODEL_PATH = INDEX_DIR / "intent_classifier.joblib"

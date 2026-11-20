@@ -116,8 +116,8 @@ app.get('/health', async (req, res) => {
 app.get('/api/version', (req, res) => {
   res.json({
     service: 'server-gateway',
-    git_sha: process.env.GIT_SHA || '204df12',
-    build_time: process.env.BUILD_TIME || '2026-11-20T10:45:00Z',
+    git_sha: process.env.GIT_SHA || 'unknown',
+    build_time: process.env.BUILD_TIME || 'unknown',
     node_env: process.env.NODE_ENV || 'development'
   });
 });

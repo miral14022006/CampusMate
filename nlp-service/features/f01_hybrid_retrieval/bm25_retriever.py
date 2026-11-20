@@ -1,10 +1,11 @@
 import json
+import os
 import joblib
 from typing import List, Dict, Any
 from rank_bm25 import BM25Okapi
 
 from features.f01_hybrid_retrieval.base import BaseRetriever
-from app.core.config import DATA_DIR, INDEX_DIR
+from app.core.config import CHUNKS_FILE, INDEX_DIR
 from app.modules.preprocessing import preprocessor
 
 BM25_INDEX_PATH = INDEX_DIR / "bm25_index.joblib"
@@ -20,15 +21,24 @@ class BM25Retriever(BaseRetriever):
         return "bm25"
 
     def build_index(self):
-        chunks_file = DATA_DIR / "processed" / "chunks.json"
+        chunks_file = CHUNKS_FILE
         if not chunks_file.exists():
+            if os.getenv("APP_ENV", "development").lower() == "production":
+                # Never auto-index bundled sample fixtures in production.
+                self.chunks = []
+                self.bm25 = None
+                return
             from app.modules.ingest import ingester
             self.chunks = ingester.process_all_raw_docs()
         else:
             with open(chunks_file, "r", encoding="utf-8") as f:
                 self.chunks = json.load(f)
 
+        # Only active chunks belong in the retrieval index.
+        self.chunks = [c for c in self.chunks if c.get("status", "active") == "active"]
+
         if not self.chunks:
+            self.bm25 = None
             return
 
         tokenized_corpus = []
@@ -47,7 +57,7 @@ class BM25Retriever(BaseRetriever):
             try:
                 data = joblib.load(BM25_INDEX_PATH)
                 self.bm25 = data["bm25"]
-                self.chunks = data["chunks"]
+                self.chunks = [c for c in data["chunks"] if c.get("status", "active") == "active"]
             except Exception:
                 self.build_index()
         else:

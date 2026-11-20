@@ -1,5 +1,6 @@
 import json
 import logging
+import math
 import os
 from pathlib import Path
 from typing import Dict, Any, List, Optional
@@ -90,13 +91,20 @@ class DecisionPolicy:
         """
         lang = language if language in ["hi", "gu", "hi-Latn"] else "en"
 
-        # Check retrieval evidence strength first
+        # Check retrieval evidence strength first. Use both the raw RRF score and
+        # the cross-encoder logit (normalized to 0..1) so reranked evidence is not
+        # discarded when the raw RRF value happens to be low.
         best_retrieval_score = 0.0
+        best_rerank_normalized = 0.0
         has_retrieval_evidence = False
         if retrieved_chunks:
             best_retrieval_score = max([c.get("score", 0.0) for c in retrieved_chunks], default=0.0)
+            rerank_scores = [c.get("rerank_score") for c in retrieved_chunks if c.get("rerank_score") is not None]
+            if rerank_scores:
+                best_rerank = max(rerank_scores)
+                best_rerank_normalized = 1.0 / (1.0 + math.exp(-float(best_rerank)))
             # RRF score >= 0.028 or normalized reranker score >= 0.50
-            if best_retrieval_score >= 0.028:
+            if best_retrieval_score >= 0.028 or best_rerank_normalized >= 0.50:
                 has_retrieval_evidence = True
 
         top1 = top_intents[0] if top_intents else {"intent": "out_of_scope", "confidence": 0.0}
@@ -119,7 +127,10 @@ class DecisionPolicy:
         if has_retrieval_evidence:
             return {
                 "decision": DecisionOutcome.ANSWER.value,
-                "reason": f"Sufficient retrieval evidence found (score {best_retrieval_score:.4f})",
+                "reason": (
+                    f"Sufficient retrieval evidence found (rrf={best_retrieval_score:.4f}, "
+                    f"rerank_norm={best_rerank_normalized:.4f})"
+                ),
                 "decision_reason": "ANSWERED",
                 "clarification_question": None,
                 "quick_replies": [],

@@ -139,7 +139,13 @@ export function AdminLayout() {
 
         {/* Footer with Version & Commit Stamp */}
         <footer className="border-t border-hairline py-3 px-6 text-center text-[10.5px] text-ink-muted">
-          <span>CampusMate v2.0 • Commit <code className="font-mono font-medium text-ink">204df12</code> • Built 2026-11-20</span>
+          <span>
+            CampusMate v2.0 • Commit{' '}
+            <code className="font-mono font-medium text-ink" title={import.meta.env.VITE_GIT_SHA || 'unknown'}>
+              {(import.meta.env.VITE_GIT_SHA || 'unknown').slice(0, 7)}
+            </code>{' '}
+            • Built {import.meta.env.VITE_BUILD_TIME || 'unknown'}
+          </span>
         </footer>
       </div>
     </div>

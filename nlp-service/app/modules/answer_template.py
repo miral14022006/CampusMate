@@ -66,8 +66,10 @@ class AnswerTemplater:
         source_doc = None
         top_chunk = retrieved_chunks[0] if retrieved_chunks else None
 
-        if top_chunk and top_chunk.get("score", 0.0) >= 0.12:
-            # High confidence retrieval: extract best sentence
+        # Extractive fallback must use the retrieved evidence even when the raw
+        # RRF/reranker score is below the old template threshold. That threshold
+        # caused LLM failures to surface the generic "student affairs" answer.
+        if top_chunk and (top_chunk.get("text") or "").strip():
             source_doc = top_chunk["doc_name"]
             extracted = self.extract_best_sentence(query, top_chunk["text"])
             return {

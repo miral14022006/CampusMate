@@ -85,10 +85,10 @@ class OCREngine:
                 logger.warn(f"Pytesseract execution error: {e}")
                 raw_text = ""
 
-        # If tesseract unavailable on local machine or empty, return processed placeholder/fallback
+        # Never fabricate text when OCR is unavailable or yields nothing. The caller
+        # must flag the document for human review / OCR setup instead.
         if not raw_text:
-            raw_text = "Notice: Examination Form submission last date is 25th October 2024. All B.Tech students must register online."
-            confidence = 88.0
+            confidence = 0.0
 
         # 3. Post-OCR Cleanup
         cleaned_text = post_ocr_cleaner.clean(raw_text)
@@ -166,7 +166,7 @@ class OCREngine:
                         needs_review = True
 
                 if not ocr_text.strip():
-                    ocr_text = f"[Scanned page {page_idx} content pending verification]"
+                    ocr_text = ""
                     needs_review = True
 
                 if needs_review:

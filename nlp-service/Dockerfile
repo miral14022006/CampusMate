@@ -30,6 +30,11 @@ RUN groupadd -g 1001 appgroup && \
 
 WORKDIR /app
 
+ARG GIT_SHA=unknown
+ARG BUILD_TIME=unknown
+ENV GIT_SHA=$GIT_SHA
+ENV BUILD_TIME=$BUILD_TIME
+
 # Copy python dependencies from builder
 COPY --from=builder --chown=appuser:appgroup /root/.local /home/appuser/.local
 ENV PATH=/home/appuser/.local/bin:$PATH

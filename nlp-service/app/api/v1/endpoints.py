@@ -35,27 +35,9 @@ def get_readiness():
     from features.f01_hybrid_retrieval.bm25_retriever import bm25_retriever
     from features.f01_hybrid_retrieval.dense_retriever import dense_retriever
     from fastapi.responses import JSONResponse
-    import os
+    from app.core.llm_health import get_llm_status
 
-    # Self-test LLM readiness
-    llm_status = "ok"
-    llm_error = None
-    gemini_key = os.getenv("GEMINI_API_KEY", "")
-    if gemini_key:
-        try:
-            import requests
-            model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={gemini_key}"
-            payload = {"contents": [{"parts": [{"text": "ping"}]}]}
-            r = requests.post(url, json=payload, timeout=5)
-            if r.status_code != 200:
-                llm_status = "degraded"
-                llm_error = f"HTTP {r.status_code}: {r.text[:100]}"
-        except Exception as e:
-            llm_status = "degraded"
-            llm_error = str(e)
-    else:
-        llm_status = "unconfigured"
+    llm_status = get_llm_status()
 
     is_ready = bool(bm25_retriever.chunks and len(bm25_retriever.chunks) > 0)
     if is_ready:
@@ -66,8 +48,10 @@ def get_readiness():
                 "service": "nlp-service",
                 "version": API_VERSION,
                 "models_loaded": True,
-                "llm": llm_status,
-                "llm_error": llm_error,
+                "llm": llm_status.get("llm"),
+                "llm_error": llm_status.get("llm_error"),
+                "llm_model": llm_status.get("llm_model"),
+                "llm_checked_at": llm_status.get("llm_checked_at"),
                 "chunks_count": len(bm25_retriever.chunks)
             }
         )
@@ -78,8 +62,10 @@ def get_readiness():
             "service": "nlp-service",
             "version": API_VERSION,
             "models_loaded": False,
-            "llm": llm_status,
-            "llm_error": llm_error,
+            "llm": llm_status.get("llm"),
+            "llm_error": llm_status.get("llm_error"),
+            "llm_model": llm_status.get("llm_model"),
+            "llm_checked_at": llm_status.get("llm_checked_at"),
             "error": "Indexes warming up or chunks not loaded"
         }
     )
@@ -119,8 +105,8 @@ def get_version():
         service="nlp-service",
         version=API_VERSION,
         api_prefix="/v1",
-        git_sha=os.getenv("GIT_SHA", "204df12"),
-        build_time=os.getenv("BUILD_TIME", "2026-11-20T10:45:00Z"),
+        git_sha=os.getenv("GIT_SHA", "unknown"),
+        build_time=os.getenv("BUILD_TIME", "unknown"),
         active_features=flags
     )
 

@@ -90,7 +90,12 @@ def root_health():
 
 @app.on_event("startup")
 async def startup_event():
+    import asyncio
+    from app.core.llm_health import run_llm_selftest
+
     structured_logger.info("NLP Production Microservice started successfully.")
+    # Run one live LLM self-test at startup so /v1/ready can report the exact state.
+    await asyncio.to_thread(run_llm_selftest)
 
 if __name__ == "__main__":
     import uvicorn
