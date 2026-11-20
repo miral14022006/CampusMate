@@ -107,9 +107,10 @@ function buildHeaders({ auth, body, headers }) {
     result['Content-Type'] = 'application/json';
   }
 
-  if (auth) {
-    const token = getAdminToken();
-    if (token) result.Authorization = `Bearer ${token}`;
+  // Attach token: user access token from memory, or admin token from storage
+  const token = getAccessToken() || getAdminToken();
+  if (token) {
+    result.Authorization = `Bearer ${token}`;
   }
 
   return result;

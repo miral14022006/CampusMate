@@ -214,12 +214,12 @@ export function HistoryPanel({
           ))}
         </div>
       ) : error ? (
-        <div className="px-2 py-4 text-center">
-          <p className="text-[11.5px] text-ink-muted">Could not load history.</p>
-          <button type="button" onClick={onRetry} className="mt-2 text-[11.5px] font-semibold text-accent hover:underline">
-            Try again
-          </button>
-        </div>
+        <EmptyState
+          compact
+          icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}
+          title={search ? 'No matches' : 'No conversations yet'}
+          description={search ? 'Try a different search term.' : 'Your chats will appear here.'}
+        />
       ) : conversations.length === 0 ? (
         <EmptyState
           compact
