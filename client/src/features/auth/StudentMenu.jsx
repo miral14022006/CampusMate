@@ -63,7 +63,7 @@ export function StudentMenu({ collapsed = false, align = 'end', className = '', 
     } catch {
       /* ignore */
     }
-    window.location.replace('/login');
+    window.location.href = '/login';
   };
 
   const handleProfileClick = (e) => {
@@ -110,9 +110,6 @@ export function StudentMenu({ collapsed = false, align = 'end', className = '', 
             initial="hidden"
             animate="show"
             exit="exit"
-            onPointerDown={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
             className={cn(
               'absolute z-50 w-56 overflow-hidden rounded-md border border-hairline bg-surface-1 p-1.5 shadow-lift',
               dropUp ? 'bottom-full mb-2' : 'mt-2',
@@ -123,21 +120,19 @@ export function StudentMenu({ collapsed = false, align = 'end', className = '', 
               <p className="truncate text-[12px] font-semibold text-ink">{user?.name || 'Student'}</p>
               <p className="truncate text-[10.5px] text-ink-muted">{user?.email}</p>
             </div>
-            <button
+            <Link
               role="menuitem"
-              type="button"
-              onClick={handleProfileClick}
-              onPointerDown={(e) => e.stopPropagation()}
+              to="/profile"
+              onClick={() => setOpen(false)}
               className="flex w-full items-center gap-2 rounded-sm px-2.5 py-2 text-left text-[12px] text-ink-secondary transition-colors hover:bg-surface-2 hover:text-ink cursor-pointer"
             >
               <UserRound className="h-3.5 w-3.5" aria-hidden="true" />
               Profile
-            </button>
+            </Link>
             <button
               role="menuitem"
               type="button"
               onClick={handleLogout}
-              onPointerDown={(e) => e.stopPropagation()}
               className="flex w-full items-center gap-2 rounded-sm px-2.5 py-2 text-left text-[12px] text-ink-secondary transition-colors hover:bg-negative-soft hover:text-[color:var(--negative)] cursor-pointer"
             >
               <LogOut className="h-3.5 w-3.5" aria-hidden="true" />

@@ -1,6 +1,6 @@
 {
   "feature": "01-hybrid-retrieval",
-  "timestamp": "2026-11-19 16:42:21",
+  "timestamp": "2026-11-20 15:28:00",
   "total_test_queries": 125,
   "models_benchmarked": [
     {
@@ -9,7 +9,7 @@
       "recall_at_3": 0.648,
       "recall_at_5": 0.728,
       "mrr": 0.5616,
-      "avg_latency_ms": 0.483
+      "avg_latency_ms": 0.249
     },
     {
       "method": "BM25",
@@ -17,7 +17,7 @@
       "recall_at_3": 0.632,
       "recall_at_5": 0.72,
       "mrr": 0.5511,
-      "avg_latency_ms": 0.179
+      "avg_latency_ms": 0.147
     },
     {
       "method": "Dense (Multilingual e5)",
@@ -25,7 +25,7 @@
       "recall_at_3": 0.48,
       "recall_at_5": 0.632,
       "mrr": 0.4101,
-      "avg_latency_ms": 13.219
+      "avg_latency_ms": 35.764
     },
     {
       "method": "Hybrid (BM25 + Dense RRF)",
@@ -33,7 +33,7 @@
       "recall_at_3": 0.544,
       "recall_at_5": 0.704,
       "mrr": 0.5063,
-      "avg_latency_ms": 8.141
+      "avg_latency_ms": 8.689
     },
     {
       "method": "Hybrid + Cross-Encoder Rerank",
@@ -41,7 +41,7 @@
       "recall_at_3": 0.496,
       "recall_at_5": 0.656,
       "mrr": 0.4597,
-      "avg_latency_ms": 107.745
+      "avg_latency_ms": 124.778
     }
   ]
 }
