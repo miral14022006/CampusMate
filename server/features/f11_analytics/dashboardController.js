@@ -428,6 +428,7 @@ router.get('/overview', async (req, res) => {
 
 function studentQuery(req) {
   const { range, semester, branch, includeDemo } = dateFilters(req);
+  const academicYear = req.query.academicYear || 'all';
   const page = Math.max(Number(req.query.page) || 1, 1);
   const limit = Math.min(Math.max(Number(req.query.limit) || 25, 1), 100);
   const sortKey = ['joined', 'lastActive', 'queries', 'views', 'conversations', 'name'].includes(req.query.sort)
@@ -443,6 +444,26 @@ function studentQuery(req) {
   };
   if (semester && semester !== 'all') match.semester = Number(semester);
   if (branch && branch !== 'all') match.branch = branch;
+  if (academicYear && academicYear !== 'all') {
+    const yearPrefixMap = {
+      'First Year': '23',
+      'Second Year': '24',
+      'Third Year': '25',
+      'Fourth Year': '26'
+    };
+    const prefix = yearPrefixMap[academicYear];
+    if (prefix) {
+      match.$and = match.$and || [];
+      match.$and.push({
+        $or: [
+          { academicYear: academicYear },
+          { email: new RegExp(`^${prefix}`, 'i') }
+        ]
+      });
+    } else {
+      match.academicYear = academicYear;
+    }
+  }
   if (status !== 'all') match.status = status;
   if (search) {
     const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
@@ -511,6 +532,7 @@ async function listStudents(req) {
         email: 1,
         semester: 1,
         branch: 1,
+        academicYear: 1,
         status: 1,
         createdAt: 1,
         lastActive: { $ifNull: ['$usage.lastActive', null] },

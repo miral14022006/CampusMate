@@ -41,6 +41,12 @@ const UserSchema = new mongoose.Schema({
     trim: true,
     default: null
   },
+  academicYear: {
+    type: String,
+    enum: ['First Year', 'Second Year', 'Third Year', 'Fourth Year', null],
+    default: null,
+    index: true
+  },
   emailVerified: {
     type: Boolean,
     default: false

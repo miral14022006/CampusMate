@@ -63,7 +63,8 @@ const signupSchema = z.object({
   email: z.string().email('Invalid email address').max(200),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   semester: z.number().int().min(1).max(12).optional().nullable(),
-  branch: z.string().max(100).optional().nullable()
+  branch: z.string().max(100).optional().nullable(),
+  academicYear: z.enum(['First Year', 'Second Year', 'Third Year', 'Fourth Year']).optional().nullable()
 });
 
 const loginSchema = z.object({
@@ -96,8 +97,17 @@ router.post('/signup', authLimiter, async (req, res) => {
     return res.status(400).json({ error: msg });
   }
 
-  const { name, email, password, semester, branch } = parseResult.data;
+  const { name, email, password, semester, branch, academicYear: inputAcademicYear } = parseResult.data;
   const normalizedEmail = email.toLowerCase().trim();
+
+  // Deduce academicYear from email roll number if not explicitly given
+  let academicYear = inputAcademicYear || null;
+  if (!academicYear) {
+    if (normalizedEmail.startsWith('23')) academicYear = 'First Year';
+    else if (normalizedEmail.startsWith('24')) academicYear = 'Second Year';
+    else if (normalizedEmail.startsWith('25')) academicYear = 'Third Year';
+    else if (normalizedEmail.startsWith('26')) academicYear = 'Fourth Year';
+  }
 
   // Validate allowed email domains (allow pdpu.ac.in, pdeu.ac.in, campus.edu by default)
   const allowedConfig = process.env.ALLOWED_EMAIL_DOMAINS 
@@ -128,6 +138,7 @@ router.post('/signup', authLimiter, async (req, res) => {
       status: 'active',
       semester: semester || null,
       branch: branch || null,
+      academicYear: academicYear || null,
       emailVerified: false
     });
 
