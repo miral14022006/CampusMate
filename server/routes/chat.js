@@ -50,23 +50,28 @@ const handleChat = async (req, res) => {
       }
     }
 
-    // For timetable, schedule, or exam queries, if query does not explicitly specify the student's branch,
+    // For timetable, schedule, or exam queries, if query does not explicitly specify any branch,
     // inject the branch context into the query sent to the NLP retriever to ensure proper document grounding.
     let queryToProcess = query.trim();
     if (req.user?.branch) {
       const qLower = queryToProcess.toLowerCase();
       const isScheduleOrTimetable = /timetable|time\s*table|schedule|exam|datesheet|date\s*sheet|class/i.test(qLower);
-      const userBranchNormalized = req.user.branch.toLowerCase();
-      const alreadyMentionsBranch = qLower.includes(userBranchNormalized) ||
-        (userBranchNormalized.includes('computer') && (qLower.includes('cs') || qLower.includes('cse') || qLower.includes('ce'))) ||
-        (userBranchNormalized.includes('information') && (qLower.includes('it') || qLower.includes('ict'))) ||
-        (userBranchNormalized.includes('chemical') && (qLower.includes('chemical') || qLower.includes('che'))) ||
-        (userBranchNormalized.includes('petroleum') && (qLower.includes('petroleum') || qLower.includes('pe'))) ||
-        (userBranchNormalized.includes('mechanical') && (qLower.includes('mechanical') || qLower.includes('me'))) ||
-        (userBranchNormalized.includes('electrical') && (qLower.includes('electrical') || qLower.includes('ee'))) ||
-        (userBranchNormalized.includes('civil') && (qLower.includes('civil')));
+      const branches = [
+        'computer', 'cse', 'cs', 'ce',
+        'information', 'ict', 'it',
+        'chemical', 'che',
+        'petroleum', 'pe',
+        'mechanical', 'me',
+        'electrical', 'ee',
+        'civil',
+        'biotechnology', 'biotech',
+        'physics', 'chemistry', 'mathematics', 'science',
+        'environmental', 'ctm', 'artificial intelligence', 'ai',
+        'data science', 'cyber security', 'vlsi'
+      ];
+      const anyBranchMentioned = branches.some((b) => new RegExp('\\b' + b + '\\b').test(qLower));
 
-      if (isScheduleOrTimetable && !alreadyMentionsBranch) {
+      if (isScheduleOrTimetable && !anyBranchMentioned) {
         queryToProcess = `${queryToProcess} for ${req.user.branch}`;
       }
     }
