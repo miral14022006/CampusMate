@@ -63,7 +63,7 @@ export function StudentMenu({ collapsed = false, align = 'end', className = '', 
     } catch {
       /* ignore */
     }
-    window.location.href = '/login';
+    window.location.replace('/login');
   };
 
   const handleProfileClick = (e) => {
@@ -110,6 +110,7 @@ export function StudentMenu({ collapsed = false, align = 'end', className = '', 
             initial="hidden"
             animate="show"
             exit="exit"
+            onPointerDown={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
             className={cn(
@@ -122,15 +123,16 @@ export function StudentMenu({ collapsed = false, align = 'end', className = '', 
               <p className="truncate text-[12px] font-semibold text-ink">{user?.name || 'Student'}</p>
               <p className="truncate text-[10.5px] text-ink-muted">{user?.email}</p>
             </div>
-            <Link
+            <button
               role="menuitem"
-              to="/profile"
-              onClick={() => setOpen(false)}
+              type="button"
+              onClick={handleProfileClick}
+              onPointerDown={(e) => e.stopPropagation()}
               className="flex w-full items-center gap-2 rounded-sm px-2.5 py-2 text-left text-[12px] text-ink-secondary transition-colors hover:bg-surface-2 hover:text-ink cursor-pointer"
             >
               <UserRound className="h-3.5 w-3.5" aria-hidden="true" />
               Profile
-            </Link>
+            </button>
             <button
               role="menuitem"
               type="button"
