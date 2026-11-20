@@ -13,7 +13,20 @@ const RANGES = [
 ];
 
 const SEMESTERS = ['all', '1', '2', '3', '4', '5', '6', '7', '8'];
-const BRANCHES = ['all', 'Computer Engineering', 'Information Technology', 'Electronics & Communication', 'Mechanical Engineering', 'Civil Engineering', 'Chemical Engineering'];
+const BRANCHES = [
+  'all',
+  'Computer Engineering',
+  'Information and Communication Technology',
+  'Information Technology',
+  'Mechanical Engineering',
+  'Electrical Engineering',
+  'Electronics and Communication Engineering',
+  'Electronics & Communication',
+  'Civil Engineering',
+  'Chemical Engineering',
+  'Artificial Intelligence & Data Science',
+  'Petroleum Engineering'
+];
 
 function isoDate(date) {
   return date.toISOString().slice(0, 10);
