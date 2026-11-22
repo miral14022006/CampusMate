@@ -30,8 +30,7 @@ import { cn } from '../../../lib/cn';
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const SERIES = [
   { id: 'queries', label: 'Queries', color: SERIES_COLORS.copper },
-  { id: 'activeStudents', label: 'Active students', color: SERIES_COLORS.sage },
-  { id: 'documentViews', label: 'Document views', color: SERIES_COLORS.sky }
+  { id: 'activeStudents', label: 'Active students', color: SERIES_COLORS.sage }
 ];
 const LANG_LABELS = { en: 'English', hi: 'Hindi', gu: 'Gujarati', 'hi-Latn': 'Hinglish', 'gu-Latn': 'Gujlish' };
 
@@ -83,21 +82,13 @@ export default function DashboardOverview() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4 2xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-6">
         <KpiCard label="Registered students" kpi={kpis.registeredStudents} loading={loading} />
         <KpiCard label="New sign-ups" kpi={kpis.newSignups} spark={spark('queries')} loading={loading} />
         <KpiCard label="Active students" kpi={kpis.activeStudents} spark={spark('activeStudents')} loading={loading} />
         <KpiCard label="Guest visitors" kpi={kpis.guestVisitors} loading={loading} />
         <KpiCard label="Conversations" kpi={kpis.conversations} spark={spark('queries')} loading={loading} />
         <KpiCard label="Queries" kpi={kpis.queries} spark={spark('queries')} loading={loading} />
-        <KpiCard label="Document views" kpi={kpis.documentViews} spark={spark('documentViews')} loading={loading} />
-        <KpiCard label="Unique viewers" kpi={kpis.uniqueViewers} loading={loading} />
-        <KpiCard label="Calendar adds" kpi={kpis.calendarAdds} loading={loading} />
-        <KpiCard label="Thumbs-up rate" kpi={kpis.thumbsUpRate} loading={loading} decimals={1} />
-        <KpiCard label="Fallback / IDK" kpi={kpis.fallbackRate} loading={loading} decimals={1} />
-        <KpiCard label="Avg latency" kpi={kpis.avgLatencyMs} loading={loading} suffix=" ms" />
-        <KpiCard label="p95 latency" kpi={kpis.p95LatencyMs} loading={loading} suffix=" ms" />
-        <KpiCard label="Unique view windows" kpi={kpis.uniqueViewWindows} loading={loading} />
       </div>
 
       <ChartWithTable
@@ -126,8 +117,8 @@ export default function DashboardOverview() {
         table={
           <MiniTable
             caption="Usage over time"
-            columns={['Date', 'Queries', 'Active students', 'Views']}
-            rows={timeSeries.map((row) => [row.date, row.queries, row.activeStudents, row.documentViews])}
+            columns={['Date', 'Queries', 'Active students']}
+            rows={timeSeries.map((row) => [row.date, row.queries, row.activeStudents])}
           />
         }
       >
