@@ -289,34 +289,22 @@ async function buildOverview(req) {
   const [
     summary,
     prevSummary,
-    uniqueViews,
-    prevUniqueViews,
     series,
     heatmap,
     intents,
     languages,
-    feedback,
-    prevFeedback,
-    qStats,
-    prevQStats,
     breakdown,
     docs,
     feed
   ] = await Promise.all([
     activityAggregate(match),
     activityAggregate(prevMatch),
-    uniqueViewCount(range, includeDemo),
-    uniqueViewCount(previous, includeDemo),
     dbReady(ActivityEvent)
       ? ActivityEvent.aggregate(buildTimeSeriesPipeline(match, granularity))
       : [],
     dbReady(ActivityEvent) ? ActivityEvent.aggregate(buildHeatmapPipeline(match)) : [],
     dbReady(ActivityEvent) ? ActivityEvent.aggregate(buildTopIntentsPipeline(match)) : [],
     dbReady(ActivityEvent) ? ActivityEvent.aggregate(buildLanguagePipeline(match)) : [],
-    feedbackStats(range),
-    feedbackStats(previous),
-    queryStats(range, includeDemo),
-    queryStats(previous, includeDemo),
     semesterBreakdown(match),
     topDocuments(match),
     recentActivity(12, req.user?.role)
@@ -325,10 +313,6 @@ async function buildOverview(req) {
   const registered = dbReady(User)
     ? await User.countDocuments({ role: 'student', ...(includeDemo === 'only' ? { isDemo: true } : includeDemo === 'true' ? {} : { isDemo: { $ne: true } }) })
     : 0;
-  const rated = feedback.up + feedback.down;
-  const prevRated = prevFeedback.up + prevFeedback.down;
-  const thumbsRate = rate(feedback.up, rated, 0);
-  const prevThumbsRate = rate(prevFeedback.up, prevRated, 0);
 
   const kpis = {
     registeredStudents: { value: registered, previous: null, change: null },
@@ -356,45 +340,6 @@ async function buildOverview(req) {
       value: summary.queries,
       previous: prevSummary.queries,
       change: percentageChange(summary.queries, prevSummary.queries)
-    },
-    documentViews: {
-      value: summary.documentViews,
-      previous: prevSummary.documentViews,
-      change: percentageChange(summary.documentViews, prevSummary.documentViews)
-    },
-    uniqueViewers: {
-      value: summary.viewers,
-      previous: prevSummary.viewers,
-      change: percentageChange(summary.viewers, prevSummary.viewers)
-    },
-    uniqueViewWindows: {
-      value: uniqueViews,
-      previous: prevUniqueViews,
-      change: percentageChange(uniqueViews, prevUniqueViews)
-    },
-    calendarAdds: {
-      value: summary.calendarAdds,
-      previous: prevSummary.calendarAdds,
-      change: percentageChange(summary.calendarAdds, prevSummary.calendarAdds)
-    },
-    thumbsUpRate: { value: thumbsRate, previous: prevThumbsRate, change: Math.round((thumbsRate - prevThumbsRate) * 10) / 10, unit: '%' },
-    fallbackRate: {
-      value: rate(qStats.fallback, qStats.total, 0),
-      previous: rate(prevQStats.fallback, prevQStats.total, 0),
-      change: Math.round((rate(qStats.fallback, qStats.total) - rate(prevQStats.fallback, prevQStats.total)) * 10) / 10,
-      unit: '%'
-    },
-    avgLatencyMs: {
-      value: qStats.avgLatencyMs,
-      previous: prevQStats.avgLatencyMs,
-      change: percentageChange(qStats.avgLatencyMs, prevQStats.avgLatencyMs),
-      unit: 'ms'
-    },
-    p95LatencyMs: {
-      value: qStats.p95LatencyMs,
-      previous: prevQStats.p95LatencyMs,
-      change: percentageChange(qStats.p95LatencyMs, prevQStats.p95LatencyMs),
-      unit: 'ms'
     }
   };
 
