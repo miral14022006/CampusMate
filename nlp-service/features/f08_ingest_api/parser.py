@@ -42,22 +42,24 @@ def parse_document(file_path: Path) -> str:
 
 
 def _is_table_line(line: str) -> bool:
-    """Detects whether a line belongs to a markdown or delimited table."""
+    """Detects whether a line belongs to a table, schedule, or columnar data."""
     stripped = line.strip()
     if not stripped:
         return False
     # Markdown table or pipe-separated
-    if "|" in stripped and len(stripped.split("|")) >= 3:
+    if "|" in stripped and len(stripped.split("|")) >= 2:
         return True
-    # Tab or multiple space separated columns (e.g. 3+ columns)
-    if "\t" in stripped and len(stripped.split("\t")) >= 3:
+    # Tab separated columns
+    if "\t" in stripped:
+        return True
+    # Columnar spacing (2 or more spaces separating words or dates)
+    if re.search(r'\w+\s{2,}\d{1,2}(?:st|nd|rd|th)?\s+\w+', stripped):
         return True
     return False
 
 
 def _split_into_sentences(text: str) -> List[str]:
     """Splits text into sentences preserving Hindi purna viram (।) and standard delimiters."""
-    # Split on punctuation followed by whitespace or line break
     sentence_delims = re.compile(r'(?<=[.!?।॥])\s+')
     raw_sents = sentence_delims.split(text)
     return [s.strip() for s in raw_sents if s.strip()]
@@ -65,98 +67,65 @@ def _split_into_sentences(text: str) -> List[str]:
 
 def chunk_text(
     text: str,
-    chunk_size: int = 400,
-    overlap: int = 50,
-    max_chunk_words: int = 550
+    chunk_size: int = 350,
+    overlap: int = 40,
+    max_chunk_words: int = 500
 ) -> List[str]:
     """
-    Intelligent sentence-aware and table-preserving text chunker.
-    - Preserves tables as contiguous units where possible.
+    Intelligent sentence-aware and table/line-preserving text chunker.
+    - Preserves newlines and row structures so tabular dates and events are never flattened into run-on sentences.
     - Respects paragraph boundaries (\n\n) and sentence boundaries.
-    - Carries forward active heading context if detected.
-    - Uses sentence-level overlap rather than hard word slicing.
+    - Maintains line breaks between schedule items.
     """
     if not text or not text.strip():
         return []
 
-    lines = text.split("\n")
-    blocks: List[str] = []
-    current_block: List[str] = []
-    in_table = False
+    lines = [l.rstrip() for l in text.split("\n") if l.strip()]
+    if not lines:
+        return []
+
+    chunks: List[str] = []
+    current_lines: List[str] = []
+    current_word_count = 0
 
     for line in lines:
-        stripped = line.strip()
-        if not stripped:
-            if in_table:
-                in_table = False
-            if current_block:
-                blocks.append("\n".join(current_block))
-                current_block = []
+        line_word_count = len(line.split())
+        if not line_word_count:
             continue
 
-        if _is_table_line(stripped):
-            if not in_table and current_block:
-                blocks.append("\n".join(current_block))
-                current_block = []
-            in_table = True
-            current_block.append(stripped)
+        # If a single line is extraordinarily long (a wall of text), split by sentences
+        if line_word_count > max_chunk_words:
+            sents = _split_into_sentences(line)
+            for sent in sents:
+                sent_words = len(sent.split())
+                if current_word_count + sent_words > chunk_size and current_lines:
+                    chunks.append("\n".join(current_lines))
+                    # Retain last line or sentence for overlap
+                    current_lines = [current_lines[-1]] if current_lines else []
+                    current_word_count = sum(len(l.split()) for l in current_lines)
+                current_lines.append(sent)
+                current_word_count += sent_words
+            continue
+
+        if current_word_count + line_word_count > chunk_size and current_lines:
+            chunks.append("\n".join(current_lines))
+            # Overlap: keep the last 1-2 lines for context continuity
+            overlap_lines: List[str] = []
+            ov_words = 0
+            for prev_l in reversed(current_lines):
+                lw = len(prev_l.split())
+                if ov_words + lw <= overlap or not overlap_lines:
+                    overlap_lines.insert(0, prev_l)
+                    ov_words += lw
+                else:
+                    break
+            current_lines = overlap_lines + [line]
+            current_word_count = sum(len(l.split()) for l in current_lines)
         else:
-            if in_table:
-                in_table = False
-                if current_block:
-                    blocks.append("\n".join(current_block))
-                    current_block = []
-            current_block.append(stripped)
+            current_lines.append(line)
+            current_word_count += line_word_count
 
-    if current_block:
-        blocks.append("\n".join(current_block))
-
-    # Convert blocks into chunks with target size and overlap
-    chunks: List[str] = []
-    current_chunk_words: List[str] = []
-    overlap_words: List[str] = []
-
-    for block in blocks:
-        block_words = block.split()
-        if not block_words:
-            continue
-
-        # If a single table/block is very large, split it by rows/sentences
-        if len(block_words) > max_chunk_words:
-            if _is_table_line(block.split("\n")[0]):
-                table_lines = block.split("\n")
-                header = table_lines[0] if table_lines else ""
-                sub_lines = []
-                for tline in table_lines[1:]:
-                    sub_lines.append(tline)
-                    if sum(len(sl.split()) for sl in sub_lines) >= chunk_size:
-                        t_chunk = header + "\n" + "\n".join(sub_lines)
-                        chunks.append(t_chunk)
-                        sub_lines = []
-                if sub_lines:
-                    chunks.append(header + "\n" + "\n".join(sub_lines))
-            else:
-                sents = _split_into_sentences(block)
-                for s in sents:
-                    s_words = s.split()
-                    if len(current_chunk_words) + len(s_words) > max_chunk_words and current_chunk_words:
-                        chunks.append(" ".join(current_chunk_words))
-                        # retain overlap
-                        overlap_words = current_chunk_words[-overlap:] if len(current_chunk_words) > overlap else current_chunk_words[:]
-                        current_chunk_words = overlap_words + s_words
-                    else:
-                        current_chunk_words.extend(s_words)
-            continue
-
-        # Normal block appending
-        if len(current_chunk_words) + len(block_words) > chunk_size and current_chunk_words:
-            chunks.append(" ".join(current_chunk_words))
-            overlap_words = current_chunk_words[-overlap:] if len(current_chunk_words) > overlap else current_chunk_words[:]
-            current_chunk_words = overlap_words + block_words
-        else:
-            current_chunk_words.extend(block_words)
-
-    if current_chunk_words:
-        chunks.append(" ".join(current_chunk_words))
+    if current_lines:
+        chunks.append("\n".join(current_lines))
 
     return chunks
