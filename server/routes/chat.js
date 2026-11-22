@@ -2,17 +2,15 @@ const express = require('express');
 const Message = require('../models/Message');
 const Conversation = require('../models/Conversation');
 const { PersistentConversation } = require('../features/f00_history');
-const { requireAuth, optionalAuth } = require('../features/f16_auth');
+const { requireAuth } = require('../features/f16_auth');
 const { recordInBackground } = require('../features/f17_activity/activityService');
+const { nlpClient } = require('../services/nlpClient');
 
 const router = express.Router();
 
-const MAINTENANCE_MESSAGE =
-  'CampusMate AI Assistant is undergoing scheduled maintenance. The conversational service will be restored shortly.';
-
 /**
  * POST /api/chat & POST /api/chat/message
- * Chat endpoint: safely disconnected from old RAG/NLP pipeline, returning a maintenance response while preserving message history.
+ * Production Chat endpoint: connects to modern FastAPI NLP/RAG microservice with automatic fallback.
  */
 const handleChat = async (req, res) => {
   const { query, sessionId = `session_${Date.now()}` } = req.body;
@@ -25,6 +23,31 @@ const handleChat = async (req, res) => {
     const createdMessageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
     const studentId = req.user?.id || 'anonymous_user';
 
+    let nlpData = null;
+    try {
+      nlpData = await nlpClient.query(query.trim(), sessionId, {
+        branch: req.user?.branch || null,
+        semester: req.user?.semester || null
+      });
+    } catch (nlpErr) {
+      console.warn(`[Chat] NLP service call failed (${nlpErr.message}). Using offline message.`);
+      nlpData = {
+        answer: "CampusMate AI Assistant is temporarily unavailable. Please try again shortly.",
+        reply: "CampusMate AI Assistant is temporarily unavailable. Please try again shortly.",
+        language: "en",
+        intent: "out_of_scope",
+        confidence: 0.0,
+        source_doc: null,
+        citations: [],
+        grounded: false,
+        generation_mode: "offline",
+        decision: "FALLBACK",
+        decision_reason: "NLP_UNAVAILABLE",
+        execution_time_ms: 10
+      };
+    }
+
+    // Save message to MongoDB
     try {
       if (Message.db && Message.db.readyState === 1) {
         // Save user question
@@ -40,14 +63,16 @@ const handleChat = async (req, res) => {
           }
         });
 
-        // Save assistant maintenance message
+        // Save assistant answer
         await Message.create({
           sessionId,
           sender: 'bot',
-          text: MAINTENANCE_MESSAGE,
+          text: nlpData.answer,
           metadata: {
-            mode: 'maintenance',
-            grounded: false
+            mode: nlpData.generation_mode,
+            grounded: nlpData.grounded,
+            source_doc: nlpData.source_doc,
+            citations: nlpData.citations
           }
         });
       }
@@ -56,7 +81,7 @@ const handleChat = async (req, res) => {
         { sessionId },
         {
           $inc: { messageCount: 2 },
-          $set: { dominantLanguage: 'en', channel: 'web', lastActivity: new Date() }
+          $set: { dominantLanguage: nlpData.language || 'en', channel: 'web', lastActivity: new Date() }
         },
         { upsert: true, new: true }
       );
@@ -73,7 +98,7 @@ const handleChat = async (req, res) => {
             createdAt: new Date()
           },
           $set: {
-            lastMessagePreview: MAINTENANCE_MESSAGE.slice(0, 80),
+            lastMessagePreview: (nlpData.answer || '').slice(0, 80),
             updatedAt: new Date()
           },
           $inc: { messageCount: 2 }
@@ -89,9 +114,9 @@ const handleChat = async (req, res) => {
       type: 'chat_query',
       meta: {
         conversationId: sessionId,
-        intent: 'maintenance',
-        language: 'en',
-        category: 'MAINTENANCE',
+        intent: nlpData.intent || 'unknown',
+        language: nlpData.language || 'en',
+        category: nlpData.decision || 'ANSWER',
         messageId: createdMessageId
       }
     });
@@ -99,29 +124,25 @@ const handleChat = async (req, res) => {
     return res.json({
       messageId: createdMessageId,
       sessionId,
-      answer: MAINTENANCE_MESSAGE,
-      reply: MAINTENANCE_MESSAGE,
-      language: 'en',
-      detected_language: 'en',
-      intent: 'maintenance',
-      confidence: 1.0,
-      source_doc: null,
-      entities: [],
-      citations: [],
-      calendar_events: [],
-      grounded: false,
-      generation_mode: 'maintenance',
-      hallucination_score: 0.0,
-      decision: 'MAINTENANCE',
-      decision_reason: 'SERVICE_UNDER_MAINTENANCE',
-      clarification_question: null,
-      quick_replies: [],
-      contact_info: null,
-      standalone_query: query,
-      is_follow_up: false,
-      is_reset: false,
-      dialogue_state: null,
-      execution_time_ms: 10
+      answer: nlpData.answer,
+      reply: nlpData.answer,
+      language: nlpData.language,
+      detected_language: nlpData.language,
+      intent: nlpData.intent,
+      confidence: nlpData.confidence,
+      source_doc: nlpData.source_doc,
+      entities: nlpData.entities || [],
+      citations: nlpData.citations || [],
+      calendar_events: nlpData.calendar_events || [],
+      grounded: nlpData.grounded,
+      generation_mode: nlpData.generation_mode,
+      hallucination_score: nlpData.hallucination_score || 0.0,
+      decision: nlpData.decision,
+      decision_reason: nlpData.decision_reason,
+      clarification_question: nlpData.clarification_question,
+      quick_replies: nlpData.quick_replies || [],
+      dialogue_state: nlpData.dialogue_state,
+      execution_time_ms: nlpData.execution_time_ms
     });
   } catch (error) {
     console.error(`[Server Error] /api/chat: ${error.message}`);

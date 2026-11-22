@@ -1,6 +1,24 @@
 const request = require('supertest');
 const app = require('../server');
 
+jest.mock('../services/nlpClient', () => ({
+  nlpClient: {
+    query: jest.fn().mockResolvedValue({
+      answer: 'The exam schedule is available on the campus portal.',
+      reply: 'The exam schedule is available on the campus portal.',
+      language: 'en',
+      intent: 'exam_timetable',
+      confidence: 0.95,
+      source_doc: 'academic_calendar.pdf',
+      entities: [],
+      citations: [{ citation_id: 1, doc_name: 'academic_calendar.pdf', page: 1, snippet: 'exam schedule' }],
+      grounded: true,
+      generation_mode: 'rag',
+      decision: 'ANSWER'
+    })
+  }
+}));
+
 // Mock mongoose models in test to prevent buffering timeout
 jest.mock('../models/Message', () => ({
   create: jest.fn().mockResolvedValue({ _id: 'mock_msg_123' })
@@ -43,13 +61,14 @@ describe('Chat API Gateway Controller', () => {
     expect(res.body).toHaveProperty('error');
   });
 
-  it('should return maintenance response when query is valid and RAG is disconnected', async () => {
+  it('should return grounded assistant answer when query is valid', async () => {
     const res = await request(app)
       .post('/api/chat/message')
       .send({ query: 'What is the exam schedule?' });
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('reply');
-    expect(res.body.reply).toContain('CampusMate AI Assistant is undergoing scheduled maintenance');
-    expect(res.body.generation_mode).toEqual('maintenance');
+    expect(res.body.reply).toContain('The exam schedule is available on the campus portal');
+    expect(res.body.generation_mode).toEqual('rag');
+    expect(res.body.citations.length).toBeGreaterThan(0);
   });
 });

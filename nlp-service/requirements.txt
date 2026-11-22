@@ -1,0 +1,30 @@
+fastapi==0.110.0
+uvicorn[standard]==0.28.0
+pydantic==2.6.4
+numpy==1.26.4
+pandas==2.1.4
+scikit-learn==1.6.1
+joblib==1.3.2
+nltk==3.8.1
+spacy==3.7.4
+python-docx==1.1.0
+pypdf==4.1.0
+pdfplumber==0.11.0
+rank-bm25==0.2.2
+rapidfuzz==3.6.1
+faiss-cpu==1.8.0
+sentence-transformers==2.7.0
+opencv-python-headless==4.9.0.80
+pytesseract==0.3.10
+pdf2image==1.17.0
+Pillow==10.2.0
+requests==2.31.0
+python-multipart==0.0.9
+pytest==8.1.1
+httpx==0.27.0
+# Optional: ai4bharat-transliteration accelerates Feature 02. It currently pins
+# fairseq, which does not build on Python 3.9; the lexicon fallback is used when
+# the package is unavailable.
+# ai4bharat-transliteration==1.1.2
+matplotlib==3.8.4
+seaborn==0.13.2

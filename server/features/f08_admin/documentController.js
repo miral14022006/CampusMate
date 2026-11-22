@@ -6,6 +6,7 @@ const { generateToken, requireAdminAuth } = require('./auth');
 const { upload, calculateChecksum } = require('./uploadMiddleware');
 const { serverCacheManager } = require('../f12_cache');
 const { recordAuditLog } = require('../f16_auth/auditService');
+const { nlpClient } = require('../../services/nlpClient');
 
 const router = express.Router();
 
@@ -69,7 +70,6 @@ router.get('/documents', requireAdminAuth, async (req, res) => {
       return res.json({ count: docs.length, documents: docs });
     }
 
-    // In-memory fallback if Mongo disconnected
     return res.json({
       count: 0,
       documents: [],
@@ -82,26 +82,28 @@ router.get('/documents', requireAdminAuth, async (req, res) => {
 
 /**
  * GET /api/admin/index/status
- * Index status placeholder while RAG/NLP pipeline is disconnected
+ * Fetches status from modern NLP service
  */
 router.get('/index/status', requireAdminAuth, async (req, res) => {
-  return res.json({
-    status: 'disconnected',
-    message: 'NLP/RAG indexing service is disconnected.',
-    chunks_count: 0
-  });
+  try {
+    const status = await nlpClient.getIndexStatus();
+    return res.json(status);
+  } catch (err) {
+    return res.json({ status: 'unavailable', error: err.message, chunks_count: 0 });
+  }
 });
 
 /**
  * POST /api/admin/debug/retrieve
- * Debug retrieval placeholder while RAG/NLP pipeline is disconnected
+ * Proxy debug search to NLP service
  */
 router.post('/debug/retrieve', requireAdminAuth, async (req, res) => {
-  return res.json({
-    status: 'disconnected',
-    message: 'NLP/RAG retrieval service is disconnected.',
-    results: []
-  });
+  try {
+    const res_data = await nlpClient.client.post('/v1/retrieval/search', req.body);
+    return res.json(res_data.data);
+  } catch (err) {
+    return res.status(502).json({ error: `Retrieval error: ${err.message}` });
+  }
 });
 
 /**
@@ -139,7 +141,7 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
       }
     }
 
-    // Determine Version Number for the given topic_key
+    // Determine Version Number
     let nextVersion = 1;
     let priorDoc = null;
 
@@ -186,6 +188,11 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
       };
     }
 
+    // Automatically trigger background reindex in NLP service
+    nlpClient.reindex().catch((err) => {
+      console.warn(`[Admin] Automatic reindex triggered with warning: ${err.message}`);
+    });
+
     await recordAuditLog({
       actorId: req.admin?.id,
       action: 'document_upload',
@@ -196,7 +203,7 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
     });
 
     return res.status(201).json({
-      message: 'Document uploaded and versioned successfully.',
+      message: 'Document uploaded, versioned, and indexed successfully.',
       document: newDoc,
       superseded_prior_version: Boolean(priorDoc),
       new_index_version: nextVersion,
@@ -209,18 +216,23 @@ router.post('/documents/upload', requireAdminAuth, upload.single('file'), async 
 
 /**
  * POST /api/admin/documents/reindex
- * Rebuilds all search indexes (placeholder while disconnected)
+ * Rebuilds search indexes across all uploads
  */
 router.post('/documents/reindex', requireAdminAuth, async (req, res) => {
-  await serverCacheManager.invalidateAll();
-  return res.json({
-    message: 'Cache invalidated. Document re-indexing will resume when the new RAG service is connected.'
-  });
+  try {
+    const reindexRes = await nlpClient.reindex();
+    await serverCacheManager.invalidateAll();
+    return res.json({
+      message: 'Re-indexing completed across TF-IDF, BM25, and FAISS dense indexes.',
+      nlp: reindexRes
+    });
+  } catch (err) {
+    return res.status(500).json({ error: `Re-index failed: ${err.message}` });
+  }
 });
 
 /**
  * PATCH /api/admin/documents/:id/status
- * Archive or change status of a document
  */
 router.patch('/documents/:id/status', requireAdminAuth, async (req, res) => {
   const { status } = req.body;
@@ -233,6 +245,7 @@ router.patch('/documents/:id/status', requireAdminAuth, async (req, res) => {
       const doc = await Document.findByIdAndUpdate(req.params.id, { status }, { new: true });
       if (!doc) return res.status(404).json({ error: 'Document not found.' });
 
+      nlpClient.reindex().catch(() => {});
       await serverCacheManager.invalidateAll();
 
       await recordAuditLog({
@@ -254,7 +267,6 @@ router.patch('/documents/:id/status', requireAdminAuth, async (req, res) => {
 
 /**
  * DELETE /api/admin/documents/:id
- * Permanently removes a document record and its uploaded file.
  */
 router.delete('/documents/:id', requireAdminAuth, async (req, res) => {
   try {
@@ -265,7 +277,6 @@ router.delete('/documents/:id', requireAdminAuth, async (req, res) => {
     const doc = await Document.findByIdAndDelete(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Document not found.' });
 
-    // Remove the stored file, but never touch anything outside the upload directory.
     try {
       const fs = require('fs');
       const { UPLOAD_DIR } = require('./uploadMiddleware');
@@ -277,6 +288,7 @@ router.delete('/documents/:id', requireAdminAuth, async (req, res) => {
       console.warn(`[Admin] Could not remove file for document ${req.params.id}: ${fileErr.message}`);
     }
 
+    nlpClient.reindex().catch(() => {});
     await serverCacheManager.invalidateAll();
 
     await recordAuditLog({

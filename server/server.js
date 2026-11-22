@@ -89,12 +89,23 @@ app.use('/api/calendar', calendarRoutes);
 
 // Health check
 app.get('/health', async (req, res) => {
-  const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  const { nlpClient } = require('./services/nlpClient');
+  let nlpStatus = 'disconnected';
+  try {
+    const nlpHealth = await nlpClient.getHealth();
+    nlpStatus = nlpHealth && nlpHealth.status === 'ok' ? 'ok' : 'degraded';
+  } catch (err) {
+    nlpStatus = 'unavailable';
+  }
 
-  res.status(mongoStatus === 'connected' ? 200 : 503).json({
-    status: mongoStatus === 'connected' ? 'ok' : 'degraded',
+  const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  const overallStatus = mongoStatus === 'connected' && nlpStatus === 'ok' ? 'ok' : (nlpStatus === 'unavailable' ? 'degraded' : 'ok');
+
+  res.status(overallStatus === 'ok' ? 200 : 503).json({
+    status: overallStatus,
     service: 'server-gateway',
     server: 'ok',
+    nlp: nlpStatus,
     mongo: mongoStatus
   });
 });

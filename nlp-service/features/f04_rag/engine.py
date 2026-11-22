@@ -1,0 +1,222 @@
+import logging
+import os
+import re
+from typing import List, Dict, Any, Optional
+
+from features.f04_rag.schemas import RAGResponse, CitationItem
+from features.f04_rag.prompt_builder import prompt_builder
+from features.f04_rag.verifier import hallucination_guard
+from features.f14_synthetic_data.llm import get_llm_provider
+from app.modules.answer_template import answer_templater
+
+logger = logging.getLogger(__name__)
+
+def is_general_concept_query(query: str) -> bool:
+    if not query:
+        return False
+    q_low = re.sub(r"[^\w\s]", " ", query.lower())
+    q_low = re.sub(r"\s+", " ", q_low).strip()
+
+    # Campus/college specific indicator terms
+    campus_indicators = [
+        "fee", "fees", "hostel", "mess", "timetable", "time table", "exam", "exams",
+        "examination", "circular", "semester", "sem", "pdeu", "pdpu", "hall ticket",
+        "admit card", "holiday", "holidays", "academic calendar", "registration",
+        "result", "results", "spi", "cpi", "cgpa", "course code", "warden",
+        "club", "president", "professor", "hod", "department", "campus", "college",
+        "swimming", "pool", "library", "canteen", "sports",
+        "फीस", "होस्टल", "हॉस्टल", "परीक्षा", "समय सारिणी", "तारीख", "कैलेंडर", "अवकाश",
+        "સ્વિમિંગ", "પુલ", "ફી", "હોસ્ટેલ", "પરીક્ષા", "સમયપત્રક", "તારીખ", "કેલેન્ડર", "રજા"
+    ]
+    # If the query contains any explicit campus indicator, it is NOT purely a general query
+    if any(re.search(r"\b" + re.escape(ci) + r"\b", q_low) for ci in campus_indicators):
+        return False
+
+    # Common greetings and conversational pleasantries
+    conversational_triggers = [
+        "hi", "hello", "hey", "hola", "namaste", "kem cho", "how are you", "who are you",
+        "what can you do", "good morning", "good evening", "good afternoon", "thank you",
+        "thanks", "bye", "goodbye", "help", "who created you", "what is your name"
+    ]
+    if any(re.search(r"\b" + re.escape(ct) + r"\b", q_low) for ct in conversational_triggers):
+        return True
+
+    keywords = [
+        "object oriented", "oop", "rest api", "restful", "tcp", "udp",
+        "machine learning", "deep learning", "neural network", "recursion",
+        "binary search", "data structure", "algorithm", "sorting", "merge sort",
+        "quick sort", "database", "sql", "nosql", "docker", "kubernetes",
+        "operating system", "deadlock", "semaphore", "compiler", "microservice",
+        "git", "github", "http", "https", "python", "javascript", "react", "html", "css",
+        "moon", "earth", "sun", "space", "science", "history", "geography", "who is", "who was",
+        "tell me about", "what is", "why is", "how to", "capital of", "president", "prime minister"
+    ]
+    has_kw = any(re.search(r"\b" + re.escape(kw) + r"\b", q_low) for kw in keywords)
+    if has_kw:
+        return True
+
+    # If it's a general question not mentioning campus terms, treat as general conversational chat
+    prompt_triggers = [
+        "what is", "explain", "define", "difference between", "how does", "compare", "give example", "what are",
+        "who was", "who is", "where is", "when was", "can you", "tell me"
+    ]
+    has_trigger = any(re.search(r"\b" + re.escape(tr) + r"\b", q_low) for tr in prompt_triggers)
+    if has_trigger:
+        return True
+
+    # Default short general queries without campus terms (e.g. "computer", "moon")
+    return len(q_low.split()) <= 4
+
+class RAGEngine:
+    IDK_MESSAGES = {
+        "en": "I'm sorry, but the official college documents do not contain sufficient information to answer this question. Please reach out to the campus helpdesk for assistance.",
+        "hi": "क्षमा करें, आधिकारिक कॉलेज दस्तावेजों में इस प्रश्न का उत्तर देने के लिए पर्याप्त जानकारी नहीं है। कृपया सहायता के लिए कॉलेज हेल्पडेस्क से संपर्क करें।",
+        "gu": "માફ કરશો, સત્તાવાર કૉલેજ દસ્તાવેજોમાં આ પ્રશ્નનો જવાબ આપવા માટે પૂરતી માહિતી ઉપલબ્ધ નથી. કૃપા કરીને સહાય માટે કૉલેજ હેલ્પડેસ્કનો સંપર્ક કરો.",
+        "hi-Latn": "Sorry, official college documents mein is sawaal ka answer provide karne ke liye sufficient information available nahi hai. Please campus helpdesk se contact karein.",
+        "gu-Latn": "Maaf karsho, official college documents ma aa baabate purti mahiti uplabdh nathi. Krupya sahay mate campus helpdesk no sampark karo.",
+        "gujlish": "Maaf karsho, official college documents ma aa baabate purti mahiti uplabdh nathi. Krupya sahay mate campus helpdesk no sampark karo."
+    }
+
+    def __init__(
+        self,
+        min_evidence_score: float = 0.005,
+        llm_provider_name: Optional[str] = None
+    ):
+        self.min_evidence_score = min_evidence_score
+        self.llm_provider_name = llm_provider_name or os.getenv("LLM_PROVIDER", "groq")
+        self._llm = None
+
+    def _get_llm(self):
+        if self._llm is None:
+            self._llm = get_llm_provider(self.llm_provider_name)
+        return self._llm
+
+    def is_general_concept_query(self, query: str) -> bool:
+        return is_general_concept_query(query)
+
+    def resolve_date_conflicts(self, chunks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        return sorted(chunks, key=lambda c: (c.get("upload_date", "2024-01-01"), c.get("score", 0.0)), reverse=True)
+
+    def generate_answer(
+        self,
+        query: str,
+        retrieved_chunks: List[Dict[str, Any]],
+        language: str = "en",
+        intent: str = "general_queries",
+        mock_llm_response: Optional[str] = None
+    ) -> RAGResponse:
+        lang_key = language if language in ["hi", "gu", "hi-Latn", "gu-Latn", "gujlish"] else "en"
+        is_general_query = self.is_general_concept_query(query)
+
+        # 1. Evidence Strength Gate
+        top_score = max([c.get("score", 0.0) for c in retrieved_chunks], default=0.0)
+        if not is_general_query and (not retrieved_chunks or top_score < self.min_evidence_score):
+            return RAGResponse(
+                answer=self.IDK_MESSAGES.get(lang_key, self.IDK_MESSAGES["en"]),
+                language=language,
+                citations=[],
+                grounded=True,
+                mode="idk",
+                hallucination_score=0.0,
+                verification_details={"reason": f"Top retrieval score {top_score:.4f} is below evidence threshold {self.min_evidence_score}"}
+            )
+
+        # 2. Date-conflict ordering
+        ordered_chunks = self.resolve_date_conflicts(retrieved_chunks)
+
+        # 3. Build Grounded Prompt
+        sys_prompt, user_prompt, indexed_chunks = prompt_builder.build_prompt(
+            query=query,
+            retrieved_chunks=ordered_chunks,
+            language=language
+        )
+
+        # 4. Invoke LLM
+        try:
+            if mock_llm_response is not None:
+                raw_llm_ans = mock_llm_response
+            else:
+                llm = self._get_llm()
+                raw_llm_ans = llm.generate(prompt=user_prompt, system_prompt=sys_prompt, temperature=0.2)
+        except Exception as e:
+            logger.error(f"LLM generation failed: {e}. Falling back to extractive template.")
+            extractive = answer_templater.generate_answer(query, intent, language, retrieved_chunks)
+            return RAGResponse(
+                answer=extractive["answer"],
+                language=language,
+                citations=[
+                    CitationItem(
+                        citation_id=1,
+                        doc_name=c.get("doc_name", "doc"),
+                        page=c.get("page", 1),
+                        snippet=c.get("text", "")[:150],
+                        score=c.get("score", 0.0)
+                    ) for c in retrieved_chunks[:2]
+                ],
+                grounded=True,
+                mode="extractive",
+                hallucination_score=0.0,
+                verification_details={"fallback_reason": str(e)}
+            )
+
+        # 5. Check if LLM signaled NO_ANSWER
+        trimmed = raw_llm_ans.strip()
+        if "NO_ANSWER" in trimmed or trimmed in ["NO", "NO_", "NO_ANSWER."] or trimmed.startswith("NO_"):
+            return RAGResponse(
+                answer=self.IDK_MESSAGES.get(lang_key, self.IDK_MESSAGES["en"]),
+                language=language,
+                citations=[],
+                grounded=True,
+                mode="idk",
+                hallucination_score=0.0,
+                verification_details={"llm_status": "NO_ANSWER"}
+            )
+
+        # 6. Post-generation Groundedness & Citation Verification
+        if is_general_query:
+            return RAGResponse(
+                answer=raw_llm_ans,
+                language=language,
+                citations=[],
+                grounded=True,
+                mode="general_knowledge",
+                hallucination_score=0.0,
+                verification_details={"type": "general_knowledge"}
+            )
+
+        verif = hallucination_guard.verify(raw_llm_ans, indexed_chunks)
+
+        citations = []
+        for vc in verif["valid_citations"]:
+            citations.append(CitationItem(
+                citation_id=vc["citation_id"],
+                doc_name=vc["doc_name"],
+                page=vc["page"],
+                snippet=vc["snippet"],
+                score=vc["score"],
+                upload_date=vc.get("upload_date")
+            ))
+
+        if not verif["grounded"] and verif["hallucination_score"] > 0.5:
+            extractive = answer_templater.generate_answer(query, intent, language, retrieved_chunks)
+            return RAGResponse(
+                answer=extractive["answer"],
+                language=language,
+                citations=citations,
+                grounded=False,
+                mode="extractive",
+                hallucination_score=verif["hallucination_score"],
+                verification_details=verif
+            )
+
+        return RAGResponse(
+            answer=raw_llm_ans,
+            language=language,
+            citations=citations,
+            grounded=verif["grounded"],
+            mode="rag",
+            hallucination_score=verif["hallucination_score"],
+            verification_details=verif
+        )
+
+rag_engine = RAGEngine()
