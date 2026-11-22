@@ -72,6 +72,11 @@ INDIC_TO_ENGLISH_MAP = {
     "na": "of",
     "ni": "of",
     "પ્રવેશ": "admission enrollment",
+    # Campus Festivals & Events (Gujarati)
+    "રંગતાલ": "rangtaal navratri celebration",
+    "ટેસેરેક્ટ": "tesseract science technical fest",
+    "ફ્લેર": "flare social cultural fest",
+    "એનર્જી કપ": "energy cup sports fest",
     # Hindi
     "होस्टल": "hostel accommodation room residence fee",
     "हॉस्टल": "hostel accommodation room residence fee",
@@ -87,6 +92,11 @@ INDIC_TO_ENGLISH_MAP = {
     "शुल्क": "fee tuition payment",
     "परिणाम": "result grade marksheet",
     "छात्रावास": "hostel accommodation",
+    # Campus Festivals & Events (Hindi)
+    "रंगताल": "rangtaal navratri celebration",
+    "टेसेरैक्ट": "tesseract science technical fest",
+    "फ्लेयर": "flare social cultural fest",
+    "एनर्जी कप": "energy cup sports fest",
     # Romanized Gujlish
     "hostel": "hostel accommodation fee",
     "bharvani": "registration form deadline submission last date",
