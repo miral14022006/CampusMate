@@ -154,7 +154,8 @@ def process_query(request_body: QueryRequest, request: Request):
         language_override=request_body.language_override,
         request_id=req_id,
         session_id=request_body.session_id,
-        dialogue_state=request_body.dialogue_state
+        dialogue_state=request_body.dialogue_state,
+        conversation_history=request_body.conversation_history
     )
 
     entities = [
@@ -236,7 +237,8 @@ async def stream_query(request_body: QueryRequest, request: Request):
         language_override=request_body.language_override,
         request_id=req_id,
         session_id=request_body.session_id,
-        dialogue_state=request_body.dialogue_state
+        dialogue_state=request_body.dialogue_state,
+        conversation_history=request_body.conversation_history
     )
 
     async def event_generator():
@@ -273,7 +275,8 @@ def analyze_query(request_body: QueryRequest, request: Request):
         language_override=request_body.language_override,
         request_id=req_id,
         session_id=request_body.session_id,
-        dialogue_state=request_body.dialogue_state
+        dialogue_state=request_body.dialogue_state,
+        conversation_history=request_body.conversation_history
     )
 
     entities = [

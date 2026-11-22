@@ -1,8 +1,11 @@
 import json
+import logging
 from app.pipeline_stages.base import PipelineStage, PipelineContext
 from app.core.config import FEATURES_CONFIG_PATH
 from app.modules.answer_template import answer_templater
 from features.f04_rag.engine import rag_engine
+
+logger = logging.getLogger(__name__)
 
 class AnswerStage(PipelineStage):
     """
@@ -39,7 +42,8 @@ class AnswerStage(PipelineStage):
                 query=query_to_use,
                 retrieved_chunks=context.retrieved_chunks,
                 language=context.language,
-                intent=context.intent
+                intent=context.intent,
+                conversation_history=context.conversation_history
             )
             context.answer = rag_res.answer
             context.citations = [c.dict() for c in rag_res.citations]

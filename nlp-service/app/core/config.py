@@ -36,5 +36,14 @@ LOG_DIR = BASE_DIR / "logs"
 
 # Pipeline Parameters
 INTENT_CONFIDENCE_THRESHOLD = float(os.getenv("INTENT_CONFIDENCE_THRESHOLD", "0.35"))
-RETRIEVAL_TOP_K = int(os.getenv("RETRIEVAL_TOP_K", "3"))
+RETRIEVAL_TOP_K = int(os.getenv("RETRIEVAL_TOP_K", "8"))
+
+# Neighboring chunk expansion: how many chunks before/after a hit to include
+NEIGHBOR_CHUNK_WINDOW = int(os.getenv("NEIGHBOR_CHUNK_WINDOW", "1"))
+
+# Maximum context tokens to send to LLM (reserve ~2000 for answer)
+MAX_CONTEXT_TOKENS = int(os.getenv("MAX_CONTEXT_TOKENS", "6000"))
+
+# Conversation history: max prior turns to include in LLM prompt
+MAX_HISTORY_TURNS = int(os.getenv("MAX_HISTORY_TURNS", "5"))
 

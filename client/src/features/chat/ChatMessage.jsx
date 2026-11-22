@@ -36,8 +36,24 @@ function useTypewriter(text, animate) {
   return { visible, done: visible === text };
 }
 
+function cleanMarkdown(text) {
+  if (!text) return '';
+  return String(text)
+    // Replace escaped markdown asterisks or underscores like \*\*bold\*\* -> **bold**
+    .replace(/\\(\*|_|`|#|\[|\])/g, '$1');
+}
+
+function cleanDocName(name) {
+  if (!name) return 'Official Document';
+  // Strip .pdf and trailing timestamp hashes like _1795241576446
+  let clean = name.replace(/\.pdf$/i, '').replace(/_\d{10,}$/, '');
+  // Replace underscores and double hyphens with clean spaces/dashes
+  clean = clean.replace(/__+/g, ' ').replace(/_/g, ' ').replace(/\s*-\s*/g, ' - ').trim();
+  return clean || name;
+}
+
 const MARKDOWN_COMPONENTS = {
-  p: ({ children }) => <p className="mb-2 text-[13.5px] leading-[1.7] last:mb-0">{children}</p>,
+  p: ({ children }) => <p className="mb-2 text-[14px] leading-[1.7] last:mb-0">{children}</p>,
   strong: ({ children }) => <strong className="font-semibold text-ink">{children}</strong>,
   a: ({ href, children }) => (
     <a
@@ -49,22 +65,32 @@ const MARKDOWN_COMPONENTS = {
       {children}
     </a>
   ),
-  ul: ({ children }) => <ul className="mb-2 list-disc space-y-1 pl-5 last:mb-0">{children}</ul>,
-  ol: ({ children }) => <ol className="mb-2 list-decimal space-y-1 pl-5 last:mb-0">{children}</ol>,
+  ul: ({ children }) => <ul className="mb-2 list-disc space-y-1 pl-5 text-[14px] leading-[1.6] last:mb-0">{children}</ul>,
+  ol: ({ children }) => <ol className="mb-2 list-decimal space-y-1 pl-5 text-[14px] leading-[1.6] last:mb-0">{children}</ol>,
   li: ({ children }) => <li className="pl-0.5">{children}</li>,
   code: ({ inline, children }) =>
     inline ? (
-      <code className="rounded bg-surface-2 px-1 py-0.5 font-mono text-[12px] text-ink">{children}</code>
+      <code className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[12px] font-medium text-ink">{children}</code>
     ) : (
-      <code className="block overflow-x-auto rounded-sm bg-surface-2 p-3 font-mono text-[12px] text-ink">{children}</code>
+      <code className="block overflow-x-auto rounded-md bg-surface-2 p-3 font-mono text-[12.5px] leading-relaxed text-ink">{children}</code>
     ),
-  h1: ({ children }) => <p className="mb-2 mt-3 text-[15px] font-semibold text-ink">{children}</p>,
-  h2: ({ children }) => <p className="mb-2 mt-3 text-[14px] font-semibold text-ink">{children}</p>,
-  h3: ({ children }) => <p className="mb-1.5 mt-2 text-[13.5px] font-semibold text-ink">{children}</p>,
+  h1: ({ children }) => <h1 className="mb-2.5 mt-4 text-[16px] font-bold text-ink first:mt-0">{children}</h1>,
+  h2: ({ children }) => <h2 className="mb-2 mt-3.5 text-[15px] font-semibold text-ink first:mt-0">{children}</h2>,
+  h3: ({ children }) => <h3 className="mb-1.5 mt-2.5 text-[14px] font-semibold text-ink first:mt-0">{children}</h3>,
   blockquote: ({ children }) => (
-    <blockquote className="mb-2 border-l-2 border-accent pl-3 text-ink-secondary">{children}</blockquote>
+    <blockquote className="my-2 border-l-2 border-accent pl-3 text-ink-secondary italic">{children}</blockquote>
   ),
-  hr: () => <hr className="my-3 border-hairline" />
+  hr: () => <hr className="my-3 border-hairline" />,
+  table: ({ children }) => (
+    <div className="my-3.5 w-full overflow-x-auto rounded-lg border border-hairline shadow-sm">
+      <table className="w-full min-w-[500px] border-collapse text-left text-[13px]">{children}</table>
+    </div>
+  ),
+  thead: ({ children }) => <thead className="border-b border-hairline bg-surface-2/70 font-semibold text-ink">{children}</thead>,
+  tbody: ({ children }) => <tbody className="divide-y divide-hairline bg-surface-1">{children}</tbody>,
+  tr: ({ children }) => <tr className="transition-colors hover:bg-surface-2/40">{children}</tr>,
+  th: ({ children }) => <th className="px-3.5 py-2.5 font-semibold text-ink tracking-tight">{children}</th>,
+  td: ({ children }) => <td className="px-3.5 py-2.5 text-ink-secondary align-top leading-snug">{children}</td>
 };
 
 function CitationChip({ citation, index }) {
@@ -82,7 +108,8 @@ function CitationChip({ citation, index }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
 
-  const docLabel = citation.doc_name || citation.docName || `Source ${index + 1}`;
+  const rawDoc = citation.doc_name || citation.docName || '';
+  const docLabel = rawDoc ? cleanDocName(rawDoc) : `Source ${index + 1}`;
   const page = citation.page ?? citation.page_number;
   const docId =
     citation.docId ||
@@ -311,7 +338,7 @@ export function MessageBubble({ message, onFeedback, onToast, reducedMotion }) {
       >
         <div
           className={cn(
-            'max-w-[85%] rounded-[18px] rounded-br-md bg-surface-2 px-4 py-2.5 text-[13.5px] leading-relaxed text-ink sm:max-w-[75%]',
+            'max-w-[85%] rounded-[20px] rounded-br-md bg-surface-2 px-4 py-2.5 text-[14px] leading-relaxed text-ink shadow-sm sm:max-w-[75%]',
             indic && 'indic'
           )}
         >
@@ -327,14 +354,14 @@ export function MessageBubble({ message, onFeedback, onToast, reducedMotion }) {
       variants={messageEntrance}
       initial="hidden"
       animate="show"
-      className="group flex items-start gap-2.5"
+      className="group flex items-start gap-3"
     >
-      <Logo variant="mark" size="sm" className="mt-0.5 shrink-0" showTassel={false} />
-      <div className="min-w-0 max-w-[88%] sm:max-w-[80%]">
-        <div className="rounded-[18px] rounded-tl-md border border-hairline bg-surface-1 px-4 py-3">
+      <Logo variant="mark" size="sm" className="mt-1 shrink-0" showTassel={false} />
+      <div className="min-w-0 w-full max-w-[96%] sm:max-w-[92%] lg:max-w-[90%]">
+        <div className="rounded-[20px] rounded-tl-md border border-hairline bg-surface-1 px-4 py-3.5 sm:px-5 shadow-sm">
           <div className={cn('text-ink-secondary', indic && 'indic')}>
             <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS}>
-              {message.isNew ? visible : message.text}
+              {cleanMarkdown(message.isNew ? visible : message.text)}
             </ReactMarkdown>
             {message.isNew ? <span className="sr-only">{message.text}</span> : null}
           </div>

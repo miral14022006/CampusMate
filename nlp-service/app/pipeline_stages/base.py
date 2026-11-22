@@ -31,6 +31,9 @@ class PipelineContext(BaseModel):
     contact_info: Optional[Dict[str, Any]] = None
     session_id: Optional[str] = None
     dialogue_state: Optional[Dict[str, Any]] = None
+    conversation_history: List[Dict[str, str]] = Field(default_factory=list)
+    transliterated_text: Optional[str] = None
+    dual_form: Optional[str] = None
     standalone_query: Optional[str] = None
     is_follow_up: bool = False
     is_reset: bool = False

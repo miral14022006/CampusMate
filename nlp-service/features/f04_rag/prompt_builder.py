@@ -1,13 +1,14 @@
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 
 class GroundedPromptBuilder:
     """
     Constructs grounded system prompts and indexed context blocks for RAG.
     Enforces strict rules:
     - Official campus inquiries grounded in provided context chunks.
+    - Multilingual translation & answering: answers in Gujarati / Hindi / Hinglish / Gujlish even when docs are in English.
     - General academic/computer science concepts explained directly using general AI knowledge.
     - Conversational exam inquiries provide exam cycle overview and clarify branch/semester.
-    - Reply in user's detected language.
+    - Conversation history included for multi-turn contextual continuity.
     - Cite sources explicitly as [1], [2], etc.
     """
 
@@ -25,11 +26,15 @@ class GroundedPromptBuilder:
         "     * Answer helpfully, accurately, and naturally using your extensive AI knowledge.\n"
         "     * Format cleanly with Markdown (lists, bolding, code blocks when suitable).\n"
         "     * DO NOT output NO_ANSWER for general or conversational questions.\n\n"
-        "3. Language & Multilingual Tone:\n"
-        "   - Respond in the EXACT language of the user inquiry (English, Hindi, Gujarati, Hinglish, or Gujlish).\n"
-        "   - If the user asks in Hindi (e.g. 'होस्टल की फीस कितनी है?'), answer fully in natural, fluent Hindi.\n"
-        "   - If the user asks in Gujarati (e.g. 'હોસ્ટેલ ની ફી કેટલી છે?'), answer fully in natural, fluent Gujarati.\n"
-        "   - If the user asks in English, answer in English.\n"
+        "3. CRITICAL MULTILINGUAL RULES:\n"
+        "   - You MUST respond in the EXACT language and script of the user's inquiry:\n"
+        "     * Gujarati script (e.g. 'રંગતાલ ક્યારે છે?'): Answer in natural, fluent Gujarati script.\n"
+        "     * Gujlish / Romanized Gujarati (e.g. 'rangtaal kyare che?', 'exam form bharvani last date su che?'): Answer in natural Gujarati (in Gujarati script or clear conversational Gujlish).\n"
+        "     * Hindi (Devanagari) (e.g. 'रंगताल कब होता है?', 'परीक्षा कब है?'): Answer in natural, fluent Hindi.\n"
+        "     * Hinglish / Romanized Hindi (e.g. 'exam kab hai?', 'fees kitni hai?'): Answer in conversational Hinglish or clean Hindi.\n"
+        "     * English: Answer in clear English.\n"
+        "   - CROSS-LINGUAL EXTRACTION: Official university documents are usually written in English. When the user asks in Gujarati or Hindi, you MUST extract the factual information from the English context chunks and formulate your answer in the user's question language! NEVER say information is not available just because the documents are written in English!\n"
+        "   - Technical terms (e.g., 'Computer Engineering', 'Mid-Semester Exam', 'Hall Ticket') may be kept in English or transliterated naturally.\n"
         "   - Maintain a friendly, supportive, and polite conversational tone.\n"
     )
 
@@ -37,7 +42,8 @@ class GroundedPromptBuilder:
         self,
         query: str,
         retrieved_chunks: List[Dict[str, Any]],
-        language: str = "en"
+        language: str = "en",
+        conversation_history: Optional[List[Dict[str, str]]] = None
     ) -> Tuple[str, str, List[Dict[str, Any]]]:
         indexed_chunks = []
         context_blocks = []
@@ -63,18 +69,43 @@ class GroundedPromptBuilder:
                 f"[{idx}] Source: {doc_name} (Page {page}, Date: {upload_date})\n{text}"
             )
 
-        context_str = "\n\n".join(context_blocks)
-        lang_note = f"Detected User Language: {language}"
+        context_str = "\n\n".join(context_blocks) if context_blocks else "No relevant document chunks found."
+
+        # Map language tag to human instructions
+        lang_instructions = {
+            "gu": "Gujarati (ગુજરાતી script). Answer completely in natural Gujarati, even though context is in English.",
+            "gu-Latn": "Gujarati / Gujlish. Answer in natural Gujarati or conversational Gujlish based on the English context.",
+            "gujlish": "Gujarati / Gujlish. Answer in natural Gujarati or conversational Gujlish based on the English context.",
+            "hi": "Hindi (हिंदी Devanagari script). Answer completely in natural Hindi, even though context is in English.",
+            "hi-Latn": "Hinglish / Hindi. Answer in conversational Hinglish or Hindi based on the English context.",
+            "en": "English."
+        }
+        target_lang_desc = lang_instructions.get(language, f"{language}. Match the user's language.")
+
+        # Build conversation history block if available
+        history_str = ""
+        if conversation_history:
+            recent_turns = conversation_history[-6:]
+            hist_lines = []
+            for turn in recent_turns:
+                role = "User" if turn.get("role") == "user" else "Assistant"
+                content = (turn.get("content") or "").strip()
+                if content:
+                    hist_lines.append(f"{role}: {content}")
+            if hist_lines:
+                history_str = "=== Conversation History ===\n" + "\n".join(hist_lines) + "\n\n"
 
         user_prompt = (
             f"=== Context Chunks ===\n{context_str}\n\n"
+            f"{history_str}"
             f"=== User Inquiry ===\n"
-            f"Language: {lang_note}\n"
+            f"Detected Language: {language} ({target_lang_desc})\n"
             f"Question: {query}\n\n"
-            f"Instructions:\n"
-            f"- If the question is about university circulars, dates, fees, or policies and relevant Context Chunks are present, answer accurately using the chunks, citing evidence as [1], [2].\n"
-            f"- If the question is a general knowledge question, greeting, conversational query, or general conceptual topic, answer naturally and conversationally like ChatGPT/Gemini in the user's language.\n"
-            f"- Only output NO_ANSWER if the inquiry specifically demands official PDEU documents/circulars that are not provided in the context."
+            f"CRITICAL REMINDERS:\n"
+            f"1. Respond in {target_lang_desc}.\n"
+            f"2. If the user question can be answered using the Context Chunks above, extract the answer and cite the source, citing evidence as [1], [2].\n"
+            f"3. If the question is a general topic, greeting, or coding question, answer helpfully like ChatGPT/Gemini in {target_lang_desc}.\n"
+            f"4. Do NOT say NO_ANSWER if the facts exist in the context chunks."
         )
 
         return self.SYSTEM_INSTRUCTIONS, user_prompt, indexed_chunks

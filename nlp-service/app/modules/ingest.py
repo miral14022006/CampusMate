@@ -47,36 +47,17 @@ class DocumentIngester:
         return pages_content
 
     def chunk_text(self, text: str, doc_name: str, page: int) -> List[Dict[str, Any]]:
-        # Split by paragraph first
-        paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+        from features.f08_ingest_api.parser import chunk_text as parser_chunk_text
+        pieces = parser_chunk_text(text, chunk_size=self.chunk_size, overlap=self.overlap)
         chunks = []
-        chunk_counter = 1
-
-        for p in paragraphs:
-            # If paragraph exceeds chunk size, split by sentence or window
-            words = p.split()
-            if len(words) <= self.chunk_size:
-                chunks.append({
-                    "chunk_id": f"{doc_name}_p{page}_c{chunk_counter}",
-                    "doc_name": doc_name,
-                    "page": page,
-                    "text": p,
-                    "upload_date": datetime.date.today().isoformat()
-                })
-                chunk_counter += 1
-            else:
-                step = self.chunk_size - self.overlap
-                for i in range(0, len(words), step):
-                    chunk_slice = " ".join(words[i:i + self.chunk_size])
-                    chunks.append({
-                        "chunk_id": f"{doc_name}_p{page}_c{chunk_counter}",
-                        "doc_name": doc_name,
-                        "page": page,
-                        "text": chunk_slice,
-                        "upload_date": datetime.date.today().isoformat()
-                    })
-                    chunk_counter += 1
-
+        for idx, piece in enumerate(pieces, 1):
+            chunks.append({
+                "chunk_id": f"{doc_name}_p{page}_c{idx}",
+                "doc_name": doc_name,
+                "page": page,
+                "text": piece,
+                "upload_date": datetime.date.today().isoformat()
+            })
         return chunks
 
     def process_all_raw_docs(self) -> List[Dict[str, Any]]:

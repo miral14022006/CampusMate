@@ -30,12 +30,27 @@ class Preprocessor:
         return stopwords
 
     def normalize(self, text: str) -> str:
+        """
+        Normalizes Unicode and cleans extraneous control characters while carefully preserving
+        meaningful punctuation, math/currency symbols, and Indic script characters.
+        """
         if not text:
             return ""
         # Unicode NFC normalization
         normalized = unicodedata.normalize("NFC", text)
-        # Strip extraneous emojis and control symbols while preserving Indic and Latin scripts
-        # Indic scripts range: \u0900-\u097F (Devanagari), \u0A80-\u0AFF (Gujarati)
+        # Strip extraneous control symbols while preserving Indic scripts, Latin, numbers,
+        # and essential punctuation: ? . , ! : ; - / ( ) [ ] % ₹ $ | @ & + =
+        cleaned = re.sub(r'[^\w\s\u0900-\u097F\u0A80-\u0AFF\?\.\,\!\:\;\-\/\(\)\[\]\%₹\$\|\@\&\+\=]', ' ', normalized)
+        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+        return cleaned
+
+    def normalize_for_retrieval(self, text: str) -> str:
+        """
+        Aggressive cleanup for BM25 and dense embedding keyword matching (strips punctuation).
+        """
+        if not text:
+            return ""
+        normalized = unicodedata.normalize("NFC", text)
         cleaned = re.sub(r'[^\w\s\u0900-\u097F\u0A80-\u0AFF\-]', ' ', normalized)
         cleaned = re.sub(r'\s+', ' ', cleaned).strip()
         return cleaned
@@ -77,9 +92,11 @@ class Preprocessor:
         normalized = self.normalize(text)
         variants_fixed = self.normalize_variants(normalized)
         tokens = self.tokenize(variants_fixed)
+        retrieval_query = self.normalize_for_retrieval(variants_fixed)
         return {
             "raw": text,
             "normalized": variants_fixed,
+            "retrieval_query": retrieval_query,
             "tokens": tokens
         }
 

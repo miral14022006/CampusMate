@@ -37,14 +37,13 @@ class TransliterationStage(PipelineStage):
                 query_to_expand,
                 context.language
             )
-            context.stage_latencies_ms["transliterated_text"] = translit_text
-            context.stage_latencies_ms["dual_form"] = dual_form
+            context.transliterated_text = translit_text
+            context.dual_form = dual_form
             query_to_expand = dual_form
 
         # 2. Cross-lingual English concept expansion for English document retrieval
         if hasattr(transliteration_engine, "expand_with_english_concepts"):
             expanded_query = transliteration_engine.expand_with_english_concepts(query_to_expand)
-            context.stage_latencies_ms["english_expanded_query"] = expanded_query
             context.normalized_query = expanded_query
         else:
             context.normalized_query = query_to_expand

@@ -98,6 +98,12 @@ INDIC_TO_ENGLISH_MAP = {
     "फ्लेयर": "flare social cultural fest",
     "एनर्जी कप": "energy cup sports fest",
     # Romanized Gujlish
+    "rangtaal": "rangtaal navratri celebration event date",
+    "kyare": "when date schedule timing",
+    "su": "what details",
+    "shu": "what details",
+    "ketli": "fee amount charges",
+    "ketla": "fee amount charges",
     "hostel": "hostel accommodation fee",
     "bharvani": "registration form deadline submission last date",
     "chelli": "last final deadline",
@@ -105,17 +111,68 @@ INDIC_TO_ENGLISH_MAP = {
     "chhutti": "holiday vacation",
     "pariksha": "exam examination",
     # Romanized Hinglish
+    "kab": "when date schedule timing",
+    "kya": "what details",
+    "kahan": "where location venue",
+    "kaise": "how procedure steps",
+    "kitna": "fee amount charges",
+    "kitni": "fee amount charges",
     "bharne": "registration form deadline submission last date",
     "aakhri": "last final deadline",
     "antim": "last final deadline",
     "chutti": "holiday vacation"
 }
 
+DEFAULT_TRANSLIT_HI_WORDS = {
+    "kab": "कब", "kya": "क्या", "kaise": "कैसे", "kyun": "क्यों", "hai": "है",
+    "hain": "हैं", "bharne": "भरने", "tarikh": "तारीख", "batao": "बताओ",
+    "chahiye": "चाहिए", "kitna": "कितना", "kitni": "कितनी", "hoga": "होगा",
+    "hogi": "होगी", "nahi": "नहीं", "mera": "मेरा", "meri": "मेरी",
+    "aap": "आप", "apka": "आपका", "hum": "हम", "karo": "करो"
+}
+
+DEFAULT_TRANSLIT_GU_WORDS = {
+    "shu": "શું", "su": "શું", "kem": "કેમ", "kyare": "ક્યારે", "che": "છે",
+    "chhe": "છે", "ketli": "કેટલી", "ketla": "કેટલા", "ketlu": "કેટલું",
+    "aavshe": "આવશે", "aavse": "આવશે", "karvu": "કરવું", "joyiye": "જોઈએ",
+    "joiye": "જોઈએ", "mate": "માટે", "nathi": "નથી", "mane": "મને",
+    "maru": "મારું", "mari": "મારી", "tame": "તમે", "tamaru": "તમારું",
+    "batavo": "બતાવો", "janavo": "જણાવો", "kaho": "કહો"
+}
+
+DEFAULT_ENGLISH_COLLEGE_WORDS = {
+    "exam", "exams", "examination", "form", "forms", "last", "date", "dates",
+    "deadline", "fees", "fee", "hostel", "mess", "timetable", "time", "table",
+    "result", "results", "semester", "sem", "spi", "cpi", "cgpa", "course",
+    "courses", "department", "admission", "scholarship", "library", "sports",
+    "campus", "college", "university", "pdeu", "pdpu", "hall", "ticket",
+    "circular", "notice", "attendance", "rules", "schedule", "grade", "credits"
+}
+
 class TransliterationEngine:
     def __init__(self):
-        self.hi_rules = self._load_json(LEXICONS_DIR / "translit_rules_hi.json")
-        self.gu_rules = self._load_json(LEXICONS_DIR / "translit_rules_gu.json")
-        self.english_vocab = self._load_vocab(LEXICONS_DIR / "english_college_vocab.txt")
+        # Look in both nlp-service/data and root data
+        lex_dirs = [
+            LEXICONS_DIR,
+            Path(__file__).resolve().parent.parent.parent / "data" / "lexicons",
+            Path.cwd() / "nlp-service" / "data" / "lexicons",
+            Path.cwd() / "data" / "lexicons"
+        ]
+        self.hi_rules = {"words": dict(DEFAULT_TRANSLIT_HI_WORDS)}
+        self.gu_rules = {"words": dict(DEFAULT_TRANSLIT_GU_WORDS)}
+        self.english_vocab = set(DEFAULT_ENGLISH_COLLEGE_WORDS)
+
+        for ld in lex_dirs:
+            if ld.exists():
+                r_hi = self._load_json(ld / "translit_rules_hi.json")
+                if r_hi.get("words"):
+                    self.hi_rules["words"].update(r_hi["words"])
+                r_gu = self._load_json(ld / "translit_rules_gu.json")
+                if r_gu.get("words"):
+                    self.gu_rules["words"].update(r_gu["words"])
+                v = self._load_vocab(ld / "english_college_vocab.txt")
+                self.english_vocab.update(v)
+
         self.xlit_engine = None
         self._init_indic_xlit()
 
@@ -152,7 +209,7 @@ class TransliterationEngine:
         clean = token.lower().strip()
         if not clean or clean.isdigit():
             return True
-        if clean in self.english_vocab:
+        if clean in self.english_vocab or clean in DEFAULT_ENGLISH_COLLEGE_WORDS:
             return True
         if clean.endswith("ing") or clean.endswith("ed") or clean.endswith("tion") or clean.endswith("able"):
             return True
@@ -172,6 +229,12 @@ class TransliterationEngine:
 
         if clean_token in words_dict:
             return words_dict[clean_token]
+
+        # Check default dictionaries
+        if lang in ["hi", "hi-Latn"] and clean_token in DEFAULT_TRANSLIT_HI_WORDS:
+            return DEFAULT_TRANSLIT_HI_WORDS[clean_token]
+        if lang in ["gu", "gu-Latn"] and clean_token in DEFAULT_TRANSLIT_GU_WORDS:
+            return DEFAULT_TRANSLIT_GU_WORDS[clean_token]
 
         if self.xlit_engine:
             try:

@@ -27,6 +27,7 @@ class QueryRequest(BaseModel):
     language_override: Optional[str] = Field(None, example="hi-Latn")
     session_id: Optional[str] = Field(None, example="sess_user_123")
     dialogue_state: Optional[Dict[str, Any]] = None
+    conversation_history: Optional[List[Dict[str, str]]] = Field(None, description="Prior turns as [{role, content}]")
 
 class AnalyzeResponse(BaseModel):
     request_id: str

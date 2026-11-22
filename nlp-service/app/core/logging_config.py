@@ -5,7 +5,6 @@ from datetime import datetime
 
 from app.core.config import LOG_DIR
 
-LOG_DIR.mkdir(parents=True, exist_ok=True)
 log_file = LOG_DIR / "nlp_service.log"
 
 class JSONFormatter(logging.Formatter):
@@ -29,25 +28,27 @@ def setup_logger(name: str = "nlp_service") -> logging.Logger:
     logger.setLevel(logging.INFO)
 
     if not logger.handlers:
-        # Rotating File Handler (10MB max, keep 5 backups)
-        file_handler = RotatingFileHandler(
-            log_file,
-            maxBytes=10 * 1024 * 1024,
-            backupCount=5,
-            encoding="utf-8"
-        )
-        file_handler.setFormatter(JSONFormatter())
-        file_handler.setLevel(logging.INFO)
-
         # Stream Handler for console / docker logs
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(JSONFormatter())
         console_handler.setLevel(logging.INFO)
-
-        logger.addHandler(file_handler)
         logger.addHandler(console_handler)
+
+        try:
+            LOG_DIR.mkdir(parents=True, exist_ok=True)
+            file_handler = RotatingFileHandler(
+                log_file,
+                maxBytes=10 * 1024 * 1024,
+                backupCount=5,
+                encoding="utf-8"
+            )
+            file_handler.setFormatter(JSONFormatter())
+            file_handler.setLevel(logging.INFO)
+            logger.addHandler(file_handler)
+        except Exception:
+            # Fall back to console only if log file is unwritable
+            pass
 
     return logger
 
 structured_logger = setup_logger()
-

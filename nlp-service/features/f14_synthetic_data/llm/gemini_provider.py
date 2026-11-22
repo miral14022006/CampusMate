@@ -9,11 +9,8 @@ logger = logging.getLogger("synthetic_data.gemini")
 class GeminiProvider(BaseLLMProvider):
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY", "")
-        # The model must come from GEMINI_MODEL (or an explicit caller argument).
-        # Never fall back to a hard-coded model: retired names silently produce IDK.
-        self.model = model or os.getenv("GEMINI_MODEL")
-        if not self.model:
-            raise ValueError("GEMINI_MODEL environment variable is not configured.")
+        # The model comes from GEMINI_MODEL (or explicit caller argument) with sensible default
+        self.model = model or os.getenv("GEMINI_MODEL") or "gemini-3.5-flash-lite"
         self.endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
 
     def generate(self, prompt: str, system_prompt: Optional[str] = None, temperature: float = 0.8) -> str:

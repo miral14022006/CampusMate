@@ -8,64 +8,9 @@ from features.f04_rag.prompt_builder import prompt_builder
 from features.f04_rag.verifier import hallucination_guard
 from features.f14_synthetic_data.llm import get_llm_provider
 from app.modules.answer_template import answer_templater
+from app.modules.query_classifier import is_general_concept_query
 
 logger = logging.getLogger(__name__)
-
-def is_general_concept_query(query: str) -> bool:
-    if not query:
-        return False
-    q_low = re.sub(r"[^\w\s]", " ", query.lower())
-    q_low = re.sub(r"\s+", " ", q_low).strip()
-
-    # Campus/college specific indicator terms
-    campus_indicators = [
-        "fee", "fees", "hostel", "mess", "timetable", "time table", "exam", "exams",
-        "examination", "circular", "semester", "sem", "pdeu", "pdpu", "hall ticket",
-        "admit card", "holiday", "holidays", "academic calendar", "registration",
-        "result", "results", "spi", "cpi", "cgpa", "course code", "warden",
-        "club", "president", "professor", "hod", "department", "campus", "college",
-        "swimming", "pool", "library", "canteen", "sports",
-        "फीस", "होस्टल", "हॉस्टल", "परीक्षा", "समय सारिणी", "तारीख", "कैलेंडर", "अवकाश",
-        "સ્વિમિંગ", "પુલ", "ફી", "હોસ્ટેલ", "પરીક્ષા", "સમયપત્રક", "તારીખ", "કેલેન્ડર", "રજા"
-    ]
-    # If the query contains any explicit campus indicator, it is NOT purely a general query
-    if any(re.search(r"\b" + re.escape(ci) + r"\b", q_low) for ci in campus_indicators):
-        return False
-
-    # Common greetings and conversational pleasantries
-    conversational_triggers = [
-        "hi", "hello", "hey", "hola", "namaste", "kem cho", "how are you", "who are you",
-        "what can you do", "good morning", "good evening", "good afternoon", "thank you",
-        "thanks", "bye", "goodbye", "help", "who created you", "what is your name"
-    ]
-    if any(re.search(r"\b" + re.escape(ct) + r"\b", q_low) for ct in conversational_triggers):
-        return True
-
-    keywords = [
-        "object oriented", "oop", "rest api", "restful", "tcp", "udp",
-        "machine learning", "deep learning", "neural network", "recursion",
-        "binary search", "data structure", "algorithm", "sorting", "merge sort",
-        "quick sort", "database", "sql", "nosql", "docker", "kubernetes",
-        "operating system", "deadlock", "semaphore", "compiler", "microservice",
-        "git", "github", "http", "https", "python", "javascript", "react", "html", "css",
-        "moon", "earth", "sun", "space", "science", "history", "geography", "who is", "who was",
-        "tell me about", "what is", "why is", "how to", "capital of", "president", "prime minister"
-    ]
-    has_kw = any(re.search(r"\b" + re.escape(kw) + r"\b", q_low) for kw in keywords)
-    if has_kw:
-        return True
-
-    # If it's a general question not mentioning campus terms, treat as general conversational chat
-    prompt_triggers = [
-        "what is", "explain", "define", "difference between", "how does", "compare", "give example", "what are",
-        "who was", "who is", "where is", "when was", "can you", "tell me"
-    ]
-    has_trigger = any(re.search(r"\b" + re.escape(tr) + r"\b", q_low) for tr in prompt_triggers)
-    if has_trigger:
-        return True
-
-    # Default short general queries without campus terms (e.g. "computer", "moon")
-    return len(q_low.split()) <= 4
 
 class RAGEngine:
     IDK_MESSAGES = {
@@ -103,7 +48,8 @@ class RAGEngine:
         retrieved_chunks: List[Dict[str, Any]],
         language: str = "en",
         intent: str = "general_queries",
-        mock_llm_response: Optional[str] = None
+        mock_llm_response: Optional[str] = None,
+        conversation_history: Optional[List[Dict[str, str]]] = None
     ) -> RAGResponse:
         lang_key = language if language in ["hi", "gu", "hi-Latn", "gu-Latn", "gujlish"] else "en"
         is_general_query = self.is_general_concept_query(query)
@@ -128,7 +74,8 @@ class RAGEngine:
         sys_prompt, user_prompt, indexed_chunks = prompt_builder.build_prompt(
             query=query,
             retrieved_chunks=ordered_chunks,
-            language=language
+            language=language,
+            conversation_history=conversation_history
         )
 
         # 4. Invoke LLM
@@ -139,22 +86,14 @@ class RAGEngine:
                 llm = self._get_llm()
                 raw_llm_ans = llm.generate(prompt=user_prompt, system_prompt=sys_prompt, temperature=0.2)
         except Exception as e:
-            logger.error(f"LLM generation failed: {e}. Falling back to extractive template.")
-            extractive = answer_templater.generate_answer(query, intent, language, retrieved_chunks)
+            logger.error(f"LLM generation failed: {e}. Falling back to clean multilingual fallback.")
+            fallback_msg = self.IDK_MESSAGES.get(lang_key, self.IDK_MESSAGES["en"])
             return RAGResponse(
-                answer=extractive["answer"],
+                answer=fallback_msg,
                 language=language,
-                citations=[
-                    CitationItem(
-                        citation_id=1,
-                        doc_name=c.get("doc_name", "doc"),
-                        page=c.get("page", 1),
-                        snippet=c.get("text", "")[:150],
-                        score=c.get("score", 0.0)
-                    ) for c in retrieved_chunks[:2]
-                ],
-                grounded=True,
-                mode="extractive",
+                citations=[],
+                grounded=False,
+                mode="idk",
                 hallucination_score=0.0,
                 verification_details={"fallback_reason": str(e)}
             )

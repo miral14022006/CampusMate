@@ -190,6 +190,10 @@ class DialogueManager:
         if state.awaiting_slot and (extracted_slots or len(words) <= 4):
             return True
 
+        # If previous intent was out_of_scope, general_faq, or greeting, do NOT treat new queries as follow-ups
+        if state.last_intent in ["out_of_scope", "general_faq", "greeting"]:
+            return False
+
         # Starts with follow-up conjunction
         if words and words[0] in FOLLOW_UP_CONJUNCTIONS:
             return True
@@ -202,7 +206,8 @@ class DialogueManager:
             return True
 
         # Short query with low confidence and prior intent (only if no new topic keywords found)
-        if len(words) <= 5 and intent_confidence < 0.50 and not matched_new_topics:
+        # Only valid if last_intent was an actual college domain intent (not out_of_scope/generic)
+        if len(words) <= 5 and intent_confidence < 0.50 and not matched_new_topics and state.last_intent in INTENT_TEMPLATES:
             return True
 
         # Follow-up phrases asking for details/subjects/dates under previous topic
@@ -304,8 +309,10 @@ class DialogueManager:
             template = INTENT_TEMPLATES.get(resolved_intent)
             if template:
                 standalone_query = template.format(slots=slots_repr)
-            else:
+            elif parts:
                 standalone_query = f"{query} for {slots_repr}"
+            else:
+                standalone_query = query
             rewrite_applied = True
         else:
             # Even if not follow up, if branch or semester is explicitly in query or updated_slots, ensure query includes it if query is very short

@@ -94,7 +94,7 @@ class AnswerTemplater:
 
         return {
             "answer": answer,
-            "source_doc": source_doc or "academic_regulations_2024.pdf",
+            "source_doc": source_doc or None,
             "mode": "template"
         }
 

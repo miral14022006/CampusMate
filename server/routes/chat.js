@@ -2,7 +2,7 @@ const express = require('express');
 const Message = require('../models/Message');
 const Conversation = require('../models/Conversation');
 const { PersistentConversation } = require('../features/f00_history');
-const { requireAuth } = require('../features/f16_auth');
+const { optionalAuth, requireAuth } = require('../features/f16_auth');
 const { recordInBackground } = require('../features/f17_activity/activityService');
 const { nlpClient } = require('../services/nlpClient');
 
@@ -23,17 +23,37 @@ const handleChat = async (req, res) => {
     const createdMessageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
     const studentId = req.user?.id || 'anonymous_user';
 
+    // Retrieve recent conversation history for multi-turn context
+    let conversationHistory = [];
+    try {
+      if (Message.db && Message.db.readyState === 1) {
+        const priorMsgs = await Message.find({ sessionId }).sort({ createdAt: -1 }).limit(6).lean();
+        conversationHistory = priorMsgs.reverse().map(m => ({
+          role: m.sender === 'assistant' ? 'assistant' : 'user',
+          content: m.text
+        }));
+      }
+    } catch (histErr) {
+      console.warn(`[Chat] Could not load message history: ${histErr.message}`);
+    }
+
     let nlpData = null;
     try {
-      nlpData = await nlpClient.query(query.trim(), sessionId, {
-        branch: req.user?.branch || null,
-        semester: req.user?.semester || null
-      });
+      nlpData = await nlpClient.query(
+        query.trim(),
+        sessionId,
+        {
+          branch: req.user?.branch || null,
+          semester: req.user?.semester || null
+        },
+        conversationHistory
+      );
     } catch (nlpErr) {
-      console.warn(`[Chat] NLP service call failed (${nlpErr.message}). Using offline message.`);
+      const errMsg = nlpErr.message || (typeof nlpErr === 'object' ? JSON.stringify(nlpErr) : String(nlpErr));
+      console.warn(`[Chat] NLP service call failed (${errMsg}). Using offline message.`);
       nlpData = {
-        answer: "CampusMate AI Assistant is temporarily unavailable. Please try again shortly.",
-        reply: "CampusMate AI Assistant is temporarily unavailable. Please try again shortly.",
+        answer: "I could not retrieve an answer at this moment. Please check back shortly or consult your department circular.",
+        reply: "I could not retrieve an answer at this moment. Please check back shortly or consult your department circular.",
         language: "en",
         intent: "out_of_scope",
         confidence: 0.0,
@@ -55,25 +75,20 @@ const handleChat = async (req, res) => {
           sessionId,
           sender: 'user',
           text: query.trim(),
-          studentId: req.user?.id || null,
-          metadata: {
-            channel: 'web',
-            studentBranch: req.user?.branch || null,
-            studentSemester: req.user?.semester || null
-          }
+          language: nlpData.language || 'en'
         });
 
         // Save assistant answer
         await Message.create({
           sessionId,
-          sender: 'bot',
-          text: nlpData.answer,
-          metadata: {
-            mode: nlpData.generation_mode,
-            grounded: nlpData.grounded,
-            source_doc: nlpData.source_doc,
-            citations: nlpData.citations
-          }
+          sender: 'assistant',
+          text: nlpData.answer || nlpData.reply || '',
+          language: nlpData.language || 'en',
+          intent: nlpData.intent || null,
+          confidence: nlpData.confidence || null,
+          sourceDoc: nlpData.source_doc || null,
+          decision: nlpData.decision || 'ANSWER',
+          decisionReason: nlpData.decision_reason || 'ANSWERED'
         });
       }
 
@@ -150,8 +165,9 @@ const handleChat = async (req, res) => {
   }
 };
 
-router.post('/', requireAuth, handleChat);
-router.post('/message', requireAuth, handleChat);
+// Allow authenticated students as well as public / prospective students (attaching req.user when logged in)
+router.post('/', optionalAuth, handleChat);
+router.post('/message', optionalAuth, handleChat);
 
 /**
  * GET /api/chat/history/:sessionId

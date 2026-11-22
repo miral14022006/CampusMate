@@ -1,12 +1,9 @@
 """Startup LLM self-test used by /v1/ready.
-
-The model name is read exclusively from GEMINI_MODEL. There is deliberately no
-hard-coded fallback model: a missing/retired model must be visible to operators.
+Supports Groq as primary LLM and Gemini as fallback.
 """
 import logging
 import os
 from typing import Any, Dict, Optional
-
 import requests
 
 logger = logging.getLogger("nlp_service.llm_health")
@@ -28,57 +25,66 @@ def _redact(text: str, secret: str) -> str:
 def run_llm_selftest(timeout: int = 15) -> Dict[str, Any]:
     from datetime import datetime, timezone
 
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
-    model = os.getenv("GEMINI_MODEL", "").strip()
+    provider = os.getenv("LLM_PROVIDER", "groq").lower()
+    groq_key = os.getenv("GROQ_API_KEY", "").strip()
+    gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
 
-    _status["llm_model"] = model or None
     _status["llm_checked_at"] = datetime.now(timezone.utc).isoformat()
 
-    if not api_key:
-        _status.update(llm="unconfigured", llm_error="GEMINI_API_KEY is not set")
-        return dict(_status)
-    if not model:
-        _status.update(llm="error", llm_error="GEMINI_MODEL is not set")
-        return dict(_status)
-
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-    payload = {
-        "contents": [{"role": "user", "parts": [{"text": "Reply with exactly: OK"}]}],
-        "generationConfig": {"temperature": 0, "maxOutputTokens": 32},
-    }
-    try:
-        resp = requests.post(
-            url,
-            params={"key": api_key},
-            json=payload,
-            headers={"Content-Type": "application/json"},
-            timeout=timeout,
-        )
-        if resp.status_code == 200:
-            body = resp.json()
-            candidates = body.get("candidates") or []
-            text = ""
-            if candidates:
-                text = "".join(p.get("text", "") for p in candidates[0].get("content", {}).get("parts", []))
-            if candidates:
+    # 1. Test Groq if provider is groq or groq_key is present
+    if (provider == "groq" and groq_key) or (groq_key and not gemini_key):
+        model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
+        _status["llm_model"] = f"groq/{model}"
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        payload = {
+            "model": model,
+            "messages": [{"role": "user", "content": "Reply with exactly: OK"}],
+            "max_tokens": 16,
+            "temperature": 0
+        }
+        headers = {
+            "Authorization": f"Bearer {groq_key}",
+            "Content-Type": "application/json"
+        }
+        try:
+            resp = requests.post(url, json=payload, headers=headers, timeout=timeout)
+            if resp.status_code == 200:
                 _status.update(llm="ok", llm_error=None)
+                return dict(_status)
             else:
-                _status.update(
-                    llm="error",
-                    llm_error=f"HTTP 200 but no candidates (promptFeedback={body.get('promptFeedback')})",
-                )
-        else:
-            detail = resp.text[:300]
-            try:
-                detail = resp.json().get("error", {}).get("message", detail)
-            except Exception:
-                pass
-            _status.update(llm="error", llm_error=f"HTTP {resp.status_code}: {_redact(str(detail), api_key)}")
-    except Exception as exc:
-        message = _redact(f"{type(exc).__name__}: {exc}", api_key)
-        _status.update(llm="error", llm_error=message[:500])
+                _status.update(llm="error", llm_error=f"Groq HTTP {resp.status_code}: {resp.text[:200]}")
+        except Exception as exc:
+            _status.update(llm="error", llm_error=f"Groq {type(exc).__name__}: {exc}")
 
-    logger.info("LLM self-test: model=%s status=%s error=%s", model, _status["llm"], _status["llm_error"])
+    # 2. Test Gemini (either primary or fallback)
+    if gemini_key:
+        model = os.getenv("GEMINI_MODEL", "gemini-flash-lite-latest").strip()
+        _status["llm_model"] = f"gemini/{model}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+        payload = {
+            "contents": [{"role": "user", "parts": [{"text": "Reply with exactly: OK"}]}],
+            "generationConfig": {"temperature": 0, "maxOutputTokens": 16},
+        }
+        try:
+            resp = requests.post(
+                url,
+                params={"key": gemini_key},
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=timeout,
+            )
+            if resp.status_code == 200:
+                _status.update(llm="ok", llm_error=None)
+                return dict(_status)
+            else:
+                detail = resp.text[:200]
+                _status.update(llm="error", llm_error=f"Gemini HTTP {resp.status_code}: {_redact(detail, gemini_key)}")
+                return dict(_status)
+        except Exception as exc:
+            _status.update(llm="error", llm_error=_redact(f"Gemini {type(exc).__name__}: {exc}", gemini_key))
+            return dict(_status)
+
+    _status.update(llm="unconfigured", llm_error="No LLM API keys configured (GROQ_API_KEY or GEMINI_API_KEY)")
     return dict(_status)
 
 

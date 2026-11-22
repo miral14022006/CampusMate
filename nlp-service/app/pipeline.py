@@ -57,14 +57,16 @@ class ModularPipeline:
         language_override: Optional[str] = None,
         request_id: str = "",
         session_id: Optional[str] = None,
-        dialogue_state: Optional[dict] = None
+        dialogue_state: Optional[dict] = None,
+        conversation_history: Optional[List[dict]] = None
     ) -> PipelineContext:
         ctx = PipelineContext(
             request_id=request_id,
             raw_query=raw_query,
             language_override=language_override,
             session_id=session_id,
-            dialogue_state=dialogue_state
+            dialogue_state=dialogue_state,
+            conversation_history=conversation_history or []
         )
 
         t0 = time.perf_counter()
@@ -101,7 +103,8 @@ class ModularPipeline:
         language_override: Optional[str] = None,
         request_id: str = "",
         session_id: Optional[str] = None,
-        dialogue_state: Optional[dict] = None
+        dialogue_state: Optional[dict] = None,
+        conversation_history: Optional[List[dict]] = None
     ) -> PipelineContext:
         """Executes intermediate stages up to retrieval without answer generation."""
         ctx = PipelineContext(
@@ -109,7 +112,8 @@ class ModularPipeline:
             raw_query=raw_query,
             language_override=language_override,
             session_id=session_id,
-            dialogue_state=dialogue_state
+            dialogue_state=dialogue_state,
+            conversation_history=conversation_history or []
         )
 
         t0 = time.perf_counter()

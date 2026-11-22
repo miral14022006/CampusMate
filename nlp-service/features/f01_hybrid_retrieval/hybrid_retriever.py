@@ -161,6 +161,43 @@ class HybridRetriever(BaseRetriever):
                 matched.append(c_copy)
         return matched
 
+    def _expand_neighbor_chunks(self, hits: List[Dict[str, Any]], max_expanded: int = 8) -> List[Dict[str, Any]]:
+        """
+        Expands top retrieved chunks by including adjacent chunks from the same document
+        (same doc_name and same/adjacent page) to provide full context across page boundaries.
+        """
+        if not hits or not bm25_retriever.chunks:
+            return hits
+
+        all_chunks = bm25_retriever.chunks
+        existing_ids = {h.get("chunk_id") for h in hits}
+        expanded = list(hits)
+
+        for hit in hits[:3]:
+            doc_name = hit.get("doc_name")
+            page = hit.get("page", 1)
+            if not doc_name:
+                continue
+
+            for c in all_chunks:
+                cid = c.get("chunk_id")
+                if cid in existing_ids:
+                    continue
+                if c.get("doc_name") == doc_name:
+                    c_page = c.get("page", 1)
+                    if abs(c_page - page) <= 1:
+                        c_copy = dict(c)
+                        c_copy["score"] = round(hit.get("score", 0.1) * 0.85, 4)
+                        c_copy["is_neighbor"] = True
+                        expanded.append(c_copy)
+                        existing_ids.add(cid)
+                        if len(expanded) >= max_expanded:
+                            break
+            if len(expanded) >= max_expanded:
+                break
+
+        return expanded[:max_expanded]
+
     def retrieve(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         # Check timetable specific exact match first
         is_tt, branch, semester, date_str = self._extract_timetable_slots(query)
@@ -184,10 +221,12 @@ class HybridRetriever(BaseRetriever):
         )
 
         # Step 3: Optional Cross-Encoder Reranking
+        target_k = max(top_k, 8)
         if self.use_reranker:
-            return reranker.rerank(query, fused[:20], top_n=top_k)
+            reranked = reranker.rerank(query, fused[:20], top_n=top_k)
+            return self._expand_neighbor_chunks(reranked, max_expanded=target_k)
 
-        return fused[:top_k]
+        return self._expand_neighbor_chunks(fused[:top_k], max_expanded=target_k)
 
 hybrid_retriever = HybridRetriever(use_reranker=False)
 hybrid_rerank_retriever = HybridRetriever(use_reranker=True)

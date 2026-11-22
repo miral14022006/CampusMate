@@ -8,11 +8,27 @@ class HallucinationGuard:
     2. Verifies that every cited chunk index actually exists in the provided context.
     3. Groundedness check: extracts key factual entities (numbers, dates, percentages, amounts)
        from the answer and ensures they are supported by the text of the cited chunks.
-    4. Computes hallucination score.
+    4. Supports Indic numeral normalization (Devanagari ०-९, Gujarati ૦-૯) for multilingual RAG.
+    5. Computes hallucination score.
     """
 
     CITATION_REGEX = re.compile(r"(?:\[|【)(\d+)(?:\]|】)")
     NUMERIC_FACT_REGEX = re.compile(r"\b(?:\d{1,4}(?:st|nd|rd|th)?|\d+(?:\.\d+)?%?|₹\s*\d+(?:,\d+)*|\d+(?:,\d+)*(?:\.\d+)?)\b")
+
+    INDIC_TO_DIGIT = {
+        # Devanagari numerals
+        '०': '0', '१': '1', '२': '2', '३': '3', '४': '4',
+        '५': '5', '६': '6', '७': '7', '૮': '8', '९': '9',
+        # Gujarati numerals
+        '૦': '0', '૧': '1', '૨': '2', '૩': '3', '૪': '4',
+        '૫': '5', '૬': '6', '૭': '7', '૮': '8', '૯': '9'
+    }
+
+    def _normalize_indic_numerals(self, text: str) -> str:
+        res = []
+        for ch in text:
+            res.append(self.INDIC_TO_DIGIT.get(ch, ch))
+        return "".join(res)
 
     def parse_citations(self, text: str) -> List[int]:
         matches = self.CITATION_REGEX.findall(text)
@@ -38,19 +54,21 @@ class HallucinationGuard:
             else:
                 invalid_citations.append(idx)
 
-        # Build combined text of all retrieved chunks to verify facts across available context
-        source_corpus = " ".join([c["full_text"] for c in indexed_chunks]).lower().replace(",", "")
+        # Normalize numerals for both corpus and answer
+        raw_corpus = " ".join([c.get("full_text", "") for c in indexed_chunks]).lower()
+        source_corpus = self._normalize_indic_numerals(raw_corpus).replace(",", "")
 
-        # Extract numeric/date/factual tokens from answer
-        answer_facts = self.NUMERIC_FACT_REGEX.findall(answer)
+        norm_answer = self._normalize_indic_numerals(answer)
+        answer_facts = self.NUMERIC_FACT_REGEX.findall(norm_answer)
         unsupported_facts = []
 
         for fact in answer_facts:
             clean_fact = fact.lower().replace(",", "").replace("₹", "").strip()
+            # Ignore standalone 1-digit numbers or citation references
+            if clean_fact in [str(i) for i in cited_indices] or len(clean_fact) <= 1:
+                continue
+
             if clean_fact and clean_fact not in source_corpus:
-                # ignore citation indices [1], [2], 【1】, 【2】
-                if clean_fact in [str(i) for i in cited_indices]:
-                    continue
                 unsupported_facts.append(fact)
 
         is_grounded = True
@@ -61,10 +79,11 @@ class HallucinationGuard:
             hallucination_score += 0.5
 
         if unsupported_facts:
-            # Only mark hallucination if more than 3 distinct facts are completely unsupported
-            if len(unsupported_facts) >= 3:
+            # If critical date or amount is unsupported
+            has_critical_fact = any(re.search(r"\b(202\d|₹\s*\d+)\b", uf) for uf in unsupported_facts)
+            if has_critical_fact or len(unsupported_facts) >= 2:
                 is_grounded = False
-                hallucination_score += min(1.0, len(unsupported_facts) * 0.25)
+                hallucination_score += min(1.0, len(unsupported_facts) * 0.35)
 
         return {
             "grounded": is_grounded,
@@ -76,4 +95,3 @@ class HallucinationGuard:
         }
 
 hallucination_guard = HallucinationGuard()
-

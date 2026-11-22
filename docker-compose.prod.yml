@@ -71,9 +71,11 @@ services:
       - PORT=8000
       - APP_ENV=production
       - NLP_API_KEY=${NLP_API_KEY}
-      - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
+      - LLM_PROVIDER=${LLM_PROVIDER:-groq}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3-flash-preview}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-flash-lite-latest}
       - ENABLE_RERANKER=true
       - DATA_DIR=/data
       - UPLOADS_DIR=/data/uploads
