@@ -22,7 +22,10 @@ NEW_TOPIC_KEYWORDS = {
     "placement", "package", "salary", "recruiter", "company", "companies",
     "admission", "cutoff", "eligibility", "merit",
     "result", "grade", "spi", "cpi", "cgpa", "re-evaluation", "rechecking",
-    "attendance", "bunk", "leave", "holiday", "vacation"
+    "attendance", "bunk", "leave", "holiday", "vacation",
+    # Hindi & Gujarati keywords
+    "फीस", "शुल्क", "होस्टल", "हॉस्टल", "मेस", "परीक्षा", "समय सारिणी", "तारीख", "कैलेंडर", "अवकाश",
+    "ફી", "હોસ્ટેલ", "મેસ", "પરીક્ષા", "સમયપત્રક", "તારીખ", "કેલેન્ડર", "રજા"
 }
 
 INTENT_TEMPLATES = {
@@ -169,14 +172,18 @@ class DialogueManager:
             return False
 
         # If the query introduces a clear new domain keyword, do NOT treat it as a follow-up to an old intent
-        q_tokens = set(re.findall(r"\b\w+\b", q_lower))
+        q_clean = q_lower.replace("?", " ").replace("!", " ")
+        q_tokens = set(re.findall(r"\b\w+\b", q_clean)).union(set(q_clean.split()))
         matched_new_topics = q_tokens.intersection(NEW_TOPIC_KEYWORDS)
         if matched_new_topics:
             # If the last intent was exam_timetable, but query asks about fees/hostel/bus/etc., NOT follow-up
-            if state.last_intent == "exam_timetable" and any(k in matched_new_topics for k in ["fee", "fees", "tuition", "challan", "hostel", "bus", "placement", "admission"]):
+            if state.last_intent == "exam_timetable" and any(k in matched_new_topics for k in ["fee", "fees", "tuition", "challan", "hostel", "bus", "placement", "admission", "फीस", "शुल्क", "होस्टल", "हॉस्टल", "ફી", "હોસ્ટેલ"]):
                 return False
             # Similarly, if last intent was fee, and user asks about timetable/exam/hostel/etc., NOT follow-up
-            if "fee" in state.last_intent and any(k in matched_new_topics for k in ["hostel", "bus", "placement", "admission", "syllabus"]):
+            if "fee" in state.last_intent and any(k in matched_new_topics for k in ["hostel", "bus", "placement", "admission", "syllabus", "होस्टल", "हॉस्टल", "હોસ્ટેલ"]):
+                return False
+            # If last intent was out_of_scope and query contains topic keywords, it is a new topic, NOT a follow up
+            if state.last_intent == "out_of_scope":
                 return False
 
         # Answering a missing-slot clarification

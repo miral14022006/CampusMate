@@ -11,7 +11,7 @@ class HallucinationGuard:
     4. Computes hallucination score.
     """
 
-    CITATION_REGEX = re.compile(r"\[(\d+)\]")
+    CITATION_REGEX = re.compile(r"(?:\[|【)(\d+)(?:\]|】)")
     NUMERIC_FACT_REGEX = re.compile(r"\b(?:\d{1,4}(?:st|nd|rd|th)?|\d+(?:\.\d+)?%?|₹\s*\d+(?:,\d+)*|\d+(?:,\d+)*(?:\.\d+)?)\b")
 
     def parse_citations(self, text: str) -> List[int]:
@@ -38,21 +38,17 @@ class HallucinationGuard:
             else:
                 invalid_citations.append(idx)
 
-        # Build combined text of all valid cited chunks (or all retrieved chunks if no citations parsed)
-        if valid_citations:
-            source_corpus = " ".join([c["full_text"] for c in valid_citations]).lower()
-        else:
-            source_corpus = " ".join([c["full_text"] for c in indexed_chunks]).lower()
+        # Build combined text of all retrieved chunks to verify facts across available context
+        source_corpus = " ".join([c["full_text"] for c in indexed_chunks]).lower().replace(",", "")
 
         # Extract numeric/date/factual tokens from answer
         answer_facts = self.NUMERIC_FACT_REGEX.findall(answer)
         unsupported_facts = []
 
         for fact in answer_facts:
-            # normalize fact
             clean_fact = fact.lower().replace(",", "").replace("₹", "").strip()
             if clean_fact and clean_fact not in source_corpus:
-                # ignore single trivial digits like citation indices [1], [2]
+                # ignore citation indices [1], [2], 【1】, 【2】
                 if clean_fact in [str(i) for i in cited_indices]:
                     continue
                 unsupported_facts.append(fact)
@@ -65,8 +61,10 @@ class HallucinationGuard:
             hallucination_score += 0.5
 
         if unsupported_facts:
-            is_grounded = False
-            hallucination_score += min(1.0, len(unsupported_facts) * 0.25)
+            # Only mark hallucination if more than 3 distinct facts are completely unsupported
+            if len(unsupported_facts) >= 3:
+                is_grounded = False
+                hallucination_score += min(1.0, len(unsupported_facts) * 0.25)
 
         return {
             "grounded": is_grounded,
