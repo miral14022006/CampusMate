@@ -310,22 +310,18 @@ async function buildOverview(req) {
     recentActivity(12, req.user?.role)
   ]);
 
-  const registered = dbReady(User)
-    ? await User.countDocuments({ role: 'student', ...(includeDemo === 'only' ? { isDemo: true } : includeDemo === 'true' ? {} : { isDemo: { $ne: true } }) })
-    : 0;
+  const [registered, totalDocs] = await Promise.all([
+    dbReady(User)
+      ? User.countDocuments({ role: 'student', ...(includeDemo === 'only' ? { isDemo: true } : includeDemo === 'true' ? {} : { isDemo: { $ne: true } }) })
+      : 0,
+    dbReady(Document)
+      ? Document.countDocuments({ status: { $ne: 'deleted' } })
+      : 0
+  ]);
 
   const kpis = {
     registeredStudents: { value: registered, previous: null, change: null },
-    newSignups: {
-      value: summary.signups,
-      previous: prevSummary.signups,
-      change: percentageChange(summary.signups, prevSummary.signups)
-    },
-    activeStudents: {
-      value: summary.activeStudents,
-      previous: prevSummary.activeStudents,
-      change: percentageChange(summary.activeStudents, prevSummary.activeStudents)
-    },
+    documentsCount: { value: totalDocs, previous: null, change: null },
     guestVisitors: {
       value: summary.guestVisitors,
       previous: prevSummary.guestVisitors,

@@ -29,8 +29,7 @@ import { cn } from '../../../lib/cn';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const SERIES = [
-  { id: 'queries', label: 'Queries', color: SERIES_COLORS.copper },
-  { id: 'activeStudents', label: 'Active students', color: SERIES_COLORS.sage }
+  { id: 'queries', label: 'Queries', color: SERIES_COLORS.copper }
 ];
 const LANG_LABELS = { en: 'English', hi: 'Hindi', gu: 'Gujarati', 'hi-Latn': 'Hinglish', 'gu-Latn': 'Gujlish' };
 
@@ -82,10 +81,9 @@ export default function DashboardOverview() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-5">
         <KpiCard label="Registered students" kpi={kpis.registeredStudents} loading={loading} />
-        <KpiCard label="New sign-ups" kpi={kpis.newSignups} spark={spark('queries')} loading={loading} />
-        <KpiCard label="Active students" kpi={kpis.activeStudents} spark={spark('activeStudents')} loading={loading} />
+        <KpiCard label="No. of documents" kpi={kpis.documentsCount} loading={loading} />
         <KpiCard label="Guest visitors" kpi={kpis.guestVisitors} loading={loading} />
         <KpiCard label="Conversations" kpi={kpis.conversations} spark={spark('queries')} loading={loading} />
         <KpiCard label="Queries" kpi={kpis.queries} spark={spark('queries')} loading={loading} />
@@ -117,8 +115,8 @@ export default function DashboardOverview() {
         table={
           <MiniTable
             caption="Usage over time"
-            columns={['Date', 'Queries', 'Active students']}
-            rows={timeSeries.map((row) => [row.date, row.queries, row.activeStudents])}
+            columns={['Date', 'Queries']}
+            rows={timeSeries.map((row) => [row.date, row.queries])}
           />
         }
       >
